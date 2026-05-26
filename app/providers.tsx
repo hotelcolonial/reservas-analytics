@@ -1,25 +1,15 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 import { useStore } from "@/lib/store";
 
-/**
- * Hidrata o store do Zustand a partir do localStorage no cliente.
- * Usa useSyncExternalStore para acompanhar o estado de hidratação sem
- * provocar mismatch de SSR: no servidor e no primeiro render do cliente o
- * snapshot é `false` (mostra placeholder); após `rehydrate()` terminar, o
- * componente re-renderiza com o conteúdo real.
- */
 export function Providers({ children }: { children: React.ReactNode }) {
-  const hydrated = useSyncExternalStore(
-    (cb) => useStore.persist.onFinishHydration(cb),
-    () => useStore.persist.hasHydrated(),
-    () => false,
-  );
+  const hydrated = useStore((s) => s.hydrated);
+  const loadData = useStore((s) => s.loadData);
 
   useEffect(() => {
-    useStore.persist.rehydrate();
-  }, []);
+    loadData();
+  }, [loadData]);
 
   if (!hydrated) {
     return (
