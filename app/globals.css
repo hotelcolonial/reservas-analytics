@@ -2,24 +2,21 @@
 
 @theme {
   /* Superfícies / neutros */
-  --color-neutro: #f4f5f7; /* fundo do app (cinza claro frio) */
+  --color-neutro: #f4efea; /* fundo neutro claro da marca */
   --color-branco: #ffffff;
 
-  /* Texto e superfícies escuras (slate). Mantém os nomes "colonial*"
-     usados pelos componentes, mas com valores neutros modernos. */
-  --color-colonial: #111827; /* texto forte / quase preto */
-  --color-colonial-50: #f1f5f9; /* hover / chips claros */
-  --color-colonial-100: #e2e8f0;
-  --color-colonial-700: #1f2937;
-  --color-natural: #1f2937;
+  /* Verde Colonial (texto forte e superfícies escuras) */
+  --color-colonial: #122b1c; /* verde principal / dominante */
+  --color-colonial-50: #eef2ef;
+  --color-colonial-100: #d4ddd6;
+  --color-colonial-700: #1c3a28;
+  --color-natural: #233d20; /* verde secundário / dominante 2 */
 
-  /* Acento primário (índigo) */
-  --color-brand: #4f46e5;
-  --color-brand-dark: #4338ca;
-
-  /* Acento secundário (âmbar) — usado no gauge */
-  --color-laranja: #f59e0b;
-  --color-laranja-dark: #d97706;
+  /* Acento de destaque / CTA (laranja) */
+  --color-brand: #f3a42c;
+  --color-brand-dark: #db9117;
+  --color-laranja: #f3a42c;
+  --color-laranja-dark: #db9117;
 
   /* Fontes */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -27,8 +24,8 @@
 }
 
 :root {
-  --background: #f4f5f7;
-  --foreground: #111827;
+  --background: #f4efea;
+  --foreground: #122b1c;
 }
 
 body {
@@ -54,9 +51,9 @@ input[type="number"] {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #d8d0c5;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b4bac3;
+  background: #c4b9a9;
 }

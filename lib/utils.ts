@@ -3,7 +3,6 @@ import type {
   TipoCampanha,
   StatusCampanha,
   StatusReserva,
-  Reserva,
 } from "./types";
 
 /** Junta classes condicionais (substituto leve de clsx). */
@@ -76,15 +75,6 @@ export function todayISO(): string {
   return new Date().toISOString().split("T")[0];
 }
 
-/** Gera o próximo código legível de reserva (ex.: "RES-0013"). */
-export function proximoCodigoReserva(reservas: Reserva[]): string {
-  const maior = reservas.reduce((max, r) => {
-    const n = parseInt((r.codigo ?? "").replace(/\D/g, ""), 10);
-    return Number.isNaN(n) ? max : Math.max(max, n);
-  }, 0);
-  return `RES-${String(maior + 1).padStart(4, "0")}`;
-}
-
 /* ---------- Labels PT-BR ---------- */
 
 export const PLATAFORMA_LABELS: Record<Plataforma, string> = {
@@ -149,11 +139,11 @@ export const STATUS_RESERVA_BADGE: Record<StatusReserva, string> = {
   cancelada: "bg-rose-100 text-rose-700",
 };
 
-/** Paleta usada nos gráficos por plataforma. */
+/** Paleta usada nos gráficos por plataforma (tons da marca). */
 export const PLATAFORMA_CORES: Record<Plataforma, string> = {
-  google_ads: "#6366f1", // índigo
-  meta_ads: "#fb7185", // coral
-  organico: "#34d399", // verde
-  whatsapp_direto: "#f59e0b", // âmbar
-  outro: "#94a3b8", // cinza
+  google_ads: "#122b1c", // verde principal
+  meta_ads: "#233d20", // verde secundário
+  organico: "#6b8f71", // verde médio
+  whatsapp_direto: "#f3a42c", // laranja destaque
+  outro: "#c9bfae", // bege
 };

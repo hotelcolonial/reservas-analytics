@@ -1,7 +1,14 @@
 "use client";
 
+import { Badge } from "@/components/ui/Badge";
 import type { Campanha, Reserva } from "@/lib/types";
-import { formatBRL, formatDate, PLATAFORMA_LABELS } from "@/lib/utils";
+import {
+  formatBRL,
+  formatDate,
+  PLATAFORMA_LABELS,
+  STATUS_RESERVA_BADGE,
+  STATUS_RESERVA_LABELS,
+} from "@/lib/utils";
 
 export function ReservationTable({
   reservas,
@@ -21,10 +28,12 @@ export function ReservationTable({
 
   return (
     <div className="overflow-x-auto rounded-3xl bg-branco shadow-[0_1px_3px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]">
-      <table className="w-full min-w-[760px] border-collapse text-sm">
+      <table className="w-full min-w-[1080px] border-collapse text-sm">
         <thead>
           <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-colonial/45">
             <th className="px-4 py-3.5 font-semibold">Reserva</th>
+            <th className="px-4 py-3.5 font-semibold">Cliente</th>
+            <th className="px-4 py-3.5 font-semibold">WhatsApp</th>
             <th className="px-4 py-3.5 font-semibold">Campanha</th>
             <th className="px-4 py-3.5 font-semibold">Plataforma</th>
             <th className="px-4 py-3.5 font-semibold">Check-in</th>
@@ -32,6 +41,8 @@ export function ReservationTable({
             <th className="px-4 py-3.5 text-right font-semibold">Pax</th>
             <th className="px-4 py-3.5 text-right font-semibold">Noites</th>
             <th className="px-4 py-3.5 text-right font-semibold">Valor</th>
+            <th className="px-4 py-3.5 font-semibold">Status</th>
+            <th className="px-4 py-3.5 font-semibold">Atendente</th>
             <th className="px-4 py-3.5 text-right font-semibold">Ações</th>
           </tr>
         </thead>
@@ -40,6 +51,12 @@ export function ReservationTable({
             <tr key={r.id} className="hover:bg-colonial-50/60">
               <td className="px-4 py-3.5 font-semibold text-colonial">
                 {r.codigo}
+              </td>
+              <td className="px-4 py-3.5 font-medium text-colonial">
+                {r.cliente}
+              </td>
+              <td className="px-4 py-3.5 text-colonial/70">
+                {r.telefone || "—"}
               </td>
               <td className="px-4 py-3.5 text-colonial/70">
                 {nomeCampanha(r.campanhaId)}
@@ -59,6 +76,14 @@ export function ReservationTable({
               </td>
               <td className="px-4 py-3.5 text-right font-semibold text-colonial">
                 {formatBRL(r.valor)}
+              </td>
+              <td className="px-4 py-3.5">
+                <Badge className={STATUS_RESERVA_BADGE[r.status]}>
+                  {STATUS_RESERVA_LABELS[r.status]}
+                </Badge>
+              </td>
+              <td className="px-4 py-3.5 text-colonial/70">
+                {r.atendente || "—"}
               </td>
               <td className="px-4 py-3.5">
                 <div className="flex items-center justify-end gap-1">

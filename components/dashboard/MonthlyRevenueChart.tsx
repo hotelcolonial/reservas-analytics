@@ -72,7 +72,7 @@ export function MonthlyRevenueChart({ reservas }: { reservas: Reserva[] }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
       <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-        <CartesianGrid vertical={false} stroke="#eef0f3" />
+        <CartesianGrid vertical={false} stroke="#e7e1d6" />
         <XAxis
           dataKey="rotulo"
           tick={{ fontSize: 12, fill: "#6b7280" }}
@@ -88,7 +88,7 @@ export function MonthlyRevenueChart({ reservas }: { reservas: Reserva[] }) {
           width={64}
         />
         <Tooltip
-          cursor={{ fill: "rgba(79,70,229,0.06)" }}
+          cursor={{ fill: "rgba(18,43,28,0.06)" }}
           formatter={(v, name) => [
             formatBRL(Number(v)),
             name === "confirmada" ? "Confirmada" : "Pendente",
@@ -99,11 +99,11 @@ export function MonthlyRevenueChart({ reservas }: { reservas: Reserva[] }) {
             fontSize: 13,
           }}
         />
-        <Bar dataKey="confirmada" stackId="a" fill="#4f46e5" barSize={28} />
+        <Bar dataKey="confirmada" stackId="a" fill="#122b1c" barSize={28} />
         <Bar
           dataKey="pendente"
           stackId="a"
-          fill="#c7d2fe"
+          fill="#f3a42c"
           barSize={28}
           radius={[6, 6, 0, 0]}
         />

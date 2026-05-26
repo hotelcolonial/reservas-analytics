@@ -41,9 +41,10 @@ export function RecentReservations({
           className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
         >
           <div className="min-w-0">
-            <p className="truncate font-semibold text-colonial">{r.codigo}</p>
+            <p className="truncate font-semibold text-colonial">{r.cliente}</p>
             <p className="truncate text-xs text-colonial/50">
-              {nomeCampanha(r.campanhaId)} · check-in {formatDate(r.checkIn)}
+              {r.codigo} · {nomeCampanha(r.campanhaId)} · check-in{" "}
+              {formatDate(r.checkIn)}
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">

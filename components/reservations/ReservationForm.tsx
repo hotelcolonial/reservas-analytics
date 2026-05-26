@@ -92,6 +92,10 @@ export function ReservationForm({
   }
 
   function salvar() {
+    if (!form.codigo.trim()) {
+      setErro("Informe o ID da reserva.");
+      return;
+    }
     if (!form.cliente.trim()) {
       setErro("Informe o nome do cliente.");
       return;
@@ -126,12 +130,14 @@ export function ReservationForm({
       }
     >
       <div className="space-y-5">
-        {editando && form.codigo && (
-          <div className="flex items-center gap-2 rounded-xl bg-colonial-50 px-3.5 py-2.5 text-sm">
-            <span className="text-colonial/55">ID da reserva</span>
-            <span className="font-semibold text-colonial">{form.codigo}</span>
-          </div>
-        )}
+        <FormRow label="ID da reserva" required htmlFor="res-codigo">
+          <Input
+            id="res-codigo"
+            value={form.codigo}
+            onChange={(e) => set("codigo", e.target.value)}
+            placeholder="Ex.: RES-0001"
+          />
+        </FormRow>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormRow label="Nome do cliente" required htmlFor="res-cliente">
             <Input

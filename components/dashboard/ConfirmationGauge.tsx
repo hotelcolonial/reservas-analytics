@@ -32,7 +32,7 @@ export function ConfirmationGauge({ confirmadas, total }: ConfirmationGaugeProps
               cy={cy}
               r={r}
               fill="none"
-              stroke="#eef0f3"
+              stroke="#e6ded2"
               strokeWidth={stroke}
               strokeDasharray={trackDash}
               strokeLinecap="round"
@@ -42,7 +42,7 @@ export function ConfirmationGauge({ confirmadas, total }: ConfirmationGaugeProps
               cy={cy}
               r={r}
               fill="none"
-              stroke="#f59e0b"
+              stroke="#f3a42c"
               strokeWidth={stroke}
               strokeDasharray={progressDash}
               strokeLinecap="round"
