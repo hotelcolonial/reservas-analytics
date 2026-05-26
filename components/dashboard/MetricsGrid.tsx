@@ -14,7 +14,11 @@ export function MetricsGrid({ m }: { m: MetricasDashboard }) {
         label="Receita total"
         value={formatBRL(m.receitaTotal)}
         hint="Reservas confirmadas"
-        accent="colonial"
+        trend={
+          m.receitaTotal > 0
+            ? { direction: "up", label: formatMultiplier(m.roasGeral) }
+            : null
+        }
       />
       <MetricCard
         label="Investimento total"
@@ -25,7 +29,14 @@ export function MetricsGrid({ m }: { m: MetricasDashboard }) {
         label="ROI geral"
         value={formatPercent(m.roiGeral)}
         hint="Retorno sobre investimento"
-        accent="laranja"
+        trend={
+          m.roiGeral === null
+            ? null
+            : {
+                direction: m.roiGeral >= 0 ? "up" : "down",
+                label: m.roiGeral >= 0 ? "lucro" : "prejuízo",
+              }
+        }
       />
       <MetricCard
         label="ROAS geral"
@@ -63,9 +74,7 @@ export function MetricsGrid({ m }: { m: MetricasDashboard }) {
       />
       <MetricCard
         label="Campanha de melhor ROI"
-        value={
-          m.campanhaMelhorRoi ? formatPercent(m.campanhaMelhorRoi.roi) : "—"
-        }
+        value={m.campanhaMelhorRoi ? formatPercent(m.campanhaMelhorRoi.roi) : "—"}
         hint={m.campanhaMelhorRoi?.campanha.nome ?? "Sem dados"}
       />
     </div>

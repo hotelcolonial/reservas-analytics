@@ -72,6 +72,7 @@ export const campanhasMock: Campanha[] = [
 export const reservasMock: Reserva[] = [
   {
     id: "res-001",
+    codigo: "RES-0001",
     cliente: "Mariana Lopes",
     telefone: "(45) 99876-1234",
     dataReserva: "2026-05-16",
@@ -89,6 +90,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-002",
+    codigo: "RES-0002",
     cliente: "Rodrigo Almeida",
     telefone: "(45) 99811-5678",
     dataReserva: "2026-05-18",
@@ -105,6 +107,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-003",
+    codigo: "RES-0003",
     cliente: "Patrícia Nunes",
     telefone: "(45) 99902-3344",
     dataReserva: "2026-05-20",
@@ -121,6 +124,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-004",
+    codigo: "RES-0004",
     cliente: "Eduardo Martins",
     telefone: "(41) 99745-8890",
     dataReserva: "2026-05-21",
@@ -138,6 +142,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-005",
+    codigo: "RES-0005",
     cliente: "Família Souza",
     telefone: "(45) 99633-1100",
     dataReserva: "2026-04-10",
@@ -154,6 +159,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-006",
+    codigo: "RES-0006",
     cliente: "Beatriz Ferreira",
     telefone: "(45) 99588-7766",
     dataReserva: "2026-05-02",
@@ -170,6 +176,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-007",
+    codigo: "RES-0007",
     cliente: "Carlos e Ana",
     telefone: "(47) 99477-2211",
     dataReserva: "2026-06-22",
@@ -187,6 +194,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-008",
+    codigo: "RES-0008",
     cliente: "Juliana Castro",
     telefone: "(45) 99322-6655",
     dataReserva: "2026-06-25",
@@ -203,6 +211,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-009",
+    codigo: "RES-0009",
     cliente: "Fernando Dias",
     telefone: "(45) 99211-9988",
     dataReserva: "2026-06-28",
@@ -220,6 +229,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-010",
+    codigo: "RES-0010",
     cliente: "Luciana Prado",
     telefone: "(45) 99100-4455",
     dataReserva: "2026-05-08",
@@ -237,6 +247,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-011",
+    codigo: "RES-0011",
     cliente: "Marcos Vinícius",
     telefone: "(45) 99055-3322",
     dataReserva: "2026-05-10",
@@ -253,6 +264,7 @@ export const reservasMock: Reserva[] = [
   },
   {
     id: "res-012",
+    codigo: "RES-0012",
     cliente: "Tatiane Rocha",
     telefone: "(45) 98999-1212",
     dataReserva: "2026-05-22",

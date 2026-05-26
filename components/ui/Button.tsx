@@ -13,10 +13,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-laranja text-colonial font-semibold hover:bg-laranja-dark shadow-sm",
-  secondary: "bg-colonial text-branco hover:bg-natural shadow-sm",
+    "bg-brand text-branco font-semibold hover:bg-brand-dark shadow-sm",
+  secondary: "bg-colonial text-branco hover:bg-colonial-700 shadow-sm",
   outline:
-    "border border-colonial/20 bg-branco text-colonial hover:bg-colonial-50",
+    "border border-black/10 bg-branco text-colonial hover:bg-colonial-50",
   ghost: "text-colonial hover:bg-colonial-50",
   danger: "bg-rose-600 text-branco hover:bg-rose-700 shadow-sm",
 };

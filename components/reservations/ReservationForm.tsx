@@ -24,6 +24,7 @@ type FormData = Omit<Reserva, "id">;
 
 function estadoInicial(r?: Reserva | null): FormData {
   return {
+    codigo: r?.codigo ?? "", // gerado automaticamente ao criar
     cliente: r?.cliente ?? "",
     telefone: r?.telefone ?? "",
     dataReserva: r?.dataReserva ?? todayISO(),
@@ -125,6 +126,12 @@ export function ReservationForm({
       }
     >
       <div className="space-y-5">
+        {editando && form.codigo && (
+          <div className="flex items-center gap-2 rounded-xl bg-colonial-50 px-3.5 py-2.5 text-sm">
+            <span className="text-colonial/55">ID da reserva</span>
+            <span className="font-semibold text-colonial">{form.codigo}</span>
+          </div>
+        )}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormRow label="Nome do cliente" required htmlFor="res-cliente">
             <Input

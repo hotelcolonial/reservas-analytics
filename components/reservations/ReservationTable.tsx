@@ -1,14 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/Badge";
 import type { Campanha, Reserva } from "@/lib/types";
-import {
-  formatBRL,
-  formatDate,
-  PLATAFORMA_LABELS,
-  STATUS_RESERVA_BADGE,
-  STATUS_RESERVA_LABELS,
-} from "@/lib/utils";
+import { formatBRL, formatDate, PLATAFORMA_LABELS } from "@/lib/utils";
 
 export function ReservationTable({
   reservas,
@@ -27,59 +20,47 @@ export function ReservationTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-black/5 bg-branco">
-      <table className="w-full min-w-[920px] border-collapse text-sm">
+    <div className="overflow-x-auto rounded-3xl bg-branco shadow-[0_1px_3px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]">
+      <table className="w-full min-w-[760px] border-collapse text-sm">
         <thead>
-          <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-colonial/50">
-            <th className="px-4 py-3 font-semibold">Cliente</th>
-            <th className="px-4 py-3 font-semibold">WhatsApp</th>
-            <th className="px-4 py-3 font-semibold">Campanha</th>
-            <th className="px-4 py-3 font-semibold">Plataforma</th>
-            <th className="px-4 py-3 font-semibold">Check-in</th>
-            <th className="px-4 py-3 font-semibold">Check-out</th>
-            <th className="px-4 py-3 text-right font-semibold">Pax</th>
-            <th className="px-4 py-3 text-right font-semibold">Noites</th>
-            <th className="px-4 py-3 text-right font-semibold">Valor</th>
-            <th className="px-4 py-3 font-semibold">Status</th>
-            <th className="px-4 py-3 font-semibold">Atendente</th>
-            <th className="px-4 py-3 text-right font-semibold">Ações</th>
+          <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-colonial/45">
+            <th className="px-4 py-3.5 font-semibold">Reserva</th>
+            <th className="px-4 py-3.5 font-semibold">Campanha</th>
+            <th className="px-4 py-3.5 font-semibold">Plataforma</th>
+            <th className="px-4 py-3.5 font-semibold">Check-in</th>
+            <th className="px-4 py-3.5 font-semibold">Check-out</th>
+            <th className="px-4 py-3.5 text-right font-semibold">Pax</th>
+            <th className="px-4 py-3.5 text-right font-semibold">Noites</th>
+            <th className="px-4 py-3.5 text-right font-semibold">Valor</th>
+            <th className="px-4 py-3.5 text-right font-semibold">Ações</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-black/5">
           {reservas.map((r) => (
-            <tr key={r.id} className="hover:bg-colonial-50/40">
-              <td className="px-4 py-3 font-medium text-colonial">
-                {r.cliente}
+            <tr key={r.id} className="hover:bg-colonial-50/60">
+              <td className="px-4 py-3.5 font-semibold text-colonial">
+                {r.codigo}
               </td>
-              <td className="px-4 py-3 text-colonial/70">{r.telefone || "—"}</td>
-              <td className="px-4 py-3 text-colonial/70">
+              <td className="px-4 py-3.5 text-colonial/70">
                 {nomeCampanha(r.campanhaId)}
               </td>
-              <td className="px-4 py-3 text-colonial/70">
+              <td className="px-4 py-3.5 text-colonial/70">
                 {PLATAFORMA_LABELS[r.plataforma]}
               </td>
-              <td className="px-4 py-3 text-colonial/70">
+              <td className="px-4 py-3.5 text-colonial/70">
                 {formatDate(r.checkIn)}
               </td>
-              <td className="px-4 py-3 text-colonial/70">
+              <td className="px-4 py-3.5 text-colonial/70">
                 {formatDate(r.checkOut)}
               </td>
-              <td className="px-4 py-3 text-right text-colonial/70">{r.pax}</td>
-              <td className="px-4 py-3 text-right text-colonial/70">
+              <td className="px-4 py-3.5 text-right text-colonial/70">{r.pax}</td>
+              <td className="px-4 py-3.5 text-right text-colonial/70">
                 {r.noites}
               </td>
-              <td className="px-4 py-3 text-right font-semibold text-colonial">
+              <td className="px-4 py-3.5 text-right font-semibold text-colonial">
                 {formatBRL(r.valor)}
               </td>
-              <td className="px-4 py-3">
-                <Badge className={STATUS_RESERVA_BADGE[r.status]}>
-                  {STATUS_RESERVA_LABELS[r.status]}
-                </Badge>
-              </td>
-              <td className="px-4 py-3 text-colonial/70">
-                {r.atendente || "—"}
-              </td>
-              <td className="px-4 py-3">
+              <td className="px-4 py-3.5">
                 <div className="flex items-center justify-end gap-1">
                   <button
                     onClick={() => onEdit(r)}

@@ -33,6 +33,7 @@ export interface Campanha {
 
 export interface Reserva {
   id: string;
+  codigo: string; // identificador legível da reserva, ex.: "RES-0001"
   cliente: string;
   telefone: string;
   dataReserva: string; // ISO date — quando a reserva foi registrada

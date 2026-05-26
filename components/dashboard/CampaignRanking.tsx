@@ -29,7 +29,7 @@ export function CampaignRanking({
         <li key={m.campanha.id}>
           <div className="mb-1.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-colonial text-xs font-bold text-laranja">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">
                 {i + 1}
               </span>
               <span className="truncate font-medium text-colonial">
@@ -43,7 +43,7 @@ export function CampaignRanking({
           <div className="ml-9 flex items-center gap-3">
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-colonial-50">
               <div
-                className="h-full rounded-full bg-laranja"
+                className="h-full rounded-full bg-brand"
                 style={{ width: `${(m.receita / maxReceita) * 100}%` }}
               />
             </div>

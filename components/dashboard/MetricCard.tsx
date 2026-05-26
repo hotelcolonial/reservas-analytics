@@ -5,73 +5,51 @@ interface MetricCardProps {
   label: string;
   value: string;
   hint?: string;
-  /** Destaca o card (cor da marca) — usado em métricas principais. */
-  accent?: "default" | "colonial" | "laranja";
-  icon?: React.ReactNode;
+  trend?: {
+    direction: "up" | "down";
+    label: string;
+  } | null;
 }
 
-export function MetricCard({
-  label,
-  value,
-  hint,
-  accent = "default",
-  icon,
-}: MetricCardProps) {
-  const isDark = accent === "colonial";
-  const isOrange = accent === "laranja";
-
+function ArrowUp() {
   return (
-    <Card
-      className={cn(
-        "flex flex-col justify-between gap-3",
-        isDark && "border-transparent bg-colonial text-branco",
-        isOrange && "border-transparent bg-laranja text-colonial",
-      )}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <p
-          className={cn(
-            "text-sm font-medium",
-            isDark ? "text-branco/70" : isOrange ? "text-colonial/70" : "text-colonial/60",
-          )}
-        >
-          {label}
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7M9 7h8v8" />
+    </svg>
+  );
+}
+
+function ArrowDown() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 7 17 17M17 9v8H9" />
+    </svg>
+  );
+}
+
+export function MetricCard({ label, value, hint, trend }: MetricCardProps) {
+  return (
+    <Card className="flex flex-col gap-3 p-5">
+      <p className="text-sm font-medium text-colonial/55">{label}</p>
+      <div className="flex items-end justify-between gap-2">
+        <p className="font-display text-3xl font-extrabold leading-none tracking-tight text-colonial sm:text-[2rem]">
+          {value}
         </p>
-        {icon && (
+        {trend && (
           <span
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-lg",
-              isDark
-                ? "bg-branco/10 text-laranja"
-                : isOrange
-                  ? "bg-colonial/10 text-colonial"
-                  : "bg-colonial-50 text-colonial",
+              "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-semibold",
+              trend.direction === "up"
+                ? "bg-emerald-50 text-emerald-600"
+                : "bg-rose-50 text-rose-600",
             )}
           >
-            {icon}
+            {trend.direction === "up" ? <ArrowUp /> : <ArrowDown />}
+            {trend.label}
           </span>
         )}
       </div>
-      <div>
-        <p
-          className={cn(
-            "font-display text-3xl font-semibold leading-tight tracking-tight",
-            isDark ? "text-branco" : "text-colonial",
-          )}
-        >
-          {value}
-        </p>
-        {hint && (
-          <p
-            className={cn(
-              "mt-1 truncate text-xs",
-              isDark ? "text-branco/60" : isOrange ? "text-colonial/60" : "text-colonial/50",
-            )}
-          >
-            {hint}
-          </p>
-        )}
-      </div>
+      {hint && <p className="truncate text-xs text-colonial/45">{hint}</p>}
     </Card>
   );
 }

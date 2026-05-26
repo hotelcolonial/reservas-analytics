@@ -53,9 +53,9 @@ export function ReservationFilters({
     filtros.checkInAte;
 
   return (
-    <div className="space-y-4 rounded-2xl border border-black/5 bg-branco p-4 sm:p-5">
+    <div className="space-y-4 rounded-3xl bg-branco p-4 shadow-[0_1px_3px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] sm:p-5">
       <Input
-        placeholder="Buscar por cliente ou WhatsApp..."
+        placeholder="Buscar por código, cliente ou WhatsApp..."
         value={filtros.busca}
         onChange={(e) => set("busca", e.target.value)}
       />

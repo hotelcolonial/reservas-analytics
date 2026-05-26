@@ -30,7 +30,7 @@ export default function ReservasPage() {
     return reservas
       .filter((r) => {
         if (busca) {
-          const alvo = `${r.cliente} ${r.telefone}`.toLowerCase();
+          const alvo = `${r.codigo} ${r.cliente} ${r.telefone}`.toLowerCase();
           if (!alvo.includes(busca)) return false;
         }
         if (filtros.campanhaId === "sem" && r.campanhaId !== null) return false;

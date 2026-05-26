@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import type { Campanha, Reserva } from "./types";
 import { storage, STORAGE_KEY } from "./storage";
 import { campanhasMock, reservasMock } from "@/data/mockData";
+import { proximoCodigoReserva } from "./utils";
 
 function novoId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -68,7 +69,14 @@ export const useStore = create<AppState>()(
 
       addReserva: (data) =>
         set((state) => ({
-          reservas: [...state.reservas, { ...data, id: novoId() }],
+          reservas: [
+            ...state.reservas,
+            {
+              ...data,
+              id: novoId(),
+              codigo: data.codigo || proximoCodigoReserva(state.reservas),
+            },
+          ],
         })),
 
       updateReserva: (id, data) =>
