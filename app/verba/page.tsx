@@ -18,6 +18,9 @@ import { Input, Select, FormRow } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PeriodFilter } from "@/components/ui/PeriodFilter";
+import { Pagination } from "@/components/ui/Pagination";
+
+const POR_PAGINA = 10;
 
 interface FormGasto {
   campanhaId: string;
@@ -37,12 +40,18 @@ export default function VerbaPage() {
   const removeGasto = useStore((s) => s.removeGasto);
 
   const [periodo, setPeriodo] = useState<Periodo>(PERIODO_TUDO);
+  const [page, setPage] = useState(1);
   const [form, setForm] = useState<FormGasto>(() =>
     formVazio(campanhas[0]?.id ?? ""),
   );
   const [editId, setEditId] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [excluir, setExcluir] = useState<GastoDiario | null>(null);
+
+  function aplicarPeriodo(p: Periodo) {
+    setPeriodo(p);
+    setPage(1);
+  }
 
   const nomeCampanha = (id: string) =>
     campanhas.find((c) => c.id === id)?.nome ?? "—";
@@ -62,6 +71,13 @@ export default function VerbaPage() {
   const total = useMemo(
     () => filtrados.reduce((acc, g) => acc + g.valor, 0),
     [filtrados],
+  );
+
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA));
+  const paginaAtual = Math.min(page, totalPaginas);
+  const paginados = filtrados.slice(
+    (paginaAtual - 1) * POR_PAGINA,
+    paginaAtual * POR_PAGINA,
   );
 
   function set<K extends keyof FormGasto>(key: K, value: FormGasto[K]) {
@@ -175,7 +191,7 @@ export default function VerbaPage() {
             </div>
           </Card>
 
-          <PeriodFilter periodo={periodo} onChange={setPeriodo} />
+          <PeriodFilter periodo={periodo} onChange={aplicarPeriodo} />
 
           <Card>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -208,7 +224,7 @@ export default function VerbaPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black/5">
-                    {filtrados.map((g) => (
+                    {paginados.map((g) => (
                       <tr key={g.id} className="hover:bg-colonial-50/50">
                         <td className="px-3 py-3 font-medium text-colonial">
                           {formatDate(g.data)}
@@ -266,6 +282,16 @@ export default function VerbaPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {filtrados.length > 0 && (
+              <div className="mt-4">
+                <Pagination
+                  page={paginaAtual}
+                  totalPages={totalPaginas}
+                  onPage={setPage}
+                />
               </div>
             )}
           </Card>

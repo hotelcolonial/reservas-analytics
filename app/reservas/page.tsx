@@ -9,11 +9,14 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ReservationForm } from "@/components/reservations/ReservationForm";
 import { ReservationTable } from "@/components/reservations/ReservationTable";
+import { Pagination } from "@/components/ui/Pagination";
 import {
   ReservationFilters,
   filtrosVazios,
   type FiltrosReserva,
 } from "@/components/reservations/ReservationFilters";
+
+const POR_PAGINA = 8;
 
 export default function ReservasPage() {
   const reservas = useStore((s) => s.reservas);
@@ -21,9 +24,15 @@ export default function ReservasPage() {
   const removeReserva = useStore((s) => s.removeReserva);
 
   const [filtros, setFiltros] = useState<FiltrosReserva>(filtrosVazios);
+  const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
   const [editando, setEditando] = useState<Reserva | null>(null);
   const [excluir, setExcluir] = useState<Reserva | null>(null);
+
+  function aplicarFiltros(f: FiltrosReserva) {
+    setFiltros(f);
+    setPage(1);
+  }
 
   const filtradas = useMemo(() => {
     const busca = filtros.busca.trim().toLowerCase();
@@ -63,6 +72,13 @@ export default function ReservasPage() {
     [filtradas],
   );
 
+  const totalPaginas = Math.max(1, Math.ceil(filtradas.length / POR_PAGINA));
+  const paginaAtual = Math.min(page, totalPaginas);
+  const paginadas = filtradas.slice(
+    (paginaAtual - 1) * POR_PAGINA,
+    paginaAtual * POR_PAGINA,
+  );
+
   function abrirNova() {
     setEditando(null);
     setFormOpen(true);
@@ -92,7 +108,7 @@ export default function ReservasPage() {
 
       <ReservationFilters
         filtros={filtros}
-        onChange={setFiltros}
+        onChange={aplicarFiltros}
         campanhas={campanhas}
       />
 
@@ -115,12 +131,19 @@ export default function ReservasPage() {
           }
         />
       ) : (
-        <ReservationTable
-          reservas={filtradas}
-          campanhas={campanhas}
-          onEdit={abrirEdicao}
-          onDelete={setExcluir}
-        />
+        <>
+          <ReservationTable
+            reservas={paginadas}
+            campanhas={campanhas}
+            onEdit={abrirEdicao}
+            onDelete={setExcluir}
+          />
+          <Pagination
+            page={paginaAtual}
+            totalPages={totalPaginas}
+            onPage={setPage}
+          />
+        </>
       )}
 
       <ReservationForm
