@@ -32,7 +32,7 @@ export function MetricCard({ label, value, hint, trend }: MetricCardProps) {
     <Card className="flex flex-col gap-3 p-5">
       <p className="text-sm font-medium text-colonial/55">{label}</p>
       <div className="flex items-end justify-between gap-2">
-        <p className="min-w-0 truncate font-display text-2xl font-extrabold leading-none tracking-tight text-colonial tabular-nums sm:text-[2rem]">
+        <p className="min-w-0 break-words font-display text-2xl font-extrabold leading-tight tracking-tight text-colonial tabular-nums">
           {value}
         </p>
         {trend && (

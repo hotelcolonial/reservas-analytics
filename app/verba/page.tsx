@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PeriodFilter } from "@/components/ui/PeriodFilter";
 import { Pagination } from "@/components/ui/Pagination";
+import { SpendByDateChart } from "@/components/verba/SpendByDateChart";
 
 const POR_PAGINA = 10;
 
@@ -169,8 +170,14 @@ export default function VerbaPage() {
                   type="number"
                   min={0}
                   step="0.01"
-                  value={form.valor}
-                  onChange={(e) => set("valor", Number(e.target.value))}
+                  placeholder="0"
+                  value={form.valor === 0 ? "" : form.valor}
+                  onChange={(e) =>
+                    set(
+                      "valor",
+                      e.target.value === "" ? 0 : Number(e.target.value),
+                    )
+                  }
                 />
               </FormRow>
             </div>
@@ -192,6 +199,21 @@ export default function VerbaPage() {
           </Card>
 
           <PeriodFilter periodo={periodo} onChange={aplicarPeriodo} />
+
+          <Card>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-display text-lg font-semibold text-colonial">
+                Verba gasta por data
+              </h2>
+              <p className="text-sm text-colonial/60">
+                Total no período{" "}
+                <span className="font-semibold text-colonial">
+                  {formatBRL(total)}
+                </span>
+              </p>
+            </div>
+            <SpendByDateChart gastos={filtrados} />
+          </Card>
 
           <Card>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">

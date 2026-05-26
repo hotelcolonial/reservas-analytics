@@ -203,8 +203,11 @@ export function ReservationForm({
               type="number"
               min={0}
               step="0.01"
-              value={form.valor}
-              onChange={(e) => set("valor", Number(e.target.value))}
+              placeholder="0"
+              value={form.valor === 0 ? "" : form.valor}
+              onChange={(e) =>
+                set("valor", e.target.value === "" ? 0 : Number(e.target.value))
+              }
             />
           </FormRow>
 
@@ -213,8 +216,11 @@ export function ReservationForm({
               id="res-pax"
               type="number"
               min={1}
-              value={form.pax}
-              onChange={(e) => set("pax", Number(e.target.value))}
+              placeholder="1"
+              value={form.pax === 0 ? "" : form.pax}
+              onChange={(e) =>
+                set("pax", e.target.value === "" ? 0 : Number(e.target.value))
+              }
             />
           </FormRow>
 
@@ -223,10 +229,14 @@ export function ReservationForm({
               id="res-noites"
               type="number"
               min={0}
-              value={form.noites}
+              placeholder="0"
+              value={form.noites === 0 ? "" : form.noites}
               onChange={(e) => {
                 setNoitesAuto(false);
-                set("noites", Number(e.target.value));
+                set(
+                  "noites",
+                  e.target.value === "" ? 0 : Number(e.target.value),
+                );
               }}
             />
           </FormRow>
