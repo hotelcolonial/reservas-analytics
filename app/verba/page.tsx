@@ -112,6 +112,9 @@ export default function VerbaPage() {
     setEditId(g.id);
     setForm({ campanhaId: g.campanhaId, data: g.data, valor: g.valor });
     setErro(null);
+    document
+      .getElementById("gasto-form")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function cancelarEdicao() {
@@ -139,7 +142,12 @@ export default function VerbaPage() {
         />
       ) : (
         <>
-          <Card className="space-y-4">
+          <Card
+            id="gasto-form"
+            className={`space-y-4 scroll-mt-24 transition-shadow ${
+              editId ? "ring-2 ring-brand/50" : ""
+            }`}
+          >
             <h2 className="font-display text-lg font-semibold text-colonial">
               {editId ? "Editar gasto" : "Lançar gasto do dia"}
             </h2>
