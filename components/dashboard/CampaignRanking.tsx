@@ -28,7 +28,7 @@ export function CampaignRanking({
       {ranking.map((m, i) => (
         <li key={m.campanha.id}>
           <div className="mb-1.5 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">
                 {i + 1}
               </span>
@@ -47,7 +47,7 @@ export function CampaignRanking({
                 style={{ width: `${(m.receita / maxReceita) * 100}%` }}
               />
             </div>
-            <span className="w-16 shrink-0 text-right text-xs text-colonial/50">
+            <span className="shrink-0 whitespace-nowrap text-right text-xs text-colonial/50">
               ROI {formatPercent(m.roi)}
             </span>
           </div>
