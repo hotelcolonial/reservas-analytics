@@ -24,9 +24,7 @@ type FormData = Omit<Reserva, "id">;
 
 function estadoInicial(r?: Reserva | null): FormData {
   return {
-    codigo: r?.codigo ?? "", // gerado automaticamente ao criar
-    cliente: r?.cliente ?? "",
-    telefone: r?.telefone ?? "",
+    codigo: r?.codigo ?? "",
     dataReserva: r?.dataReserva ?? todayISO(),
     checkIn: r?.checkIn ?? todayISO(),
     checkOut: r?.checkOut ?? todayISO(),
@@ -96,10 +94,6 @@ export function ReservationForm({
       setErro("Informe o ID da reserva.");
       return;
     }
-    if (!form.cliente.trim()) {
-      setErro("Informe o nome do cliente.");
-      return;
-    }
     if (reserva) {
       updateReserva(reserva.id, form);
     } else {
@@ -138,26 +132,6 @@ export function ReservationForm({
             placeholder="Ex.: RES-0001"
           />
         </FormRow>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <FormRow label="Nome do cliente" required htmlFor="res-cliente">
-            <Input
-              id="res-cliente"
-              value={form.cliente}
-              onChange={(e) => set("cliente", e.target.value)}
-              placeholder="Nome completo"
-            />
-          </FormRow>
-
-          <FormRow label="Telefone / WhatsApp" htmlFor="res-tel">
-            <Input
-              id="res-tel"
-              value={form.telefone}
-              onChange={(e) => set("telefone", e.target.value)}
-              placeholder="(00) 00000-0000"
-            />
-          </FormRow>
-        </div>
-
         <FormRow label="Campanha de origem">
           <Select
             value={form.campanhaId ?? ""}

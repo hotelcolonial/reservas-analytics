@@ -30,8 +30,7 @@ export default function ReservasPage() {
     return reservas
       .filter((r) => {
         if (busca) {
-          const alvo = `${r.codigo} ${r.cliente} ${r.telefone}`.toLowerCase();
-          if (!alvo.includes(busca)) return false;
+          if (!r.codigo.toLowerCase().includes(busca)) return false;
         }
         if (filtros.campanhaId === "sem" && r.campanhaId !== null) return false;
         if (
@@ -128,7 +127,7 @@ export default function ReservasPage() {
       <ConfirmDialog
         open={Boolean(excluir)}
         title="Excluir reserva"
-        message={`Tem certeza que deseja excluir a reserva de "${excluir?.cliente}"? Esta ação não pode ser desfeita.`}
+        message={`Tem certeza que deseja excluir a reserva "${excluir?.codigo}"? Esta ação não pode ser desfeita.`}
         onConfirm={() => excluir && removeReserva(excluir.id)}
         onClose={() => setExcluir(null)}
       />
