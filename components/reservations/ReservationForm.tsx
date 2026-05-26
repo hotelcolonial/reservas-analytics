@@ -143,13 +143,13 @@ export function ReservationForm({
         </FormRow>
 
         {form.campanhaId && (
-          <FormRow label="Esta reserva veio mesmo desta campanha?">
+          <FormRow label="A data da reserva coincide com a campanha?">
             <Select
               value={form.veioDaCampanha ? "sim" : "nao"}
               onChange={(e) => set("veioDaCampanha", e.target.value === "sim")}
             >
-              <option value="sim">Sim, veio da campanha</option>
-              <option value="nao">Não, veio por outra origem</option>
+              <option value="sim">Sim, a data coincide com a campanha</option>
+              <option value="nao">Não, a data não coincide</option>
             </Select>
           </FormRow>
         )}
