@@ -1,6 +1,7 @@
 import type {
   Campanha,
   Reserva,
+  GastoDiario,
   Plataforma,
   MetricasCampanha,
   MetricasPlataforma,
@@ -22,15 +23,29 @@ function isConfirmada(r: Reserva): boolean {
   return r.status === "confirmada";
 }
 
-/** Métricas de uma campanha a partir das reservas vinculadas a ela. */
+/** Verba total gasta numa campanha (soma dos gastos diários informados). */
+export function investimentoDaCampanha(
+  campanhaId: string,
+  gastos: GastoDiario[],
+): number {
+  return gastos
+    .filter((g) => g.campanhaId === campanhaId)
+    .reduce((acc, g) => acc + g.valor, 0);
+}
+
+/**
+ * Métricas de uma campanha. `reservas` e `gastos` já vêm filtrados pelo
+ * período selecionado na página (quando houver filtro).
+ */
 export function metricasCampanha(
   campanha: Campanha,
   reservas: Reserva[],
+  gastos: GastoDiario[],
 ): MetricasCampanha {
   const doCampanha = reservas.filter((r) => r.campanhaId === campanha.id);
   const confirmadas = doCampanha.filter(isConfirmada);
   const receita = confirmadas.reduce((acc, r) => acc + r.valor, 0);
-  const investimento = campanha.investimento || 0;
+  const investimento = investimentoDaCampanha(campanha.id, gastos);
 
   return {
     campanha,
@@ -50,19 +65,32 @@ export function metricasCampanha(
 export function metricasTodasCampanhas(
   campanhas: Campanha[],
   reservas: Reserva[],
+  gastos: GastoDiario[],
 ): MetricasCampanha[] {
-  return campanhas.map((c) => metricasCampanha(c, reservas));
+  return campanhas.map((c) => metricasCampanha(c, reservas, gastos));
 }
 
-/** Métricas de uma plataforma: investimento somado das campanhas + reservas dela. */
+/** Investimento de uma plataforma = soma dos gastos das campanhas dela. */
+function investimentoDaPlataforma(
+  plataforma: Plataforma,
+  campanhas: Campanha[],
+  gastos: GastoDiario[],
+): number {
+  const idsDaPlataforma = new Set(
+    campanhas.filter((c) => c.plataforma === plataforma).map((c) => c.id),
+  );
+  return gastos
+    .filter((g) => idsDaPlataforma.has(g.campanhaId))
+    .reduce((acc, g) => acc + g.valor, 0);
+}
+
 export function metricasPlataforma(
   plataforma: Plataforma,
   campanhas: Campanha[],
   reservas: Reserva[],
+  gastos: GastoDiario[],
 ): MetricasPlataforma {
-  const investimento = campanhas
-    .filter((c) => c.plataforma === plataforma)
-    .reduce((acc, c) => acc + (c.investimento || 0), 0);
+  const investimento = investimentoDaPlataforma(plataforma, campanhas, gastos);
 
   const daPlataforma = reservas.filter((r) => r.plataforma === plataforma);
   const confirmadas = daPlataforma.filter(isConfirmada);
@@ -84,15 +112,13 @@ export function metricasPlataforma(
 export function metricasDashboard(
   campanhas: Campanha[],
   reservas: Reserva[],
+  gastos: GastoDiario[],
 ): MetricasDashboard {
   const confirmadas = reservas.filter(isConfirmada);
   const receitaTotal = confirmadas.reduce((acc, r) => acc + r.valor, 0);
-  const investimentoTotal = campanhas.reduce(
-    (acc, c) => acc + (c.investimento || 0),
-    0,
-  );
+  const investimentoTotal = gastos.reduce((acc, g) => acc + g.valor, 0);
 
-  const porCampanha = metricasTodasCampanhas(campanhas, reservas);
+  const porCampanha = metricasTodasCampanhas(campanhas, reservas, gastos);
 
   const campanhaMaiorReceita =
     porCampanha.length > 0
@@ -105,7 +131,9 @@ export function metricasDashboard(
   );
   const campanhaMelhorRoi =
     comRoi.length > 0
-      ? comRoi.reduce((best, m) => ((m.roi ?? -Infinity) > (best.roi ?? -Infinity) ? m : best))
+      ? comRoi.reduce((best, m) =>
+          (m.roi ?? -Infinity) > (best.roi ?? -Infinity) ? m : best,
+        )
       : null;
 
   return {
@@ -125,6 +153,7 @@ export function metricasDashboard(
 export function metricasTodasPlataformas(
   campanhas: Campanha[],
   reservas: Reserva[],
+  gastos: GastoDiario[],
 ): MetricasPlataforma[] {
   const usadas = new Set<Plataforma>();
   campanhas.forEach((c) => usadas.add(c.plataforma));
@@ -138,5 +167,5 @@ export function metricasTodasPlataformas(
   ];
   return ordem
     .filter((p) => usadas.has(p))
-    .map((p) => metricasPlataforma(p, campanhas, reservas));
+    .map((p) => metricasPlataforma(p, campanhas, reservas, gastos));
 }

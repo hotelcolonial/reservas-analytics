@@ -42,8 +42,14 @@ export default function ReservasPage() {
         if (filtros.plataforma && r.plataforma !== filtros.plataforma)
           return false;
         if (filtros.status && r.status !== filtros.status) return false;
+        if (filtros.reservaDe && r.dataReserva < filtros.reservaDe) return false;
+        if (filtros.reservaAte && r.dataReserva > filtros.reservaAte)
+          return false;
         if (filtros.checkInDe && r.checkIn < filtros.checkInDe) return false;
         if (filtros.checkInAte && r.checkIn > filtros.checkInAte) return false;
+        if (filtros.checkOutDe && r.checkOut < filtros.checkOutDe) return false;
+        if (filtros.checkOutAte && r.checkOut > filtros.checkOutAte)
+          return false;
         return true;
       })
       .sort((a, b) => b.checkIn.localeCompare(a.checkIn));

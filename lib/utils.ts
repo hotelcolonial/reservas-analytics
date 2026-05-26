@@ -75,6 +75,51 @@ export function todayISO(): string {
   return new Date().toISOString().split("T")[0];
 }
 
+/* ---------- Período (filtro por datas) ---------- */
+
+/** Intervalo de datas. Campo vazio ("") significa "sem limite" desse lado. */
+export interface Periodo {
+  de: string; // ISO date ou ""
+  ate: string; // ISO date ou ""
+}
+
+export const PERIODO_TUDO: Periodo = { de: "", ate: "" };
+
+export type PresetPeriodo = "hoje" | "semana" | "mes" | "ano";
+
+function localISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Constrói um intervalo a partir de um preset, ancorado em hoje. */
+export function rangePreset(preset: PresetPeriodo): Periodo {
+  const now = new Date();
+  const ate = localISO(now);
+  if (preset === "hoje") return { de: ate, ate };
+  if (preset === "semana") {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+    return { de: localISO(start), ate };
+  }
+  if (preset === "mes") {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { de: localISO(start), ate };
+  }
+  const start = new Date(now.getFullYear(), 0, 1);
+  return { de: localISO(start), ate };
+}
+
+/** True se a data ISO cai dentro do período (limites inclusivos). */
+export function dentroDoPeriodo(dataISO: string, periodo: Periodo): boolean {
+  if (!dataISO) return false;
+  const d = dataISO.split("T")[0];
+  if (periodo.de && d < periodo.de) return false;
+  if (periodo.ate && d > periodo.ate) return false;
+  return true;
+}
+
 /* ---------- Labels PT-BR ---------- */
 
 export const PLATAFORMA_LABELS: Record<Plataforma, string> = {

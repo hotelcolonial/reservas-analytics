@@ -8,7 +8,6 @@ import {
   formatBRL,
   formatPercent,
   formatMultiplier,
-  formatDate,
   PLATAFORMA_LABELS,
   TIPO_CAMPANHA_LABELS,
   STATUS_CAMPANHA_LABELS,
@@ -46,12 +45,8 @@ export function CampaignCard({ m, onEdit, onDelete, onToggle }: CampaignCardProp
         </div>
       </div>
 
-      <p className="text-xs text-colonial/50">
-        {formatDate(c.dataInicio)} — {formatDate(c.dataFim)}
-      </p>
-
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-black/5">
-        <Metric label="Investido" value={formatBRL(m.investimento)} />
+        <Metric label="Verba gasta" value={formatBRL(m.investimento)} />
         <Metric label="Receita" value={formatBRL(m.receita)} />
         <Metric
           label="Reservas"
@@ -64,10 +59,6 @@ export function CampaignCard({ m, onEdit, onDelete, onToggle }: CampaignCardProp
           value={m.custoPorReserva === null ? "N/A" : formatBRL(m.custoPorReserva)}
         />
       </div>
-
-      {c.observacoes && (
-        <p className="line-clamp-2 text-sm text-colonial/60">{c.observacoes}</p>
-      )}
 
       <div className="mt-auto flex items-center gap-2 pt-1">
         <Button variant="outline" size="sm" onClick={onEdit}>

@@ -4,26 +4,35 @@ import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { metricasTodasCampanhas } from "@/lib/calculations";
 import type { Campanha } from "@/lib/types";
+import { PERIODO_TUDO, dentroDoPeriodo, type Periodo } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { PeriodFilter } from "@/components/ui/PeriodFilter";
 import { CampaignCard } from "@/components/campaigns/CampaignCard";
 import { CampaignForm } from "@/components/campaigns/CampaignForm";
 
 export default function CampanhasPage() {
   const campanhas = useStore((s) => s.campanhas);
   const reservas = useStore((s) => s.reservas);
+  const gastos = useStore((s) => s.gastos);
   const removeCampanha = useStore((s) => s.removeCampanha);
   const toggleCampanhaStatus = useStore((s) => s.toggleCampanhaStatus);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editando, setEditando] = useState<Campanha | null>(null);
   const [excluir, setExcluir] = useState<Campanha | null>(null);
+  const [periodo, setPeriodo] = useState<Periodo>(PERIODO_TUDO);
 
-  const metricas = useMemo(
-    () => metricasTodasCampanhas(campanhas, reservas),
-    [campanhas, reservas],
-  );
+  const metricas = useMemo(() => {
+    const reservasFiltradas = reservas.filter((r) =>
+      dentroDoPeriodo(r.dataReserva, periodo),
+    );
+    const gastosFiltrados = gastos.filter((g) =>
+      dentroDoPeriodo(g.data, periodo),
+    );
+    return metricasTodasCampanhas(campanhas, reservasFiltradas, gastosFiltrados);
+  }, [campanhas, reservas, gastos, periodo]);
 
   function abrirNova() {
     setEditando(null);
@@ -48,6 +57,8 @@ export default function CampanhasPage() {
         </div>
         <Button onClick={abrirNova}>+ Nova Campanha</Button>
       </div>
+
+      <PeriodFilter periodo={periodo} onChange={setPeriodo} />
 
       {campanhas.length === 0 ? (
         <EmptyState
@@ -79,7 +90,7 @@ export default function CampanhasPage() {
       <ConfirmDialog
         open={Boolean(excluir)}
         title="Excluir campanha"
-        message={`Tem certeza que deseja excluir "${excluir?.nome}"? As reservas vinculadas serão mantidas, porém ficarão sem campanha.`}
+        message={`Tem certeza que deseja excluir "${excluir?.nome}"? Os gastos diários dela serão removidos e as reservas vinculadas ficarão sem campanha.`}
         onConfirm={() => excluir && removeCampanha(excluir.id)}
         onClose={() => setExcluir(null)}
       />

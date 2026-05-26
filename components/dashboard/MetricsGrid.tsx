@@ -23,7 +23,7 @@ export function MetricsGrid({ m }: { m: MetricasDashboard }) {
       <MetricCard
         label="Investimento total"
         value={formatBRL(m.investimentoTotal)}
-        hint="Soma das campanhas"
+        hint="Soma da verba diária"
       />
       <MetricCard
         label="ROI geral"

@@ -3,8 +3,10 @@
 import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { metricasDashboard, metricasTodasCampanhas } from "@/lib/calculations";
+import { PERIODO_TUDO, dentroDoPeriodo, type Periodo } from "@/lib/utils";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { PeriodFilter } from "@/components/ui/PeriodFilter";
 import { Hero } from "@/components/dashboard/Hero";
 import { MetricsGrid } from "@/components/dashboard/MetricsGrid";
 import { CampaignSummaryTable } from "@/components/dashboard/CampaignSummaryTable";
@@ -18,19 +20,30 @@ import { ReservationForm } from "@/components/reservations/ReservationForm";
 export default function DashboardPage() {
   const campanhas = useStore((s) => s.campanhas);
   const reservas = useStore((s) => s.reservas);
+  const gastos = useStore((s) => s.gastos);
   const [reservaOpen, setReservaOpen] = useState(false);
+  const [periodo, setPeriodo] = useState<Periodo>(PERIODO_TUDO);
+
+  const reservasFiltradas = useMemo(
+    () => reservas.filter((r) => dentroDoPeriodo(r.dataReserva, periodo)),
+    [reservas, periodo],
+  );
+  const gastosFiltrados = useMemo(
+    () => gastos.filter((g) => dentroDoPeriodo(g.data, periodo)),
+    [gastos, periodo],
+  );
 
   const dashboard = useMemo(
-    () => metricasDashboard(campanhas, reservas),
-    [campanhas, reservas],
+    () => metricasDashboard(campanhas, reservasFiltradas, gastosFiltrados),
+    [campanhas, reservasFiltradas, gastosFiltrados],
   );
   const metricasCampanhas = useMemo(
-    () => metricasTodasCampanhas(campanhas, reservas),
-    [campanhas, reservas],
+    () => metricasTodasCampanhas(campanhas, reservasFiltradas, gastosFiltrados),
+    [campanhas, reservasFiltradas, gastosFiltrados],
   );
   const confirmadas = useMemo(
-    () => reservas.filter((r) => r.status === "confirmada").length,
-    [reservas],
+    () => reservasFiltradas.filter((r) => r.status === "confirmada").length,
+    [reservasFiltradas],
   );
 
   return (
@@ -41,16 +54,21 @@ export default function DashboardPage() {
         </Button>
       </Hero>
 
+      <PeriodFilter periodo={periodo} onChange={setPeriodo} />
+
       <MetricsGrid m={dashboard} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader
-            title="Receita por mês"
-            subtitle="Confirmada e pendente, por mês de check-in."
+            title="Receita × Investimento por mês"
+            subtitle="Receita confirmada e verba gasta, por mês."
             href="/reservas"
           />
-          <MonthlyRevenueChart reservas={reservas} />
+          <MonthlyRevenueChart
+            reservas={reservasFiltradas}
+            gastos={gastosFiltrados}
+          />
         </Card>
         <Card>
           <CardHeader
@@ -58,7 +76,7 @@ export default function DashboardPage() {
             subtitle="Distribuição de origem."
             href="/plataformas"
           />
-          <ReservationsByPlatformChart reservas={reservas} />
+          <ReservationsByPlatformChart reservas={reservasFiltradas} />
         </Card>
       </div>
 
@@ -84,7 +102,7 @@ export default function DashboardPage() {
             subtitle="Últimos registros."
             href="/reservas"
           />
-          <RecentReservations reservas={reservas} campanhas={campanhas} />
+          <RecentReservations reservas={reservasFiltradas} campanhas={campanhas} />
         </Card>
       </div>
 

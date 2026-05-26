@@ -23,12 +23,15 @@ export interface Campanha {
   nome: string;
   plataforma: Plataforma;
   tipo: TipoCampanha;
-  dataInicio: string; // ISO date (yyyy-mm-dd)
-  dataFim: string; // ISO date (yyyy-mm-dd)
-  investimento: number; // em BRL
   status: StatusCampanha;
-  observacoes?: string;
-  utm?: string;
+}
+
+/** Verba gastada numa campanha num dia específico (o investimento é variável). */
+export interface GastoDiario {
+  id: string;
+  campanhaId: string;
+  data: string; // ISO date (yyyy-mm-dd) — dia em que a verba foi gasta
+  valor: number; // em BRL
 }
 
 export interface Reserva {
@@ -42,10 +45,8 @@ export interface Reserva {
   valor: number; // valor total em BRL
   pax: number; // hóspedes
   noites: number; // diárias
-  tipoQuarto?: string;
-  status: StatusReserva;
-  atendente: string;
-  observacoes?: string;
+  veioDaCampanha: boolean; // marca informativa: a reserva realmente veio da campanha?
+  status: StatusReserva; // interno; novas reservas entram como "confirmada"
 }
 
 /** Métricas agregadas de uma campanha. Campos com divisão por zero ficam `null` → "N/A". */

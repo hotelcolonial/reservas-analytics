@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { Input, Select, Textarea, FormRow } from "@/components/ui/Field";
+import { Input, Select, FormRow } from "@/components/ui/Field";
 import { useStore } from "@/lib/store";
-import type { Plataforma, Reserva, StatusReserva } from "@/lib/types";
+import type { Plataforma, Reserva } from "@/lib/types";
 import {
   PLATAFORMAS,
   PLATAFORMA_LABELS,
-  STATUS_RESERVA_LABELS,
   calcNoites,
   todayISO,
 } from "@/lib/utils";
@@ -33,14 +32,10 @@ function estadoInicial(r?: Reserva | null): FormData {
     valor: r?.valor ?? 0,
     pax: r?.pax ?? 1,
     noites: r?.noites ?? 0,
-    tipoQuarto: r?.tipoQuarto ?? "",
-    status: r?.status ?? "confirmada",
-    atendente: r?.atendente ?? "",
-    observacoes: r?.observacoes ?? "",
+    veioDaCampanha: r?.veioDaCampanha ?? true,
+    status: r?.status ?? "confirmada", // mantido interno; novas reservas confirmadas
   };
 }
-
-const statusOpcoes: StatusReserva[] = ["confirmada", "pendente", "cancelada"];
 
 export function ReservationForm({
   open,
@@ -132,6 +127,7 @@ export function ReservationForm({
             placeholder="Ex.: RES-0001"
           />
         </FormRow>
+
         <FormRow label="Campanha de origem">
           <Select
             value={form.campanhaId ?? ""}
@@ -145,6 +141,18 @@ export function ReservationForm({
             ))}
           </Select>
         </FormRow>
+
+        {form.campanhaId && (
+          <FormRow label="Esta reserva veio mesmo desta campanha?">
+            <Select
+              value={form.veioDaCampanha ? "sim" : "nao"}
+              onChange={(e) => set("veioDaCampanha", e.target.value === "sim")}
+            >
+              <option value="sim">Sim, veio da campanha</option>
+              <option value="nao">Não, veio por outra origem</option>
+            </Select>
+          </FormRow>
+        )}
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormRow label="Plataforma de origem" required>
@@ -227,48 +235,6 @@ export function ReservationForm({
           As noites são calculadas automaticamente pelo check-in/check-out, mas
           você pode ajustá-las manualmente.
         </p>
-
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <FormRow label="Tipo de quarto (opcional)" htmlFor="res-quarto">
-            <Input
-              id="res-quarto"
-              value={form.tipoQuarto}
-              onChange={(e) => set("tipoQuarto", e.target.value)}
-              placeholder="Ex.: Casal Standard"
-            />
-          </FormRow>
-
-          <FormRow label="Atendente responsável" htmlFor="res-atendente">
-            <Input
-              id="res-atendente"
-              value={form.atendente}
-              onChange={(e) => set("atendente", e.target.value)}
-              placeholder="Quem atendeu"
-            />
-          </FormRow>
-        </div>
-
-        <FormRow label="Status da reserva" required>
-          <Select
-            value={form.status}
-            onChange={(e) => set("status", e.target.value as StatusReserva)}
-          >
-            {statusOpcoes.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_RESERVA_LABELS[s]}
-              </option>
-            ))}
-          </Select>
-        </FormRow>
-
-        <FormRow label="Observações" htmlFor="res-obs">
-          <Textarea
-            id="res-obs"
-            value={form.observacoes}
-            onChange={(e) => set("observacoes", e.target.value)}
-            placeholder="Pedidos especiais, detalhes do atendimento..."
-          />
-        </FormRow>
 
         {erro && (
           <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">

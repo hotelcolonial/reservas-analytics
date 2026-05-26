@@ -13,8 +13,12 @@ export interface FiltrosReserva {
   campanhaId: string; // "" = todas
   plataforma: string; // "" = todas
   status: string; // "" = todos
+  reservaDe: string;
+  reservaAte: string;
   checkInDe: string;
   checkInAte: string;
+  checkOutDe: string;
+  checkOutAte: string;
 }
 
 export const filtrosVazios: FiltrosReserva = {
@@ -22,8 +26,12 @@ export const filtrosVazios: FiltrosReserva = {
   campanhaId: "",
   plataforma: "",
   status: "",
+  reservaDe: "",
+  reservaAte: "",
   checkInDe: "",
   checkInAte: "",
+  checkOutDe: "",
+  checkOutAte: "",
 };
 
 const statusOpcoes: StatusReserva[] = ["confirmada", "pendente", "cancelada"];
@@ -44,13 +52,7 @@ export function ReservationFilters({
     onChange({ ...filtros, [key]: value });
   }
 
-  const algumFiltro =
-    filtros.busca ||
-    filtros.campanhaId ||
-    filtros.plataforma ||
-    filtros.status ||
-    filtros.checkInDe ||
-    filtros.checkInAte;
+  const algumFiltro = Object.values(filtros).some(Boolean);
 
   return (
     <div className="space-y-4 rounded-3xl bg-branco p-4 shadow-[0_1px_3px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] sm:p-5">
@@ -59,7 +61,8 @@ export function ReservationFilters({
         value={filtros.busca}
         onChange={(e) => set("busca", e.target.value)}
       />
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Select
           value={filtros.campanhaId}
           onChange={(e) => set("campanhaId", e.target.value)}
@@ -96,20 +99,32 @@ export function ReservationFilters({
             </option>
           ))}
         </Select>
+      </div>
 
-        <Input
-          type="date"
-          aria-label="Check-in de"
-          value={filtros.checkInDe}
-          onChange={(e) => set("checkInDe", e.target.value)}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <DateRange
+          label="Data da reserva"
+          de={filtros.reservaDe}
+          ate={filtros.reservaAte}
+          onDe={(v) => set("reservaDe", v)}
+          onAte={(v) => set("reservaAte", v)}
         />
-        <Input
-          type="date"
-          aria-label="Check-in até"
-          value={filtros.checkInAte}
-          onChange={(e) => set("checkInAte", e.target.value)}
+        <DateRange
+          label="Check-in"
+          de={filtros.checkInDe}
+          ate={filtros.checkInAte}
+          onDe={(v) => set("checkInDe", v)}
+          onAte={(v) => set("checkInAte", v)}
+        />
+        <DateRange
+          label="Check-out"
+          de={filtros.checkOutDe}
+          ate={filtros.checkOutAte}
+          onDe={(v) => set("checkOutDe", v)}
+          onAte={(v) => set("checkOutAte", v)}
         />
       </div>
+
       {algumFiltro && (
         <button
           onClick={() => onChange(filtrosVazios)}
@@ -118,6 +133,45 @@ export function ReservationFilters({
           Limpar filtros
         </button>
       )}
+    </div>
+  );
+}
+
+function DateRange({
+  label,
+  de,
+  ate,
+  onDe,
+  onAte,
+}: {
+  label: string;
+  de: string;
+  ate: string;
+  onDe: (v: string) => void;
+  onAte: (v: string) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-colonial/45">
+        {label}
+      </p>
+      <div className="flex items-center gap-2">
+        <Input
+          type="date"
+          aria-label={`${label} de`}
+          value={de}
+          onChange={(e) => onDe(e.target.value)}
+          className="py-2"
+        />
+        <span className="text-colonial/40">—</span>
+        <Input
+          type="date"
+          aria-label={`${label} até`}
+          value={ate}
+          onChange={(e) => onAte(e.target.value)}
+          className="py-2"
+        />
+      </div>
     </div>
   );
 }

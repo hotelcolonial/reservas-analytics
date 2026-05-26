@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { Input, Select, Textarea, FormRow } from "@/components/ui/Field";
+import { Input, Select, FormRow } from "@/components/ui/Field";
 import { useStore } from "@/lib/store";
 import type { Campanha, Plataforma, StatusCampanha, TipoCampanha } from "@/lib/types";
 import {
@@ -12,7 +12,6 @@ import {
   TIPOS_CAMPANHA,
   TIPO_CAMPANHA_LABELS,
   STATUS_CAMPANHA_LABELS,
-  todayISO,
 } from "@/lib/utils";
 
 interface CampaignFormProps {
@@ -28,12 +27,7 @@ function estadoInicial(c?: Campanha | null): FormData {
     nome: c?.nome ?? "",
     plataforma: c?.plataforma ?? "google_ads",
     tipo: c?.tipo ?? "promocao",
-    dataInicio: c?.dataInicio ?? todayISO(),
-    dataFim: c?.dataFim ?? todayISO(),
-    investimento: c?.investimento ?? 0,
     status: c?.status ?? "ativa",
-    observacoes: c?.observacoes ?? "",
-    utm: c?.utm ?? "",
   };
 }
 
@@ -72,7 +66,7 @@ export function CampaignForm({ open, onClose, campanha }: CampaignFormProps) {
       subtitle={
         editando
           ? "Atualize os dados da campanha."
-          : "Cadastre uma campanha para vincular reservas."
+          : "Cadastre uma campanha para vincular reservas e registrar a verba."
       }
       footer={
         <div className="flex justify-end gap-3">
@@ -121,67 +115,25 @@ export function CampaignForm({ open, onClose, campanha }: CampaignFormProps) {
               ))}
             </Select>
           </FormRow>
-
-          <FormRow label="Data de início" htmlFor="camp-inicio">
-            <Input
-              id="camp-inicio"
-              type="date"
-              value={form.dataInicio}
-              onChange={(e) => set("dataInicio", e.target.value)}
-            />
-          </FormRow>
-
-          <FormRow label="Data de fim" htmlFor="camp-fim">
-            <Input
-              id="camp-fim"
-              type="date"
-              value={form.dataFim}
-              onChange={(e) => set("dataFim", e.target.value)}
-            />
-          </FormRow>
-
-          <FormRow label="Investimento total (R$)" htmlFor="camp-invest">
-            <Input
-              id="camp-invest"
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.investimento}
-              onChange={(e) => set("investimento", Number(e.target.value))}
-            />
-          </FormRow>
-
-          <FormRow label="Status">
-            <Select
-              value={form.status}
-              onChange={(e) => set("status", e.target.value as StatusCampanha)}
-            >
-              {statusOpcoes.map((s) => (
-                <option key={s} value={s}>
-                  {STATUS_CAMPANHA_LABELS[s]}
-                </option>
-              ))}
-            </Select>
-          </FormRow>
         </div>
 
-        <FormRow label="UTM / identificador (opcional)" htmlFor="camp-utm">
-          <Input
-            id="camp-utm"
-            value={form.utm}
-            onChange={(e) => set("utm", e.target.value)}
-            placeholder="Ex.: black_friday_2026"
-          />
+        <FormRow label="Status">
+          <Select
+            value={form.status}
+            onChange={(e) => set("status", e.target.value as StatusCampanha)}
+          >
+            {statusOpcoes.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_CAMPANHA_LABELS[s]}
+              </option>
+            ))}
+          </Select>
         </FormRow>
 
-        <FormRow label="Observações" htmlFor="camp-obs">
-          <Textarea
-            id="camp-obs"
-            value={form.observacoes}
-            onChange={(e) => set("observacoes", e.target.value)}
-            placeholder="Detalhes internos sobre a campanha..."
-          />
-        </FormRow>
+        <p className="rounded-xl bg-colonial-50 px-3.5 py-3 text-xs text-colonial/60">
+          A verba gasta é registrada por dia na aba <strong>Verba</strong>, já
+          que o investimento varia ao longo da campanha.
+        </p>
 
         {erro && (
           <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">

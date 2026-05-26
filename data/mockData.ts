@@ -1,9 +1,9 @@
-import type { Campanha, Reserva } from "@/lib/types";
+import type { Campanha, Reserva, GastoDiario } from "@/lib/types";
 
 /**
  * Dados de exemplo para popular a aplicação no primeiro acesso.
- * Todas as campanhas e reservas abaixo são editáveis e podem ser excluídas
- * pela equipe — os nomes são apenas ilustrativos.
+ * Todas as campanhas, reservas e gastos abaixo são editáveis e podem ser
+ * excluídos pela equipe — os nomes são apenas ilustrativos.
  */
 
 export const campanhasMock: Campanha[] = [
@@ -12,61 +12,53 @@ export const campanhasMock: Campanha[] = [
     nome: "Corpus Christi 2026",
     plataforma: "google_ads",
     tipo: "feriado",
-    dataInicio: "2026-05-15",
-    dataFim: "2026-06-04",
-    investimento: 3500,
     status: "ativa",
-    observacoes: "Pacote de feriado prolongado com 3 diárias mínimas.",
-    utm: "corpus_christi_2026",
   },
   {
     id: "camp-colonial-junino",
     nome: "Colonial Junino",
     plataforma: "meta_ads",
     tipo: "promocao",
-    dataInicio: "2026-06-01",
-    dataFim: "2026-06-30",
-    investimento: 2800,
     status: "ativa",
-    observacoes: "Festa junina com gastronomia típica e música ao vivo.",
-    utm: "colonial_junino",
   },
   {
     id: "camp-day-use-piscina",
     nome: "Day Use Piscina Aquecida",
     plataforma: "meta_ads",
     tipo: "day_use",
-    dataInicio: "2026-04-01",
-    dataFim: "2026-08-31",
-    investimento: 1500,
     status: "ativa",
-    observacoes: "Day use com piscina aquecida e almoço incluso.",
-    utm: "day_use_piscina",
   },
   {
     id: "camp-ferias-julho",
     nome: "Férias de Julho",
     plataforma: "google_ads",
     tipo: "pacote",
-    dataInicio: "2026-06-20",
-    dataFim: "2026-07-31",
-    investimento: 5000,
     status: "ativa",
-    observacoes: "Pacote família com recreação infantil.",
-    utm: "ferias_julho_2026",
   },
   {
     id: "camp-oferta-relampago",
     nome: "Oferta Relâmpago Maio",
     plataforma: "whatsapp_direto",
     tipo: "remarketing",
-    dataInicio: "2026-05-05",
-    dataFim: "2026-05-20",
-    investimento: 0,
     status: "finalizada",
-    observacoes: "Disparo para base de contatos antigos. Sem mídia paga.",
-    utm: "",
   },
+];
+
+/** Verba gastada por dia em cada campanha (investimento variável). */
+export const gastosMock: GastoDiario[] = [
+  { id: "g-001", campanhaId: "camp-corpus-christi", data: "2026-05-15", valor: 700 },
+  { id: "g-002", campanhaId: "camp-corpus-christi", data: "2026-05-18", valor: 900 },
+  { id: "g-003", campanhaId: "camp-corpus-christi", data: "2026-05-22", valor: 950 },
+  { id: "g-004", campanhaId: "camp-corpus-christi", data: "2026-06-01", valor: 950 },
+  { id: "g-005", campanhaId: "camp-colonial-junino", data: "2026-06-01", valor: 800 },
+  { id: "g-006", campanhaId: "camp-colonial-junino", data: "2026-06-08", valor: 1000 },
+  { id: "g-007", campanhaId: "camp-colonial-junino", data: "2026-06-15", valor: 1000 },
+  { id: "g-008", campanhaId: "camp-day-use-piscina", data: "2026-04-05", valor: 400 },
+  { id: "g-009", campanhaId: "camp-day-use-piscina", data: "2026-05-02", valor: 550 },
+  { id: "g-010", campanhaId: "camp-day-use-piscina", data: "2026-05-16", valor: 550 },
+  { id: "g-011", campanhaId: "camp-ferias-julho", data: "2026-06-20", valor: 1500 },
+  { id: "g-012", campanhaId: "camp-ferias-julho", data: "2026-06-27", valor: 1750 },
+  { id: "g-013", campanhaId: "camp-ferias-julho", data: "2026-07-04", valor: 1750 },
 ];
 
 export const reservasMock: Reserva[] = [
@@ -81,10 +73,8 @@ export const reservasMock: Reserva[] = [
     valor: 2850,
     pax: 4,
     noites: 3,
-    tipoQuarto: "Família Superior",
+    veioDaCampanha: true,
     status: "confirmada",
-    atendente: "Carla",
-    observacoes: "Solicitou berço extra.",
   },
   {
     id: "res-002",
@@ -97,9 +87,8 @@ export const reservasMock: Reserva[] = [
     valor: 1640,
     pax: 2,
     noites: 2,
-    tipoQuarto: "Casal Standard",
+    veioDaCampanha: true,
     status: "confirmada",
-    atendente: "João",
   },
   {
     id: "res-003",
@@ -112,9 +101,8 @@ export const reservasMock: Reserva[] = [
     valor: 1320,
     pax: 3,
     noites: 2,
-    tipoQuarto: "Família Standard",
+    veioDaCampanha: true,
     status: "confirmada",
-    atendente: "Carla",
   },
   {
     id: "res-004",
@@ -127,10 +115,8 @@ export const reservasMock: Reserva[] = [
     valor: 720,
     pax: 2,
     noites: 1,
-    tipoQuarto: "Casal Standard",
+    veioDaCampanha: false,
     status: "pendente",
-    atendente: "Marina",
-    observacoes: "Aguardando confirmação de pagamento.",
   },
   {
     id: "res-005",
@@ -143,9 +129,8 @@ export const reservasMock: Reserva[] = [
     valor: 480,
     pax: 4,
     noites: 0,
-    tipoQuarto: "Day Use",
+    veioDaCampanha: true,
     status: "confirmada",
-    atendente: "João",
   },
   {
     id: "res-006",
@@ -158,9 +143,8 @@ export const reservasMock: Reserva[] = [
     valor: 360,
     pax: 3,
     noites: 0,
-    tipoQuarto: "Day Use",
+    veioDaCampanha: true,
     status: "confirmada",
-    atendente: "Marina",
   },
   {
     id: "res-007",
@@ -173,10 +157,8 @@ export const reservasMock: Reserva[] = [
     valor: 4250,
     pax: 5,
     noites: 5,
-    tipoQuarto: "Suíte Família",
+    veioDaCampanha: true,
     status: "confirmada",
-    atendente: "Carla",
-    observacoes: "Pacote com recreação infantil.",
   },
   {
     id: "res-008",
@@ -189,9 +171,8 @@ export const reservasMock: Reserva[] = [
     valor: 3360,
     pax: 4,
     noites: 4,
-    tipoQuarto: "Família Superior",
+    veioDaCampanha: true,
     status: "confirmada",
-    atendente: "João",
   },
   {
     id: "res-009",
@@ -204,10 +185,8 @@ export const reservasMock: Reserva[] = [
     valor: 1580,
     pax: 2,
     noites: 2,
-    tipoQuarto: "Casal Superior",
+    veioDaCampanha: true,
     status: "cancelada",
-    atendente: "Marina",
-    observacoes: "Cancelou por motivo pessoal.",
   },
   {
     id: "res-010",
@@ -220,10 +199,8 @@ export const reservasMock: Reserva[] = [
     valor: 1180,
     pax: 2,
     noites: 2,
-    tipoQuarto: "Casal Standard",
+    veioDaCampanha: true,
     status: "confirmada",
-    atendente: "Carla",
-    observacoes: "Cliente recorrente, veio pela base antiga.",
   },
   {
     id: "res-011",
@@ -236,9 +213,8 @@ export const reservasMock: Reserva[] = [
     valor: 990,
     pax: 2,
     noites: 2,
-    tipoQuarto: "Casal Standard",
+    veioDaCampanha: true,
     status: "confirmada",
-    atendente: "João",
   },
   {
     id: "res-012",
@@ -251,9 +227,7 @@ export const reservasMock: Reserva[] = [
     valor: 1100,
     pax: 2,
     noites: 2,
-    tipoQuarto: "Casal Standard",
+    veioDaCampanha: false,
     status: "confirmada",
-    atendente: "Marina",
-    observacoes: "Veio pelo Instagram orgânico, sem campanha paga.",
   },
 ];

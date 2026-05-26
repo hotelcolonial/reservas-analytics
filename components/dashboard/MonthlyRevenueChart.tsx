@@ -6,10 +6,11 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  Legend,
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import type { Reserva } from "@/lib/types";
+import type { Reserva, GastoDiario } from "@/lib/types";
 import { formatBRL, formatBRLCompact } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -31,29 +32,44 @@ const MESES = [
 interface Ponto {
   chave: string;
   rotulo: string;
-  confirmada: number;
-  pendente: number;
+  receita: number;
+  investimento: number;
 }
 
-export function MonthlyRevenueChart({ reservas }: { reservas: Reserva[] }) {
+export function MonthlyRevenueChart({
+  reservas,
+  gastos,
+}: {
+  reservas: Reserva[];
+  gastos: GastoDiario[];
+}) {
   const mapa = new Map<string, Ponto>();
 
+  function ponto(chaveMes: string): Ponto {
+    const existente = mapa.get(chaveMes);
+    if (existente) return existente;
+    const [, mes] = chaveMes.split("-");
+    const novo: Ponto = {
+      chave: chaveMes,
+      rotulo: MESES[Number(mes) - 1] ?? mes,
+      receita: 0,
+      investimento: 0,
+    };
+    mapa.set(chaveMes, novo);
+    return novo;
+  }
+
   for (const r of reservas) {
-    if (r.status === "cancelada") continue;
-    const [ano, mes] = r.checkIn.split("-");
+    if (r.status !== "confirmada") continue;
+    const [ano, mes] = r.dataReserva.split("-");
     if (!ano || !mes) continue;
-    const chave = `${ano}-${mes}`;
-    if (!mapa.has(chave)) {
-      mapa.set(chave, {
-        chave,
-        rotulo: MESES[Number(mes) - 1] ?? mes,
-        confirmada: 0,
-        pendente: 0,
-      });
-    }
-    const ponto = mapa.get(chave)!;
-    if (r.status === "confirmada") ponto.confirmada += r.valor;
-    else ponto.pendente += r.valor;
+    ponto(`${ano}-${mes}`).receita += r.valor;
+  }
+
+  for (const g of gastos) {
+    const [ano, mes] = g.data.split("-");
+    if (!ano || !mes) continue;
+    ponto(`${ano}-${mes}`).investimento += g.valor;
   }
 
   const data = Array.from(mapa.values())
@@ -63,8 +79,8 @@ export function MonthlyRevenueChart({ reservas }: { reservas: Reserva[] }) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="Sem receita ainda"
-        description="Registre reservas para ver a receita por mês."
+        title="Sem dados ainda"
+        description="Registre reservas e a verba diária para ver receita × investimento."
       />
     );
   }
@@ -91,7 +107,7 @@ export function MonthlyRevenueChart({ reservas }: { reservas: Reserva[] }) {
           cursor={{ fill: "rgba(18,43,28,0.06)" }}
           formatter={(v, name) => [
             formatBRL(Number(v)),
-            name === "confirmada" ? "Confirmada" : "Pendente",
+            name === "receita" ? "Receita" : "Investimento",
           ]}
           contentStyle={{
             borderRadius: 12,
@@ -99,12 +115,17 @@ export function MonthlyRevenueChart({ reservas }: { reservas: Reserva[] }) {
             fontSize: 13,
           }}
         />
-        <Bar dataKey="confirmada" stackId="a" fill="#122b1c" barSize={28} />
+        <Legend
+          formatter={(value) =>
+            value === "receita" ? "Receita confirmada" : "Investimento"
+          }
+          wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+        />
+        <Bar dataKey="receita" fill="#122b1c" barSize={20} radius={[6, 6, 0, 0]} />
         <Bar
-          dataKey="pendente"
-          stackId="a"
+          dataKey="investimento"
           fill="#f3a42c"
-          barSize={28}
+          barSize={20}
           radius={[6, 6, 0, 0]}
         />
       </BarChart>

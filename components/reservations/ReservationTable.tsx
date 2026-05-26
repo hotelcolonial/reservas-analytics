@@ -32,6 +32,7 @@ export function ReservationTable({
         <thead>
           <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-colonial/45">
             <th className="px-4 py-3.5 font-semibold">Reserva</th>
+            <th className="px-4 py-3.5 font-semibold">Data reserva</th>
             <th className="px-4 py-3.5 font-semibold">Campanha</th>
             <th className="px-4 py-3.5 font-semibold">Plataforma</th>
             <th className="px-4 py-3.5 font-semibold">Check-in</th>
@@ -40,7 +41,6 @@ export function ReservationTable({
             <th className="px-4 py-3.5 text-right font-semibold">Noites</th>
             <th className="px-4 py-3.5 text-right font-semibold">Valor</th>
             <th className="px-4 py-3.5 font-semibold">Status</th>
-            <th className="px-4 py-3.5 font-semibold">Atendente</th>
             <th className="px-4 py-3.5 text-right font-semibold">Ações</th>
           </tr>
         </thead>
@@ -51,7 +51,15 @@ export function ReservationTable({
                 {r.codigo}
               </td>
               <td className="px-4 py-3.5 text-colonial/70">
-                {nomeCampanha(r.campanhaId)}
+                {formatDate(r.dataReserva)}
+              </td>
+              <td className="px-4 py-3.5 text-colonial/70">
+                <span>{nomeCampanha(r.campanhaId)}</span>
+                {r.campanhaId && !r.veioDaCampanha && (
+                  <span className="ml-1.5 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                    outra origem
+                  </span>
+                )}
               </td>
               <td className="px-4 py-3.5 text-colonial/70">
                 {PLATAFORMA_LABELS[r.plataforma]}
@@ -73,9 +81,6 @@ export function ReservationTable({
                 <Badge className={STATUS_RESERVA_BADGE[r.status]}>
                   {STATUS_RESERVA_LABELS[r.status]}
                 </Badge>
-              </td>
-              <td className="px-4 py-3.5 text-colonial/70">
-                {r.atendente || "—"}
               </td>
               <td className="px-4 py-3.5">
                 <div className="flex items-center justify-end gap-1">
