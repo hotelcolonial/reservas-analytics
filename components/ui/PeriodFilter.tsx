@@ -13,6 +13,7 @@ import {
 const presets: { key: PresetPeriodo | "tudo"; label: string }[] = [
   { key: "tudo", label: "Tudo" },
   { key: "hoje", label: "Hoje" },
+  { key: "ontem", label: "Ontem" },
   { key: "semana", label: "7 dias" },
   { key: "mes", label: "Este mês" },
   { key: "ano", label: "Este ano" },

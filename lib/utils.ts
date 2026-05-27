@@ -85,7 +85,7 @@ export interface Periodo {
 
 export const PERIODO_TUDO: Periodo = { de: "", ate: "" };
 
-export type PresetPeriodo = "hoje" | "semana" | "mes" | "ano";
+export type PresetPeriodo = "hoje" | "ontem" | "semana" | "mes" | "ano";
 
 function localISO(d: Date): string {
   const y = d.getFullYear();
@@ -99,6 +99,12 @@ export function rangePreset(preset: PresetPeriodo): Periodo {
   const now = new Date();
   const ate = localISO(now);
   if (preset === "hoje") return { de: ate, ate };
+  if (preset === "ontem") {
+    const ontem = localISO(
+      new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1),
+    );
+    return { de: ontem, ate: ontem };
+  }
   if (preset === "semana") {
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
     return { de: localISO(start), ate };
