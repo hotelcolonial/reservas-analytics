@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useStore } from "@/lib/store";
 import type { GastoDiario } from "@/lib/types";
 import {
@@ -259,8 +260,13 @@ export default function VerbaPage() {
                         <td className="px-3 py-3 font-medium text-colonial">
                           {formatDate(g.data)}
                         </td>
-                        <td className="px-3 py-3 text-colonial/70">
-                          {nomeCampanha(g.campanhaId)}
+                        <td className="px-3 py-3">
+                          <Link
+                            href={`/campanhas/${g.campanhaId}`}
+                            className="font-medium text-colonial hover:text-laranja-dark hover:underline"
+                          >
+                            {nomeCampanha(g.campanhaId)}
+                          </Link>
                         </td>
                         <td className="px-3 py-3 text-colonial/70">
                           {plataformaCampanha(g.campanhaId)}
