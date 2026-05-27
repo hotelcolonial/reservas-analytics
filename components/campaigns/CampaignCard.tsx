@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 import type { MetricasCampanha } from "@/lib/types";
 import {
   formatBRL,
@@ -28,9 +29,12 @@ export function CampaignCard({ m, onEdit, onDelete, onToggle }: CampaignCardProp
     <Card className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="font-display text-lg font-semibold text-colonial">
+          <Link
+            href={`/campanhas/${c.id}`}
+            className="font-display text-lg font-semibold text-colonial hover:text-laranja-dark hover:underline"
+          >
             {c.nome}
-          </h3>
+          </Link>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Badge className="bg-colonial-50 text-colonial">
               {PLATAFORMA_LABELS[c.plataforma]}
@@ -61,7 +65,12 @@ export function CampaignCard({ m, onEdit, onDelete, onToggle }: CampaignCardProp
       </div>
 
       <div className="mt-auto flex items-center gap-2 pt-1">
-        <Button variant="outline" size="sm" onClick={onEdit}>
+        <Link href={`/campanhas/${c.id}`}>
+          <Button variant="outline" size="sm">
+            Ver detalhes
+          </Button>
+        </Link>
+        <Button variant="ghost" size="sm" onClick={onEdit}>
           Editar
         </Button>
         <Button
