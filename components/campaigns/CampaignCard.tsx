@@ -20,10 +20,8 @@ interface CampaignCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onToggle: () => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  isFirst: boolean;
-  isLast: boolean;
+  /** Slot opcional para o handle de drag (renderiza no topo-direito do card). */
+  dragHandle?: React.ReactNode;
 }
 
 export function CampaignCard({
@@ -31,10 +29,7 @@ export function CampaignCard({
   onEdit,
   onDelete,
   onToggle,
-  onMoveUp,
-  onMoveDown,
-  isFirst,
-  isLast,
+  dragHandle,
 }: CampaignCardProps) {
   const c = m.campanha;
 
@@ -60,46 +55,7 @@ export function CampaignCard({
             </Badge>
           </div>
         </div>
-        <div className="flex shrink-0 flex-col gap-1">
-          <button
-            onClick={onMoveUp}
-            disabled={isFirst}
-            aria-label="Mover para cima"
-            className="rounded-md p-1 text-colonial/45 transition-colors hover:bg-colonial-50 hover:text-colonial disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m18 15-6-6-6 6" />
-            </svg>
-          </button>
-          <button
-            onClick={onMoveDown}
-            disabled={isLast}
-            aria-label="Mover para baixo"
-            className="rounded-md p-1 text-colonial/45 transition-colors hover:bg-colonial-50 hover:text-colonial disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-        </div>
+        {dragHandle && <div className="shrink-0">{dragHandle}</div>}
       </div>
 
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-black/5">

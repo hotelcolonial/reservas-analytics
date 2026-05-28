@@ -36,7 +36,7 @@ interface AppState {
   updateCampanha: (id: string, data: Partial<Omit<Campanha, "id">>) => void;
   removeCampanha: (id: string) => void;
   toggleCampanhaStatus: (id: string) => void;
-  moveCampanha: (id: string, direction: "up" | "down") => void;
+  setCampanhasOrdem: (orderedIds: string[]) => void;
 
   // Reservas
   addReserva: (data: Omit<Reserva, "id">) => void;
@@ -167,32 +167,21 @@ export const useStore = create<AppState>()((set, get) => ({
     }
   },
 
-  moveCampanha: (id, direction) => {
-    const sorted = [...get().campanhas].sort(
-      (a, b) => (a.ordem ?? 0) - (b.ordem ?? 0) || a.nome.localeCompare(b.nome),
-    );
-    const idx = sorted.findIndex((c) => c.id === id);
-    if (idx < 0) return;
-    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= sorted.length) return;
-    const a = sorted[idx];
-    const b = sorted[swapIdx];
-    const ordemA = a.ordem;
-    const ordemB = b.ordem;
+  setCampanhasOrdem: (orderedIds) => {
+    const mapa = new Map(orderedIds.map((id, i) => [id, i + 1]));
     set((s) => ({
-      campanhas: s.campanhas.map((c) => {
-        if (c.id === a.id) return { ...c, ordem: ordemB };
-        if (c.id === b.id) return { ...c, ordem: ordemA };
-        return c;
-      }),
+      campanhas: s.campanhas.map((c) =>
+        mapa.has(c.id) ? { ...c, ordem: mapa.get(c.id)! } : c,
+      ),
     }));
     if (supabaseConfigured) {
-      Promise.all([
-        db().from("campanhas").update({ ordem: ordemB }).eq("id", a.id),
-        db().from("campanhas").update({ ordem: ordemA }).eq("id", b.id),
-      ]).then((results) => {
+      Promise.all(
+        orderedIds.map((id, i) =>
+          db().from("campanhas").update({ ordem: i + 1 }).eq("id", id),
+        ),
+      ).then((results) => {
         for (const { error } of results) {
-          if (error) console.error("Supabase move campanha:", error.message);
+          if (error) console.error("Supabase reorder campanhas:", error.message);
         }
       });
     }
