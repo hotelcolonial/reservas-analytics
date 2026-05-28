@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { metricasTodasCampanhas } from "@/lib/calculations";
 import type { Campanha } from "@/lib/types";
-import { PERIODO_TUDO, dentroDoPeriodo, type Periodo } from "@/lib/utils";
+import {
+  PERIODO_TUDO,
+  dentroDoPeriodo,
+  porOrdem,
+  type Periodo,
+} from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -18,6 +23,7 @@ export default function CampanhasPage() {
   const gastos = useStore((s) => s.gastos);
   const removeCampanha = useStore((s) => s.removeCampanha);
   const toggleCampanhaStatus = useStore((s) => s.toggleCampanhaStatus);
+  const moveCampanha = useStore((s) => s.moveCampanha);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editando, setEditando] = useState<Campanha | null>(null);
@@ -31,7 +37,12 @@ export default function CampanhasPage() {
     const gastosFiltrados = gastos.filter((g) =>
       dentroDoPeriodo(g.data, periodo),
     );
-    return metricasTodasCampanhas(campanhas, reservasFiltradas, gastosFiltrados);
+    const ordenadas = porOrdem(campanhas);
+    return metricasTodasCampanhas(
+      ordenadas,
+      reservasFiltradas,
+      gastosFiltrados,
+    );
   }, [campanhas, reservas, gastos, periodo]);
 
   function abrirNova() {
@@ -68,13 +79,17 @@ export default function CampanhasPage() {
         />
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {metricas.map((m) => (
+          {metricas.map((m, i) => (
             <CampaignCard
               key={m.campanha.id}
               m={m}
               onEdit={() => abrirEdicao(m.campanha)}
               onToggle={() => toggleCampanhaStatus(m.campanha.id)}
               onDelete={() => setExcluir(m.campanha)}
+              onMoveUp={() => moveCampanha(m.campanha.id, "up")}
+              onMoveDown={() => moveCampanha(m.campanha.id, "down")}
+              isFirst={i === 0}
+              isLast={i === metricas.length - 1}
             />
           ))}
         </div>

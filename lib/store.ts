@@ -36,6 +36,7 @@ interface AppState {
   updateCampanha: (id: string, data: Partial<Omit<Campanha, "id">>) => void;
   removeCampanha: (id: string) => void;
   toggleCampanhaStatus: (id: string) => void;
+  moveCampanha: (id: string, direction: "up" | "down") => void;
 
   // Reservas
   addReserva: (data: Omit<Reserva, "id">) => void;
@@ -91,7 +92,9 @@ export const useStore = create<AppState>()((set, get) => ({
   // ── Campanhas ─────────────────────────────────────────────────────────────
 
   addCampanha: (data) => {
-    const nova: Campanha = { ...data, id: novoId() };
+    const proximaOrdem =
+      get().campanhas.reduce((max, c) => Math.max(max, c.ordem ?? 0), 0) + 1;
+    const nova: Campanha = { ...data, ordem: proximaOrdem, id: novoId() };
     set((s) => ({ campanhas: [...s.campanhas, nova] }));
     if (supabaseConfigured) {
       db()
@@ -161,6 +164,37 @@ export const useStore = create<AppState>()((set, get) => ({
             if (error) console.error("Supabase toggle campanha:", error.message);
           });
       }
+    }
+  },
+
+  moveCampanha: (id, direction) => {
+    const sorted = [...get().campanhas].sort(
+      (a, b) => (a.ordem ?? 0) - (b.ordem ?? 0) || a.nome.localeCompare(b.nome),
+    );
+    const idx = sorted.findIndex((c) => c.id === id);
+    if (idx < 0) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= sorted.length) return;
+    const a = sorted[idx];
+    const b = sorted[swapIdx];
+    const ordemA = a.ordem;
+    const ordemB = b.ordem;
+    set((s) => ({
+      campanhas: s.campanhas.map((c) => {
+        if (c.id === a.id) return { ...c, ordem: ordemB };
+        if (c.id === b.id) return { ...c, ordem: ordemA };
+        return c;
+      }),
+    }));
+    if (supabaseConfigured) {
+      Promise.all([
+        db().from("campanhas").update({ ordem: ordemB }).eq("id", a.id),
+        db().from("campanhas").update({ ordem: ordemA }).eq("id", b.id),
+      ]).then((results) => {
+        for (const { error } of results) {
+          if (error) console.error("Supabase move campanha:", error.message);
+        }
+      });
     }
   },
 

@@ -13,6 +13,7 @@ export const campanhasMock: Campanha[] = [
     plataforma: "google_ads",
     tipo: "feriado",
     status: "ativa",
+    ordem: 1,
   },
   {
     id: "camp-colonial-junino",
@@ -20,6 +21,7 @@ export const campanhasMock: Campanha[] = [
     plataforma: "meta_ads",
     tipo: "promocao",
     status: "ativa",
+    ordem: 2,
   },
   {
     id: "camp-day-use-piscina",
@@ -27,6 +29,7 @@ export const campanhasMock: Campanha[] = [
     plataforma: "meta_ads",
     tipo: "day_use",
     status: "ativa",
+    ordem: 3,
   },
   {
     id: "camp-ferias-julho",
@@ -34,6 +37,7 @@ export const campanhasMock: Campanha[] = [
     plataforma: "google_ads",
     tipo: "pacote",
     status: "ativa",
+    ordem: 4,
   },
   {
     id: "camp-oferta-relampago",
@@ -41,6 +45,7 @@ export const campanhasMock: Campanha[] = [
     plataforma: "whatsapp_direto",
     tipo: "remarketing",
     status: "finalizada",
+    ordem: 5,
   },
 ];
 

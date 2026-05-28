@@ -7,8 +7,12 @@ create table if not exists campanhas (
   plataforma    text        not null,
   tipo          text        not null,
   status        text        not null default 'ativa',
+  ordem         integer     not null default 0,
   created_at    timestamptz not null default now()
 );
+
+-- Se a tabela já existia sem a coluna `ordem`, rode:
+--   alter table campanhas add column if not exists ordem integer not null default 0;
 
 create table if not exists reservas (
   id                text primary key,

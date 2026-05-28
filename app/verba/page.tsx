@@ -10,6 +10,7 @@ import {
   todayISO,
   PERIODO_TUDO,
   dentroDoPeriodo,
+  porOrdem,
   PLATAFORMA_LABELS,
   type Periodo,
 } from "@/lib/utils";
@@ -41,10 +42,12 @@ export default function VerbaPage() {
   const updateGasto = useStore((s) => s.updateGasto);
   const removeGasto = useStore((s) => s.removeGasto);
 
+  const campanhasOrdenadas = useMemo(() => porOrdem(campanhas), [campanhas]);
+
   const [periodo, setPeriodo] = useState<Periodo>(PERIODO_TUDO);
   const [page, setPage] = useState(1);
   const [form, setForm] = useState<FormGasto>(() =>
-    formVazio(campanhas[0]?.id ?? ""),
+    formVazio(porOrdem(campanhas)[0]?.id ?? ""),
   );
   const [editId, setEditId] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -120,7 +123,7 @@ export default function VerbaPage() {
 
   function cancelarEdicao() {
     setEditId(null);
-    setForm(formVazio(campanhas[0]?.id ?? ""));
+    setForm(formVazio(campanhasOrdenadas[0]?.id ?? ""));
     setErro(null);
   }
 
@@ -158,7 +161,7 @@ export default function VerbaPage() {
                   value={form.campanhaId}
                   onChange={(e) => set("campanhaId", e.target.value)}
                 >
-                  {campanhas.map((c) => (
+                  {campanhasOrdenadas.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nome}
                     </option>

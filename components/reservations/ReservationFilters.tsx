@@ -6,6 +6,7 @@ import {
   PLATAFORMAS,
   PLATAFORMA_LABELS,
   STATUS_RESERVA_LABELS,
+  porOrdem,
 } from "@/lib/utils";
 
 export interface FiltrosReserva {
@@ -69,7 +70,7 @@ export function ReservationFilters({
         >
           <option value="">Todas as campanhas</option>
           <option value="sem">Sem campanha</option>
-          {campanhas.map((c) => (
+          {porOrdem(campanhas).map((c) => (
             <option key={c.id} value={c.id}>
               {c.nome}
             </option>

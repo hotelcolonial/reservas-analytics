@@ -24,6 +24,7 @@ export interface Campanha {
   plataforma: Plataforma;
   tipo: TipoCampanha;
   status: StatusCampanha;
+  ordem: number; // ordem manual usada nos selectores e listas
 }
 
 /** Verba gastada numa campanha num dia específico (o investimento é variável). */

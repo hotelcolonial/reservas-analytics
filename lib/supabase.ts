@@ -32,6 +32,7 @@ export function rowToCampanha(row: Row): Campanha {
     plataforma: row.plataforma as Campanha["plataforma"],
     tipo: row.tipo as Campanha["tipo"],
     status: row.status as Campanha["status"],
+    ordem: Number(row.ordem ?? 0),
   };
 }
 
@@ -42,6 +43,7 @@ export function campanhaToRow(c: Campanha) {
     plataforma: c.plataforma,
     tipo: c.tipo,
     status: c.status,
+    ordem: c.ordem,
   };
 }
 

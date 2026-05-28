@@ -28,6 +28,9 @@ function estadoInicial(c?: Campanha | null): FormData {
     plataforma: c?.plataforma ?? "google_ads",
     tipo: c?.tipo ?? "promocao",
     status: c?.status ?? "ativa",
+    // Ao criar, o store atribui a próxima ordem automaticamente; ao editar,
+    // mantemos a ordem atual para não alterá-la sem querer.
+    ordem: c?.ordem ?? 0,
   };
 }
 

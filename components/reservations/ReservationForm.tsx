@@ -10,6 +10,7 @@ import {
   PLATAFORMAS,
   PLATAFORMA_LABELS,
   calcNoites,
+  porOrdem,
   todayISO,
 } from "@/lib/utils";
 
@@ -134,7 +135,7 @@ export function ReservationForm({
             onChange={(e) => setCampanha(e.target.value)}
           >
             <option value="">Sem campanha / direto</option>
-            {campanhas.map((c) => (
+            {porOrdem(campanhas).map((c) => (
               <option key={c.id} value={c.id}>
                 {c.nome}
               </option>

@@ -117,6 +117,15 @@ export function rangePreset(preset: PresetPeriodo): Periodo {
   return { de: localISO(start), ate };
 }
 
+/** Ordena por `ordem` crescente, com desempate por nome para estabilidade. */
+export function porOrdem<T extends { ordem: number; nome: string }>(
+  arr: T[],
+): T[] {
+  return [...arr].sort(
+    (a, b) => a.ordem - b.ordem || a.nome.localeCompare(b.nome),
+  );
+}
+
 /** True se a data ISO cai dentro do período (limites inclusivos). */
 export function dentroDoPeriodo(dataISO: string, periodo: Periodo): boolean {
   if (!dataISO) return false;
