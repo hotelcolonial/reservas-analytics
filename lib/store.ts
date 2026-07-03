@@ -23,6 +23,35 @@ function db() {
   return getSupabase();
 }
 
+type Row = Record<string, unknown>;
+
+/**
+ * Fetches every row of a table, paginating in batches of 1000.
+ *
+ * Supabase/PostgREST caps a single `select` at 1000 rows by default, so a
+ * plain `.select("*")` silently drops anything beyond the first 1000. This
+ * loops with `.range()` until fewer than a full page comes back.
+ */
+async function fetchAll(
+  table: string,
+  orderColumn: string,
+): Promise<{ data: Row[]; error: string | null }> {
+  const PAGE = 1000;
+  const all: Row[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await db()
+      .from(table)
+      .select("*")
+      .order(orderColumn, { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) return { data: all, error: error.message };
+    if (!data || data.length === 0) break;
+    all.push(...(data as Row[]));
+    if (data.length < PAGE) break;
+  }
+  return { data: all, error: null };
+}
+
 interface AppState {
   campanhas: Campanha[];
   reservas: Reserva[];
@@ -74,13 +103,13 @@ export const useStore = create<AppState>()((set, get) => ({
       { data: reservasData, error: e2 },
       { data: gastosData, error: e3 },
     ] = await Promise.all([
-      db().from("campanhas").select("*").order("created_at", { ascending: true }),
-      db().from("reservas").select("*").order("created_at", { ascending: true }),
-      db().from("gastos").select("*").order("data", { ascending: true }),
+      fetchAll("campanhas", "created_at"),
+      fetchAll("reservas", "created_at"),
+      fetchAll("gastos", "data"),
     ]);
-    if (e1) console.error("Supabase fetch campanhas:", e1.message);
-    if (e2) console.error("Supabase fetch reservas:", e2.message);
-    if (e3) console.error("Supabase fetch gastos:", e3.message);
+    if (e1) console.error("Supabase fetch campanhas:", e1);
+    if (e2) console.error("Supabase fetch reservas:", e2);
+    if (e3) console.error("Supabase fetch gastos:", e3);
     set({
       campanhas: campanhasData?.map(rowToCampanha) ?? [],
       reservas: reservasData?.map(rowToReserva) ?? [],
