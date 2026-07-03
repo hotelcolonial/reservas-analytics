@@ -18,14 +18,77 @@
   --color-laranja: #f3a42c;
   --color-laranja-dark: #db9117;
 
-  /* Fontes */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, sans-serif;
+  /* Fontes padrão do shadcn/ui (Geist). Títulos usam a mesma família, mais forte. */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ── Tokens shadcn/ui, mapeados à marca Colonial ─────────────────────────────
+   Geram utilidades bg-primary, bg-card, border-border, ring-ring, etc. usadas
+   pelos componentes shadcn. As cores da marca acima continuam válidas. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Escala de raio no padrão shadcn (new-york) */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 :root {
-  --background: #f4efea;
-  --foreground: #122b1c;
+  --radius: 0.625rem; /* raio base shadcn new-york */
+
+  --background: #f8f9f7; /* off-white limpo, leve tom verde */
+  --foreground: #122b1c; /* verde Colonial (texto) */
+
+  --card: #ffffff;
+  --card-foreground: #122b1c;
+  --popover: #ffffff;
+  --popover-foreground: #122b1c;
+
+  --primary: #f3a42c; /* laranja CTA */
+  --primary-foreground: #122b1c; /* texto verde sobre laranja */
+  --secondary: #eef2ef; /* superfície verde clara */
+  --secondary-foreground: #122b1c;
+
+  --muted: #f1f4f1;
+  --muted-foreground: #61756a; /* verde-acinzentado para texto secundário */
+  --accent: #eef2ef;
+  --accent-foreground: #122b1c;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #e4e9e4; /* borda sutil verde-acinzentada */
+  --input: #e4e9e4;
+  --ring: #d0942a; /* foco laranja discreto */
+}
+
+/* Reset base do shadcn: a classe `border` usa --border, foco usa --ring. */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 }
 
 body {
@@ -51,9 +114,9 @@ input[type="number"] {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d8d0c5;
+  background: #cfd8cf;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #c4b9a9;
+  background: #b9c4b9;
 }

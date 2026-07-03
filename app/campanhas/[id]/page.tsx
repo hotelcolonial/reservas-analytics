@@ -18,9 +18,16 @@ import {
   dentroDoPeriodo,
   type Periodo,
 } from "@/lib/utils";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardAction,
+} from "@/components/ui/card";
+import { SectionCardHeader } from "@/components/ui/section-card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PeriodFilter } from "@/components/ui/PeriodFilter";
@@ -240,60 +247,68 @@ export default function CampanhaDetalhePage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-semibold text-colonial">
+          <CardHeader>
+            <CardTitle className="font-display text-lg text-colonial">
               Verba gasta por data
-            </h2>
-            <p className="text-sm text-colonial/60">
-              Total{" "}
-              <span className="font-semibold text-colonial">
-                {formatBRL(totalGasto)}
-              </span>
-            </p>
-          </div>
-          <SpendByDateChart gastos={gastosCampanha} />
+            </CardTitle>
+            <CardAction>
+              <p className="text-sm text-muted-foreground">
+                Total{" "}
+                <span className="font-semibold text-colonial">
+                  {formatBRL(totalGasto)}
+                </span>
+              </p>
+            </CardAction>
+          </CardHeader>
+          <CardContent>
+            <SpendByDateChart gastos={gastosCampanha} />
+          </CardContent>
         </Card>
 
         <Card>
-          <CardHeader
+          <SectionCardHeader
             title="Receita × Investimento por mês"
             subtitle="Receita confirmada e verba gasta da campanha."
           />
-          <MonthlyRevenueChart
-            reservas={reservasCampanha}
-            gastos={gastosCampanha}
-          />
+          <CardContent>
+            <MonthlyRevenueChart
+              reservas={reservasCampanha}
+              gastos={gastosCampanha}
+            />
+          </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader
+        <SectionCardHeader
           title="Reservas desta campanha"
           subtitle={`${reservasCampanha.length} reserva(s) no período.`}
         />
-        {reservasCampanha.length === 0 ? (
-          <EmptyState
-            title="Nenhuma reserva no período"
-            description="Ajuste o filtro de datas ou registre reservas vinculadas a esta campanha."
-          />
-        ) : (
-          <div className="space-y-4">
-            <ReservationTable
-              reservas={reservasPaginadas}
-              campanhas={campanhas}
-              onEdit={(r) => {
-                setResEditando(r);
-                setResFormOpen(true);
-              }}
-              onDelete={setExcluirRes}
+        <CardContent>
+          {reservasCampanha.length === 0 ? (
+            <EmptyState
+              title="Nenhuma reserva no período"
+              description="Ajuste o filtro de datas ou registre reservas vinculadas a esta campanha."
             />
-            <Pagination
-              page={paginaAtual}
-              totalPages={totalPaginas}
-              onPage={setPage}
-            />
-          </div>
-        )}
+          ) : (
+            <div className="space-y-4">
+              <ReservationTable
+                reservas={reservasPaginadas}
+                campanhas={campanhas}
+                onEdit={(r) => {
+                  setResEditando(r);
+                  setResFormOpen(true);
+                }}
+                onDelete={setExcluirRes}
+              />
+              <Pagination
+                page={paginaAtual}
+                totalPages={totalPaginas}
+                onPage={setPage}
+              />
+            </div>
+          )}
+        </CardContent>
       </Card>
 
       <CampaignForm

@@ -1,7 +1,15 @@
 "use client";
 
-import { Modal } from "./Modal";
-import { Button } from "./Button";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -23,29 +31,24 @@ export function ConfirmDialog({
   onClose,
 }: ConfirmDialogProps) {
   return (
-    <Modal
+    <AlertDialog
       open={open}
-      onClose={onClose}
-      title={title}
-      variant="center"
-      footer={
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>
-            {cancelLabel}
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
-          >
-            {confirmLabel}
-          </Button>
-        </div>
-      }
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
     >
-      <p className="text-sm leading-relaxed text-colonial/70">{message}</p>
-    </Modal>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{message}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" onClick={onConfirm}>
+            {confirmLabel}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

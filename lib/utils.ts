@@ -1,3 +1,5 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 import type {
   Plataforma,
   TipoCampanha,
@@ -5,9 +7,9 @@ import type {
   StatusReserva,
 } from "./types";
 
-/** Junta classes condicionais (substituto leve de clsx). */
-export function cn(...classes: Array<string | false | null | undefined>): string {
-  return classes.filter(Boolean).join(" ");
+/** Junta classes condicionais e resolve conflitos de Tailwind (padrão shadcn). */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
 }
 
 /* ---------- Formatação ---------- */
@@ -123,6 +125,18 @@ export function porOrdem<T extends { ordem: number; nome: string }>(
 ): T[] {
   return [...arr].sort(
     (a, b) => a.ordem - b.ordem || a.nome.localeCompare(b.nome),
+  );
+}
+
+/**
+ * Campanhas oferecidas num seletor: exclui as pausadas, mas mantém a campanha
+ * já vinculada (`manterId`) para não trocá-la em silêncio ao editar.
+ */
+export function porOrdemSelecionaveis<
+  T extends { id: string; ordem: number; nome: string; status: string },
+>(arr: T[], manterId?: string | null): T[] {
+  return porOrdem(
+    arr.filter((c) => c.status !== "pausada" || c.id === manterId),
   );
 }
 

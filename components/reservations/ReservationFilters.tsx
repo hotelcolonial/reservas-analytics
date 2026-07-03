@@ -1,12 +1,20 @@
 "use client";
 
-import { Input, Select } from "@/components/ui/Field";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import type { Campanha, Plataforma, StatusReserva } from "@/lib/types";
 import {
   PLATAFORMAS,
   PLATAFORMA_LABELS,
   STATUS_RESERVA_LABELS,
-  porOrdem,
+  porOrdemSelecionaveis,
 } from "@/lib/utils";
 
 export interface FiltrosReserva {
@@ -35,6 +43,10 @@ export const filtrosVazios: FiltrosReserva = {
   checkOutAte: "",
 };
 
+// Radix Select não aceita value="" — sentinels para as opções "todas/todos".
+const TODAS = "__todas__";
+const TODOS = "__todos__";
+
 const statusOpcoes: StatusReserva[] = ["confirmada", "pendente", "cancelada"];
 
 export function ReservationFilters({
@@ -56,7 +68,7 @@ export function ReservationFilters({
   const algumFiltro = Object.values(filtros).some(Boolean);
 
   return (
-    <div className="space-y-4 rounded-3xl bg-branco p-4 shadow-[0_1px_3px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] sm:p-5">
+    <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <Input
         placeholder="Buscar por código de reserva..."
         value={filtros.busca}
@@ -65,40 +77,55 @@ export function ReservationFilters({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Select
-          value={filtros.campanhaId}
-          onChange={(e) => set("campanhaId", e.target.value)}
+          value={filtros.campanhaId === "" ? TODAS : filtros.campanhaId}
+          onValueChange={(v) => set("campanhaId", v === TODAS ? "" : v)}
         >
-          <option value="">Todas as campanhas</option>
-          <option value="sem">Sem campanha</option>
-          {porOrdem(campanhas).map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nome}
-            </option>
-          ))}
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={TODAS}>Todas as campanhas</SelectItem>
+            <SelectItem value="sem">Sem campanha</SelectItem>
+            {porOrdemSelecionaveis(campanhas, filtros.campanhaId).map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.nome}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
 
         <Select
-          value={filtros.plataforma}
-          onChange={(e) => set("plataforma", e.target.value)}
+          value={filtros.plataforma === "" ? TODAS : filtros.plataforma}
+          onValueChange={(v) => set("plataforma", v === TODAS ? "" : v)}
         >
-          <option value="">Todas as plataformas</option>
-          {PLATAFORMAS.map((p: Plataforma) => (
-            <option key={p} value={p}>
-              {PLATAFORMA_LABELS[p]}
-            </option>
-          ))}
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={TODAS}>Todas as plataformas</SelectItem>
+            {PLATAFORMAS.map((p: Plataforma) => (
+              <SelectItem key={p} value={p}>
+                {PLATAFORMA_LABELS[p]}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
 
         <Select
-          value={filtros.status}
-          onChange={(e) => set("status", e.target.value)}
+          value={filtros.status === "" ? TODOS : filtros.status}
+          onValueChange={(v) => set("status", v === TODOS ? "" : v)}
         >
-          <option value="">Todos os status</option>
-          {statusOpcoes.map((s) => (
-            <option key={s} value={s}>
-              {STATUS_RESERVA_LABELS[s]}
-            </option>
-          ))}
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={TODOS}>Todos os status</SelectItem>
+            {statusOpcoes.map((s) => (
+              <SelectItem key={s} value={s}>
+                {STATUS_RESERVA_LABELS[s]}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </div>
 
@@ -127,12 +154,13 @@ export function ReservationFilters({
       </div>
 
       {algumFiltro && (
-        <button
+        <Button
+          variant="link"
           onClick={() => onChange(filtrosVazios)}
-          className="text-sm font-medium text-laranja-dark hover:underline"
+          className="h-auto px-0 text-laranja-dark"
         >
           Limpar filtros
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -153,7 +181,7 @@ function DateRange({
 }) {
   return (
     <div>
-      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-colonial/45">
+      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
       <div className="flex items-center gap-2">
@@ -162,15 +190,13 @@ function DateRange({
           aria-label={`${label} de`}
           value={de}
           onChange={(e) => onDe(e.target.value)}
-          className="py-2"
         />
-        <span className="text-colonial/40">—</span>
+        <span className="text-muted-foreground">—</span>
         <Input
           type="date"
           aria-label={`${label} até`}
           value={ate}
           onChange={(e) => onAte(e.target.value)}
-          className="py-2"
         />
       </div>
     </div>

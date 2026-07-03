@@ -10,13 +10,27 @@ import {
   todayISO,
   PERIODO_TUDO,
   dentroDoPeriodo,
-  porOrdem,
+  porOrdemSelecionaveis,
   PLATAFORMA_LABELS,
   type Periodo,
 } from "@/lib/utils";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Input, Select, FormRow } from "@/components/ui/Field";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardAction,
+  CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PeriodFilter } from "@/components/ui/PeriodFilter";
@@ -42,12 +56,16 @@ export default function VerbaPage() {
   const updateGasto = useStore((s) => s.updateGasto);
   const removeGasto = useStore((s) => s.removeGasto);
 
-  const campanhasOrdenadas = useMemo(() => porOrdem(campanhas), [campanhas]);
+  // Campanhas oferecidas para lançar verba: só as ativas (exclui pausadas).
+  const campanhasAtivas = useMemo(
+    () => porOrdemSelecionaveis(campanhas),
+    [campanhas],
+  );
 
   const [periodo, setPeriodo] = useState<Periodo>(PERIODO_TUDO);
   const [page, setPage] = useState(1);
   const [form, setForm] = useState<FormGasto>(() =>
-    formVazio(porOrdem(campanhas)[0]?.id ?? ""),
+    formVazio(porOrdemSelecionaveis(campanhas)[0]?.id ?? ""),
   );
   const [editId, setEditId] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -123,7 +141,7 @@ export default function VerbaPage() {
 
   function cancelarEdicao() {
     setEditId(null);
-    setForm(formVazio(campanhasOrdenadas[0]?.id ?? ""));
+    setForm(formVazio(campanhasAtivas[0]?.id ?? ""));
     setErro(null);
   }
 
@@ -148,98 +166,124 @@ export default function VerbaPage() {
         <>
           <Card
             id="gasto-form"
-            className={`space-y-4 scroll-mt-24 transition-shadow ${
-              editId ? "ring-2 ring-brand/50" : ""
+            className={`scroll-mt-24 transition-shadow ${
+              editId ? "ring-2 ring-primary/40" : ""
             }`}
           >
-            <h2 className="font-display text-lg font-semibold text-colonial">
-              {editId ? "Editar gasto" : "Lançar gasto do dia"}
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <FormRow label="Campanha" required>
-                <Select
-                  value={form.campanhaId}
-                  onChange={(e) => set("campanhaId", e.target.value)}
-                >
-                  {campanhasOrdenadas.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nome}
-                    </option>
-                  ))}
-                </Select>
-              </FormRow>
-              <FormRow label="Data" required htmlFor="gasto-data">
-                <Input
-                  id="gasto-data"
-                  type="date"
-                  value={form.data}
-                  onChange={(e) => set("data", e.target.value)}
-                />
-              </FormRow>
-              <FormRow label="Valor gasto (R$)" required htmlFor="gasto-valor">
-                <Input
-                  id="gasto-valor"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  placeholder="0"
-                  value={form.valor === 0 ? "" : form.valor}
-                  onChange={(e) =>
-                    set(
-                      "valor",
-                      e.target.value === "" ? 0 : Number(e.target.value),
-                    )
-                  }
-                />
-              </FormRow>
-            </div>
-            {erro && (
-              <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                {erro}
-              </p>
-            )}
-            <div className="flex items-center gap-3">
-              <Button onClick={salvar}>
-                {editId ? "Salvar alterações" : "Registrar gasto"}
-              </Button>
-              {editId && (
-                <Button variant="ghost" onClick={cancelarEdicao}>
-                  Cancelar
-                </Button>
+            <CardHeader>
+              <CardTitle className="font-display text-lg text-colonial">
+                {editId ? "Editar gasto" : "Lançar gasto do dia"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Field>
+                  <FieldLabel htmlFor="gasto-campanha">
+                    Campanha <span className="text-primary">*</span>
+                  </FieldLabel>
+                  <Select
+                    value={form.campanhaId}
+                    onValueChange={(v) => set("campanhaId", v)}
+                  >
+                    <SelectTrigger id="gasto-campanha" className="w-full">
+                      <SelectValue placeholder="Selecione uma campanha" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {porOrdemSelecionaveis(campanhas, form.campanhaId).map(
+                        (c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.nome}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="gasto-data">
+                    Data <span className="text-primary">*</span>
+                  </FieldLabel>
+                  <Input
+                    id="gasto-data"
+                    type="date"
+                    value={form.data}
+                    onChange={(e) => set("data", e.target.value)}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="gasto-valor">
+                    Valor gasto (R$) <span className="text-primary">*</span>
+                  </FieldLabel>
+                  <Input
+                    id="gasto-valor"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    placeholder="0"
+                    value={form.valor === 0 ? "" : form.valor}
+                    onChange={(e) =>
+                      set(
+                        "valor",
+                        e.target.value === "" ? 0 : Number(e.target.value),
+                      )
+                    }
+                  />
+                </Field>
+              </div>
+              {erro && (
+                <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {erro}
+                </p>
               )}
-            </div>
+              <div className="flex items-center gap-3">
+                <Button onClick={salvar}>
+                  {editId ? "Salvar alterações" : "Registrar gasto"}
+                </Button>
+                {editId && (
+                  <Button variant="ghost" onClick={cancelarEdicao}>
+                    Cancelar
+                  </Button>
+                )}
+              </div>
+            </CardContent>
           </Card>
 
           <PeriodFilter periodo={periodo} onChange={aplicarPeriodo} />
 
           <Card>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="font-display text-lg font-semibold text-colonial">
+            <CardHeader>
+              <CardTitle className="font-display text-lg text-colonial">
                 Verba gasta por data
-              </h2>
-              <p className="text-sm text-colonial/60">
-                Total no período{" "}
-                <span className="font-semibold text-colonial">
-                  {formatBRL(total)}
-                </span>
-              </p>
-            </div>
-            <SpendByDateChart gastos={filtrados} />
+              </CardTitle>
+              <CardAction>
+                <p className="text-sm text-muted-foreground">
+                  Total no período{" "}
+                  <span className="font-semibold text-colonial">
+                    {formatBRL(total)}
+                  </span>
+                </p>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              <SpendByDateChart gastos={filtrados} />
+            </CardContent>
           </Card>
 
           <Card>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="font-display text-lg font-semibold text-colonial">
+            <CardHeader>
+              <CardTitle className="font-display text-lg text-colonial">
                 Lançamentos
-              </h2>
-              <p className="text-sm text-colonial/60">
-                {filtrados.length} lançamento(s) · total{" "}
-                <span className="font-semibold text-colonial">
-                  {formatBRL(total)}
-                </span>
-              </p>
-            </div>
-
+              </CardTitle>
+              <CardAction>
+                <p className="text-sm text-muted-foreground">
+                  {filtrados.length} lançamento(s) · total{" "}
+                  <span className="font-semibold text-colonial">
+                    {formatBRL(total)}
+                  </span>
+                </p>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
             {filtrados.length === 0 ? (
               <EmptyState
                 title="Nenhum gasto no período"
@@ -333,6 +377,7 @@ export default function VerbaPage() {
                 />
               </div>
             )}
+            </CardContent>
           </Card>
         </>
       )}

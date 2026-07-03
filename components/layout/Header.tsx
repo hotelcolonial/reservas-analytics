@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { NavTabs } from "./NavTabs";
 import { CampaignForm } from "@/components/campaigns/CampaignForm";
 import { ReservationForm } from "@/components/reservations/ReservationForm";
@@ -13,7 +13,7 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-black/5 bg-branco/85 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">

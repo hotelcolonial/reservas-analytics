@@ -1,8 +1,8 @@
 "use client";
 
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { MetricasCampanha } from "@/lib/types";
 import {
@@ -34,7 +34,7 @@ export function CampaignCard({
   const c = m.campanha;
 
   return (
-    <Card className="flex flex-col gap-4">
+    <Card className="flex flex-col gap-4 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Link

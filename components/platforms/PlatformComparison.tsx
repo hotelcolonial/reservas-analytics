@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@/components/ui/Card";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { MetricasPlataforma } from "@/lib/types";
 import {
@@ -31,7 +31,7 @@ export function PlatformComparison({
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {metricas.map((m) => (
-          <Card key={m.plataforma} className="space-y-4">
+          <Card key={m.plataforma} className="space-y-4 p-5">
             <div className="flex items-center gap-2.5">
               <span
                 className="h-3 w-3 rounded-full"
@@ -72,7 +72,7 @@ export function PlatformComparison({
         ))}
       </div>
 
-      <Card>
+      <Card className="p-6">
         <h2 className="mb-4 font-display text-xl font-semibold text-colonial">
           Comparativo geral
         </h2>

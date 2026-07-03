@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/badge";
 import type { Campanha, Reserva } from "@/lib/types";
 import {
   formatBRL,
@@ -67,7 +67,7 @@ export function ReservationTable({
         {reservas.map((r) => (
           <li
             key={r.id}
-            className="rounded-2xl bg-branco p-4 shadow-[0_1px_3px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]"
+            className="rounded-xl border border-border bg-card p-4 shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -119,7 +119,7 @@ export function ReservationTable({
       </ul>
 
       {/* Desktop: tabela completa */}
-      <div className="hidden overflow-x-auto rounded-3xl bg-branco shadow-[0_1px_3px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] md:block">
+      <div className="hidden overflow-x-auto rounded-xl border border-border bg-card shadow-sm md:block">
         <table className="w-full min-w-[880px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-colonial/45">

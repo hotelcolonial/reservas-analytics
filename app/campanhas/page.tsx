@@ -28,7 +28,7 @@ import {
   cn,
   type Periodo,
 } from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PeriodFilter } from "@/components/ui/PeriodFilter";
@@ -91,16 +91,31 @@ export default function CampanhasPage() {
     );
   }, [campanhas, reservas, gastos, periodo]);
 
-  const ids = metricas.map((m) => m.campanha.id);
+  // Separa as campanhas entre não pausadas (Ativas) e pausadas.
+  const naoPausadas = metricas.filter((m) => m.campanha.status !== "pausada");
+  const pausadas = metricas.filter((m) => m.campanha.status === "pausada");
+  const naoPausadasIds = naoPausadas.map((m) => m.campanha.id);
+  const pausadasIds = pausadas.map((m) => m.campanha.id);
+
+  const grupos = [
+    { key: "ativas", titulo: "Ativas", itens: naoPausadas },
+    { key: "pausadas", titulo: "Pausadas", itens: pausadas },
+  ].filter((g) => g.itens.length > 0);
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIdx = ids.indexOf(active.id as string);
-    const newIdx = ids.indexOf(over.id as string);
-    if (oldIdx < 0 || newIdx < 0) return;
-    const novaOrdem = arrayMove(ids, oldIdx, newIdx);
-    setCampanhasOrdem(novaOrdem);
+    // Reordena apenas dentro do mesmo grupo (Ativas ou Pausadas).
+    const emAtivas = naoPausadasIds.includes(active.id as string);
+    const lista = emAtivas ? naoPausadasIds : pausadasIds;
+    const oldIdx = lista.indexOf(active.id as string);
+    const newIdx = lista.indexOf(over.id as string);
+    if (oldIdx < 0 || newIdx < 0) return; // soltou em outro grupo → ignora
+    const nova = arrayMove(lista, oldIdx, newIdx);
+    const full = emAtivas
+      ? [...nova, ...pausadasIds]
+      : [...naoPausadasIds, ...nova];
+    setCampanhasOrdem(full);
   }
 
   function abrirNova() {
@@ -145,33 +160,45 @@ export default function CampanhasPage() {
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <SortableContext
-            items={ids}
-            strategy={
-              view === "grid"
-                ? rectSortingStrategy
-                : verticalListSortingStrategy
-            }
-          >
-            <div
-              className={
-                view === "grid"
-                  ? "grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
-                  : "space-y-3"
-              }
-            >
-              {metricas.map((m) => (
-                <SortableCampaign
-                  key={m.campanha.id}
-                  m={m}
-                  view={view}
-                  onEdit={() => abrirEdicao(m.campanha)}
-                  onToggle={() => toggleCampanhaStatus(m.campanha.id)}
-                  onDelete={() => setExcluir(m.campanha)}
-                />
-              ))}
-            </div>
-          </SortableContext>
+          <div className="space-y-8">
+            {grupos.map((g) => (
+              <section key={g.key} className="space-y-3">
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  {g.titulo}
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    {g.itens.length}
+                  </span>
+                </h2>
+                <SortableContext
+                  items={g.itens.map((m) => m.campanha.id)}
+                  strategy={
+                    view === "grid"
+                      ? rectSortingStrategy
+                      : verticalListSortingStrategy
+                  }
+                >
+                  <div
+                    className={
+                      view === "grid"
+                        ? "grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+                        : "space-y-3"
+                    }
+                  >
+                    {g.itens.map((m) => (
+                      <SortableCampaign
+                        key={m.campanha.id}
+                        m={m}
+                        view={view}
+                        onEdit={() => abrirEdicao(m.campanha)}
+                        onToggle={() => toggleCampanhaStatus(m.campanha.id)}
+                        onDelete={() => setExcluir(m.campanha)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </section>
+            ))}
+          </div>
         </DndContext>
       )}
 

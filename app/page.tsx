@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { metricasDashboard, metricasTodasCampanhas } from "@/lib/calculations";
 import { PERIODO_TUDO, dentroDoPeriodo, type Periodo } from "@/lib/utils";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/card";
+import { SectionCardHeader } from "@/components/ui/section-card";
+import { Button } from "@/components/ui/button";
 import { PeriodFilter } from "@/components/ui/PeriodFilter";
 import { Hero } from "@/components/dashboard/Hero";
 import { MetricsGrid } from "@/components/dashboard/MetricsGrid";
@@ -49,9 +50,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <Hero>
-        <Button variant="primary" onClick={() => setReservaOpen(true)}>
-          + Nova Reserva
-        </Button>
+        <Button onClick={() => setReservaOpen(true)}>+ Nova Reserva</Button>
       </Hero>
 
       <PeriodFilter periodo={periodo} onChange={setPeriodo} />
@@ -60,59 +59,77 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader
+          <SectionCardHeader
             title="Receita × Investimento por mês"
             subtitle="Receita confirmada e verba gasta, por mês."
             href="/reservas"
           />
-          <MonthlyRevenueChart
-            reservas={reservasFiltradas}
-            gastos={gastosFiltrados}
-          />
+          <CardContent>
+            <MonthlyRevenueChart
+              reservas={reservasFiltradas}
+              gastos={gastosFiltrados}
+            />
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader
+          <SectionCardHeader
             title="Reservas por plataforma"
             subtitle="Distribuição de origem."
             href="/plataformas"
           />
-          <ReservationsByPlatformChart reservas={reservasFiltradas} />
+          <CardContent>
+            <ReservationsByPlatformChart reservas={reservasFiltradas} />
+          </CardContent>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card>
-          <CardHeader title="Taxa de confirmação" subtitle="Reservas confirmadas." />
-          <ConfirmationGauge
-            confirmadas={confirmadas}
-            total={dashboard.totalReservas}
+          <SectionCardHeader
+            title="Taxa de confirmação"
+            subtitle="Reservas confirmadas."
           />
+          <CardContent>
+            <ConfirmationGauge
+              confirmadas={confirmadas}
+              total={dashboard.totalReservas}
+            />
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader
+          <SectionCardHeader
             title="Ranking de campanhas"
             subtitle="As que mais geram receita."
             href="/campanhas"
           />
-          <CampaignRanking metricas={metricasCampanhas} />
+          <CardContent>
+            <CampaignRanking metricas={metricasCampanhas} />
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader
+          <SectionCardHeader
             title="Reservas recentes"
             subtitle="Últimos registros."
             href="/reservas"
           />
-          <RecentReservations reservas={reservasFiltradas} campanhas={campanhas} />
+          <CardContent>
+            <RecentReservations
+              reservas={reservasFiltradas}
+              campanhas={campanhas}
+            />
+          </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader
+        <SectionCardHeader
           title="Resumo de campanhas"
           subtitle="Resultado consolidado por campanha, ordenado por receita."
           href="/campanhas"
         />
-        <CampaignSummaryTable metricas={metricasCampanhas} />
+        <CardContent>
+          <CampaignSummaryTable metricas={metricasCampanhas} />
+        </CardContent>
       </Card>
 
       <ReservationForm

@@ -1,16 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { Modal } from "@/components/ui/Modal";
-import { Button } from "@/components/ui/Button";
-import { Input, Select, FormRow } from "@/components/ui/Field";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { useStore } from "@/lib/store";
 import type { Plataforma, Reserva } from "@/lib/types";
 import {
   PLATAFORMAS,
   PLATAFORMA_LABELS,
   calcNoites,
-  porOrdem,
+  porOrdemSelecionaveis,
   todayISO,
 } from "@/lib/utils";
 
@@ -21,6 +36,9 @@ interface ReservationFormProps {
 }
 
 type FormData = Omit<Reserva, "id">;
+
+// Radix Select não aceita value="" — usamos este sentinel para "sem campanha".
+const SEM_CAMPANHA = "sem";
 
 function estadoInicial(r?: Reserva | null): FormData {
   return {
@@ -74,8 +92,8 @@ export function ReservationForm({
     }));
   }
 
-  function setCampanha(id: string) {
-    const campanhaId = id === "" ? null : id;
+  function setCampanha(value: string) {
+    const campanhaId = value === SEM_CAMPANHA ? null : value;
     const campanha = campanhas.find((c) => c.id === campanhaId);
     setForm((f) => ({
       ...f,
@@ -99,160 +117,205 @@ export function ReservationForm({
   }
 
   return (
-    <Modal
+    <Sheet
       open={open}
-      onClose={onClose}
-      title={editando ? "Editar reserva" : "Nova reserva"}
-      subtitle={
-        editando
-          ? "Atualize os dados da reserva."
-          : "Registre uma reserva e vincule-a à campanha de origem."
-      }
-      footer={
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={salvar}>
-            {editando ? "Salvar alterações" : "Registrar reserva"}
-          </Button>
-        </div>
-      }
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
     >
-      <div className="space-y-5">
-        <FormRow label="ID da reserva" required htmlFor="res-codigo">
-          <Input
-            id="res-codigo"
-            value={form.codigo}
-            onChange={(e) => set("codigo", e.target.value)}
-            placeholder="Ex.: RES-0001"
-          />
-        </FormRow>
+      <SheetContent side="right" className="w-full sm:max-w-lg">
+        <SheetHeader>
+          <SheetTitle className="font-display text-xl text-colonial">
+            {editando ? "Editar reserva" : "Nova reserva"}
+          </SheetTitle>
+          <SheetDescription>
+            {editando
+              ? "Atualize os dados da reserva."
+              : "Registre uma reserva e vincule-a à campanha de origem."}
+          </SheetDescription>
+        </SheetHeader>
 
-        <FormRow label="Campanha de origem">
-          <Select
-            value={form.campanhaId ?? ""}
-            onChange={(e) => setCampanha(e.target.value)}
-          >
-            <option value="">Sem campanha / direto</option>
-            {porOrdem(campanhas).map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome}
-              </option>
-            ))}
-          </Select>
-        </FormRow>
+        <div className="flex-1 overflow-y-auto px-4">
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="res-codigo">
+                ID da reserva <span className="text-primary">*</span>
+              </FieldLabel>
+              <Input
+                id="res-codigo"
+                value={form.codigo}
+                onChange={(e) => set("codigo", e.target.value)}
+                placeholder="Ex.: RES-0001"
+              />
+            </Field>
 
-        {form.campanhaId && (
-          <FormRow label="A data da reserva coincide com a campanha?">
-            <Select
-              value={form.veioDaCampanha ? "sim" : "nao"}
-              onChange={(e) => set("veioDaCampanha", e.target.value === "sim")}
-            >
-              <option value="sim">Sim, a data coincide com a campanha</option>
-              <option value="nao">Não, a data não coincide</option>
-            </Select>
-          </FormRow>
-        )}
+            <Field>
+              <FieldLabel htmlFor="res-campanha">Campanha de origem</FieldLabel>
+              <Select
+                value={form.campanhaId ?? SEM_CAMPANHA}
+                onValueChange={setCampanha}
+              >
+                <SelectTrigger id="res-campanha" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SEM_CAMPANHA}>
+                    Sem campanha / direto
+                  </SelectItem>
+                  {porOrdemSelecionaveis(campanhas, form.campanhaId).map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <FormRow label="Plataforma de origem" required>
-            <Select
-              value={form.plataforma}
-              onChange={(e) => set("plataforma", e.target.value as Plataforma)}
-            >
-              {PLATAFORMAS.map((p) => (
-                <option key={p} value={p}>
-                  {PLATAFORMA_LABELS[p]}
-                </option>
-              ))}
-            </Select>
-          </FormRow>
+            {form.campanhaId && (
+              <Field>
+                <FieldLabel htmlFor="res-veio">
+                  A data da reserva coincide com a campanha?
+                </FieldLabel>
+                <Select
+                  value={form.veioDaCampanha ? "sim" : "nao"}
+                  onValueChange={(v) => set("veioDaCampanha", v === "sim")}
+                >
+                  <SelectTrigger id="res-veio" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sim">
+                      Sim, a data coincide com a campanha
+                    </SelectItem>
+                    <SelectItem value="nao">Não, a data não coincide</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
 
-          <FormRow label="Data da reserva" htmlFor="res-data">
-            <Input
-              id="res-data"
-              type="date"
-              value={form.dataReserva}
-              onChange={(e) => set("dataReserva", e.target.value)}
-            />
-          </FormRow>
+            <Field>
+              <FieldLabel htmlFor="res-plataforma">
+                Plataforma de origem <span className="text-primary">*</span>
+              </FieldLabel>
+              <Select
+                value={form.plataforma}
+                onValueChange={(v) => set("plataforma", v as Plataforma)}
+              >
+                <SelectTrigger id="res-plataforma" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLATAFORMAS.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {PLATAFORMA_LABELS[p]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
 
-          <FormRow label="Check-in" htmlFor="res-checkin">
-            <Input
-              id="res-checkin"
-              type="date"
-              value={form.checkIn}
-              onChange={(e) => setCheckIn(e.target.value)}
-            />
-          </FormRow>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <Field>
+                <FieldLabel htmlFor="res-data">Data da reserva</FieldLabel>
+                <Input
+                  id="res-data"
+                  type="date"
+                  value={form.dataReserva}
+                  onChange={(e) => set("dataReserva", e.target.value)}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="res-checkin">Check-in</FieldLabel>
+                <Input
+                  id="res-checkin"
+                  type="date"
+                  value={form.checkIn}
+                  onChange={(e) => setCheckIn(e.target.value)}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="res-checkout">Check-out</FieldLabel>
+                <Input
+                  id="res-checkout"
+                  type="date"
+                  value={form.checkOut}
+                  onChange={(e) => setCheckOut(e.target.value)}
+                />
+              </Field>
+            </div>
 
-          <FormRow label="Check-out" htmlFor="res-checkout">
-            <Input
-              id="res-checkout"
-              type="date"
-              value={form.checkOut}
-              onChange={(e) => setCheckOut(e.target.value)}
-            />
-          </FormRow>
+            <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
+              <Field>
+                <FieldLabel htmlFor="res-valor">
+                  Valor total (R$) <span className="text-primary">*</span>
+                </FieldLabel>
+                <Input
+                  id="res-valor"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="0"
+                  value={form.valor === 0 ? "" : form.valor}
+                  onChange={(e) =>
+                    set("valor", e.target.value === "" ? 0 : Number(e.target.value))
+                  }
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="res-pax">Pax (hóspedes)</FieldLabel>
+                <Input
+                  id="res-pax"
+                  type="number"
+                  min={1}
+                  placeholder="1"
+                  value={form.pax === 0 ? "" : form.pax}
+                  onChange={(e) =>
+                    set("pax", e.target.value === "" ? 0 : Number(e.target.value))
+                  }
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="res-noites">Noites</FieldLabel>
+                <Input
+                  id="res-noites"
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={form.noites === 0 ? "" : form.noites}
+                  onChange={(e) => {
+                    setNoitesAuto(false);
+                    set(
+                      "noites",
+                      e.target.value === "" ? 0 : Number(e.target.value),
+                    );
+                  }}
+                />
+              </Field>
+            </div>
+            <p className="-mt-3 text-xs text-muted-foreground">
+              As noites são calculadas automaticamente pelo check-in/check-out,
+              mas você pode ajustá-las manualmente.
+            </p>
+
+            {erro && (
+              <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {erro}
+              </p>
+            )}
+          </FieldGroup>
         </div>
 
-        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
-          <FormRow label="Valor total (R$)" required htmlFor="res-valor">
-            <Input
-              id="res-valor"
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="0"
-              value={form.valor === 0 ? "" : form.valor}
-              onChange={(e) =>
-                set("valor", e.target.value === "" ? 0 : Number(e.target.value))
-              }
-            />
-          </FormRow>
-
-          <FormRow label="Pax (hóspedes)" htmlFor="res-pax">
-            <Input
-              id="res-pax"
-              type="number"
-              min={1}
-              placeholder="1"
-              value={form.pax === 0 ? "" : form.pax}
-              onChange={(e) =>
-                set("pax", e.target.value === "" ? 0 : Number(e.target.value))
-              }
-            />
-          </FormRow>
-
-          <FormRow label="Noites" htmlFor="res-noites">
-            <Input
-              id="res-noites"
-              type="number"
-              min={0}
-              placeholder="0"
-              value={form.noites === 0 ? "" : form.noites}
-              onChange={(e) => {
-                setNoitesAuto(false);
-                set(
-                  "noites",
-                  e.target.value === "" ? 0 : Number(e.target.value),
-                );
-              }}
-            />
-          </FormRow>
-        </div>
-        <p className="-mt-2 text-xs text-colonial/50">
-          As noites são calculadas automaticamente pelo check-in/check-out, mas
-          você pode ajustá-las manualmente.
-        </p>
-
-        {erro && (
-          <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {erro}
-          </p>
-        )}
-      </div>
-    </Modal>
+        <SheetFooter>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button onClick={salvar}>
+              {editando ? "Salvar alterações" : "Registrar reserva"}
+            </Button>
+          </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

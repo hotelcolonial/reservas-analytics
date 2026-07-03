@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/Field";
+import { Input } from "@/components/ui/input";
 import {
   cn,
   formatDate,
@@ -40,7 +40,7 @@ export function PeriodFilter({
       : mesmoPeriodo(periodo, rangePreset(key));
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-branco p-2.5 shadow-[0_1px_3px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]">
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-2.5 shadow-sm">
       <div className="flex flex-wrap gap-1">
         {presets.map((p) => (
           <button
