@@ -10,6 +10,7 @@ const tabs = [
   { href: "/reservas", label: "Reservas" },
   { href: "/verba", label: "Verba" },
   { href: "/plataformas", label: "Plataformas" },
+  { href: "/propriedades", label: "Propriedades" },
 ];
 
 export function NavTabs() {

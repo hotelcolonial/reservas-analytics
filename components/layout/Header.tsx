@@ -2,10 +2,46 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { useStore } from "@/lib/store";
 import { NavTabs } from "./NavTabs";
 import { CampaignForm } from "@/components/campaigns/CampaignForm";
 import { ReservationForm } from "@/components/reservations/ReservationForm";
+
+function PropriedadeSelector() {
+  const propriedades = useStore((s) => s.propriedades);
+  const propriedadeAtivaId = useStore((s) => s.propriedadeAtivaId);
+  const setPropriedadeAtiva = useStore((s) => s.setPropriedadeAtiva);
+
+  if (propriedades.length === 0) return null;
+
+  return (
+    <Select value={propriedadeAtivaId} onValueChange={setPropriedadeAtiva}>
+      <SelectTrigger
+        aria-label="Propriedade"
+        className="h-9 gap-2 border-border bg-card font-medium text-colonial"
+      >
+        <Building2 className="size-4 text-colonial/60" />
+        <SelectValue placeholder="Propriedade" />
+      </SelectTrigger>
+      <SelectContent>
+        {propriedades.map((p) => (
+          <SelectItem key={p.id} value={p.id}>
+            {p.nome}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 export function Header() {
   const [reservaOpen, setReservaOpen] = useState(false);
@@ -16,29 +52,25 @@ export function Header() {
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
-            <Link href="/" className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-colonial font-display text-lg font-bold text-laranja">
-                R
-              </span>
-              <div className="leading-tight">
-                <p className="font-display text-base font-semibold text-colonial sm:text-lg">
-                  ReservaTrack Colonial
-                </p>
-                <p className="hidden text-xs text-colonial/50 sm:block">
-                  Hotel Colonial · WhatsApp Booking Tracker
-                </p>
-              </div>
-            </Link>
+            <div className="flex min-w-0 items-center gap-3">
+              <Link href="/" className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-colonial font-display text-lg font-bold text-laranja">
+                  R
+                </span>
+                <div className="hidden leading-tight sm:block">
+                  <p className="font-display text-base font-semibold text-colonial sm:text-lg">
+                    ReservaTrack
+                  </p>
+                  <p className="hidden text-xs text-colonial/50 lg:block">
+                    Painel de campanhas · reservas
+                  </p>
+                </div>
+              </Link>
+              <span className="hidden h-6 w-px bg-border sm:block" />
+              <PropriedadeSelector />
+            </div>
 
             <div className="flex items-center gap-3">
-              <div className="hidden items-center gap-2 rounded-xl bg-colonial-50 px-3 py-1.5 md:flex">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-colonial text-xs font-semibold text-branco">
-                  ER
-                </span>
-                <span className="text-sm font-medium text-colonial">
-                  Equipe Reservas
-                </span>
-              </div>
               <Button
                 variant="outline"
                 size="sm"

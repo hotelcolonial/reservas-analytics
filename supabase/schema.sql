@@ -1,14 +1,28 @@
--- ReservaTrack Colonial — Supabase schema
+-- ReservaTrack — Supabase schema (multipropriedade)
 -- Run this in the Supabase SQL Editor to create the required tables.
 
-create table if not exists campanhas (
+-- Cada propriedade (hotel/pousada) tem seu próprio painel isolado.
+create table if not exists propriedades (
   id            text primary key,
   nome          text        not null,
-  plataforma    text        not null,
-  tipo          text        not null,
-  status        text        not null default 'ativa',
   ordem         integer     not null default 0,
   created_at    timestamptz not null default now()
+);
+
+insert into propriedades (id, nome, ordem) values
+  ('colonial',         'Hotel Colonial',   1),
+  ('posada-cataratas', 'Posada Cataratas', 2)
+on conflict (id) do nothing;
+
+create table if not exists campanhas (
+  id             text primary key,
+  propriedade_id text        references propriedades(id),
+  nome           text        not null,
+  plataforma     text        not null,
+  tipo           text        not null,
+  status         text        not null default 'ativa',
+  ordem          integer     not null default 0,
+  created_at     timestamptz not null default now()
 );
 
 -- Se a tabela já existia sem a coluna `ordem`, rode:
@@ -16,6 +30,7 @@ create table if not exists campanhas (
 
 create table if not exists reservas (
   id                text primary key,
+  propriedade_id    text        references propriedades(id),
   codigo            text        not null,
   data_reserva      text        not null,
   check_in          text        not null,
@@ -32,15 +47,19 @@ create table if not exists reservas (
 
 -- Verba gastada por dia em cada campanha (investimento variável).
 create table if not exists gastos (
-  id            text primary key,
-  campanha_id   text        not null references campanhas(id) on delete cascade,
-  data          text        not null,
-  valor         numeric     not null default 0,
-  created_at    timestamptz not null default now()
+  id             text primary key,
+  propriedade_id text        references propriedades(id),
+  campanha_id    text        not null references campanhas(id) on delete cascade,
+  data           text        not null,
+  valor          numeric     not null default 0,
+  created_at     timestamptz not null default now()
 );
 
 create index if not exists gastos_campanha_idx on gastos (campanha_id);
 create index if not exists gastos_data_idx on gastos (data);
+create index if not exists campanhas_prop_idx on campanhas (propriedade_id);
+create index if not exists reservas_prop_idx  on reservas  (propriedade_id);
+create index if not exists gastos_prop_idx    on gastos    (propriedade_id);
 
 -- Enable Row Level Security (RLS) — adjust policies to your auth setup.
 alter table campanhas enable row level security;

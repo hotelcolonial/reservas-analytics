@@ -1,12 +1,18 @@
 import type { Campanha, Reserva, GastoDiario } from "@/lib/types";
 
+// Os mocks não trazem `propriedadeId` — o store carimba a propriedade ativa
+// ("colonial") ao carregar/semear os dados de exemplo.
+type CampanhaMock = Omit<Campanha, "propriedadeId">;
+type ReservaMock = Omit<Reserva, "propriedadeId">;
+type GastoMock = Omit<GastoDiario, "propriedadeId">;
+
 /**
  * Dados de exemplo para popular a aplicação no primeiro acesso.
  * Todas as campanhas, reservas e gastos abaixo são editáveis e podem ser
  * excluídos pela equipe — os nomes são apenas ilustrativos.
  */
 
-export const campanhasMock: Campanha[] = [
+export const campanhasMock: CampanhaMock[] = [
   {
     id: "camp-corpus-christi",
     nome: "Corpus Christi 2026",
@@ -50,7 +56,7 @@ export const campanhasMock: Campanha[] = [
 ];
 
 /** Verba gastada por dia em cada campanha (investimento variável). */
-export const gastosMock: GastoDiario[] = [
+export const gastosMock: GastoMock[] = [
   { id: "g-001", campanhaId: "camp-corpus-christi", data: "2026-05-15", valor: 700 },
   { id: "g-002", campanhaId: "camp-corpus-christi", data: "2026-05-18", valor: 900 },
   { id: "g-003", campanhaId: "camp-corpus-christi", data: "2026-05-22", valor: 950 },
@@ -66,7 +72,7 @@ export const gastosMock: GastoDiario[] = [
   { id: "g-013", campanhaId: "camp-ferias-julho", data: "2026-07-04", valor: 1750 },
 ];
 
-export const reservasMock: Reserva[] = [
+export const reservasMock: ReservaMock[] = [
   {
     id: "res-001",
     codigo: "RES-0001",

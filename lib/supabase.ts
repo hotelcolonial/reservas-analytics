@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Campanha, Reserva, GastoDiario } from "./types";
+import type { Campanha, Reserva, GastoDiario, Propriedade } from "./types";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -25,9 +25,26 @@ export function getSupabase(): SupabaseClient {
 
 type Row = Record<string, unknown>;
 
+export function rowToPropriedade(row: Row): Propriedade {
+  return {
+    id: row.id as string,
+    nome: row.nome as string,
+    ordem: Number(row.ordem ?? 0),
+  };
+}
+
+export function propriedadeToRow(p: Propriedade) {
+  return {
+    id: p.id,
+    nome: p.nome,
+    ordem: p.ordem,
+  };
+}
+
 export function rowToCampanha(row: Row): Campanha {
   return {
     id: row.id as string,
+    propriedadeId: (row.propriedade_id as string | null) ?? "",
     nome: row.nome as string,
     plataforma: row.plataforma as Campanha["plataforma"],
     tipo: row.tipo as Campanha["tipo"],
@@ -39,6 +56,7 @@ export function rowToCampanha(row: Row): Campanha {
 export function campanhaToRow(c: Campanha) {
   return {
     id: c.id,
+    propriedade_id: c.propriedadeId,
     nome: c.nome,
     plataforma: c.plataforma,
     tipo: c.tipo,
@@ -50,6 +68,7 @@ export function campanhaToRow(c: Campanha) {
 export function rowToReserva(row: Row): Reserva {
   return {
     id: row.id as string,
+    propriedadeId: (row.propriedade_id as string | null) ?? "",
     codigo: row.codigo as string,
     dataReserva: row.data_reserva as string,
     checkIn: row.check_in as string,
@@ -67,6 +86,7 @@ export function rowToReserva(row: Row): Reserva {
 export function reservaToRow(r: Reserva) {
   return {
     id: r.id,
+    propriedade_id: r.propriedadeId,
     codigo: r.codigo,
     data_reserva: r.dataReserva,
     check_in: r.checkIn,
@@ -84,6 +104,7 @@ export function reservaToRow(r: Reserva) {
 export function rowToGasto(row: Row): GastoDiario {
   return {
     id: row.id as string,
+    propriedadeId: (row.propriedade_id as string | null) ?? "",
     campanhaId: row.campanha_id as string,
     data: row.data as string,
     valor: Number(row.valor),
@@ -93,6 +114,7 @@ export function rowToGasto(row: Row): GastoDiario {
 export function gastoToRow(g: GastoDiario) {
   return {
     id: g.id,
+    propriedade_id: g.propriedadeId,
     campanha_id: g.campanhaId,
     data: g.data,
     valor: g.valor,

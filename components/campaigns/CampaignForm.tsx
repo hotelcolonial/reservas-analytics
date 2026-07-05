@@ -35,7 +35,7 @@ interface CampaignFormProps {
   campanha?: Campanha | null;
 }
 
-type FormData = Omit<Campanha, "id">;
+type FormData = Omit<Campanha, "id" | "propriedadeId">;
 
 function estadoInicial(c?: Campanha | null): FormData {
   return {

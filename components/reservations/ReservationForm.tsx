@@ -35,7 +35,7 @@ interface ReservationFormProps {
   reserva?: Reserva | null;
 }
 
-type FormData = Omit<Reserva, "id">;
+type FormData = Omit<Reserva, "id" | "propriedadeId">;
 
 // Radix Select não aceita value="" — usamos este sentinel para "sem campanha".
 const SEM_CAMPANHA = "sem";

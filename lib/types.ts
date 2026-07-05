@@ -18,8 +18,16 @@ export type StatusCampanha = "ativa" | "pausada" | "finalizada";
 
 export type StatusReserva = "confirmada" | "pendente" | "cancelada";
 
+/** Um negócio/hotel medido no painel (multipropriedade). */
+export interface Propriedade {
+  id: string;
+  nome: string;
+  ordem: number; // ordem no seletor de propriedade
+}
+
 export interface Campanha {
   id: string;
+  propriedadeId: string; // a qual propriedade pertence
   nome: string;
   plataforma: Plataforma;
   tipo: TipoCampanha;
@@ -30,6 +38,7 @@ export interface Campanha {
 /** Verba gastada numa campanha num dia específico (o investimento é variável). */
 export interface GastoDiario {
   id: string;
+  propriedadeId: string;
   campanhaId: string;
   data: string; // ISO date (yyyy-mm-dd) — dia em que a verba foi gasta
   valor: number; // em BRL
@@ -37,6 +46,7 @@ export interface GastoDiario {
 
 export interface Reserva {
   id: string;
+  propriedadeId: string;
   codigo: string; // identificador legível da reserva, ex.: "RES-0001"
   dataReserva: string; // ISO date — quando a reserva foi registrada
   checkIn: string; // ISO date
