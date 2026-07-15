@@ -12,16 +12,18 @@ export function CampaignSummaryTable({
 }: {
   metricas: MetricasCampanha[];
 }) {
-  if (metricas.length === 0) {
+  const ativas = metricas.filter((m) => m.campanha.status !== "pausada");
+
+  if (ativas.length === 0) {
     return (
       <EmptyState
-        title="Nenhuma campanha cadastrada"
-        description="Crie campanhas para começar a medir resultados."
+        title="Nenhuma campanha ativa"
+        description="Crie ou reative campanhas para começar a medir resultados."
       />
     );
   }
 
-  const ordenadas = [...metricas].sort((a, b) => b.receita - a.receita);
+  const ordenadas = [...ativas].sort((a, b) => b.receita - a.receita);
 
   return (
     <div className="-mx-2 overflow-x-auto">
