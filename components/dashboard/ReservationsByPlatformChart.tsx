@@ -53,15 +53,15 @@ export function ReservationsByPlatformChart({
               formatter={(v) => [`${Number(v)} reserva(s)`, ""]}
               contentStyle={{
                 borderRadius: 12,
-                border: "1px solid rgba(0,0,0,0.06)",
+                border: "1px solid rgba(16,17,19,0.10)",
                 fontSize: 13,
               }}
             />
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xs font-medium text-colonial/45">Total</span>
-          <span className="font-display text-3xl font-extrabold tracking-tight text-colonial">
+          <span className="text-xs font-normal text-subtle-fg">Total</span>
+          <span className="font-brand text-3xl font-light tracking-tight text-carvao">
             {total}
           </span>
         </div>
@@ -80,11 +80,11 @@ export function ReservationsByPlatformChart({
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ background: d.cor }}
                 />
-                <span className="text-colonial/75">{d.nome}</span>
+                <span className="text-muted-fg">{d.nome}</span>
               </span>
               <span className="flex items-center gap-2">
-                <span className="font-semibold text-colonial">{d.total}</span>
-                <span className="text-xs text-colonial/40">
+                <span className="font-normal text-carvao">{d.total}</span>
+                <span className="text-xs text-subtle-fg">
                   {Math.round((d.total / total) * 100)}%
                 </span>
               </span>

@@ -4,32 +4,50 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const tabs = [
-  { href: "/", label: "Dashboard" },
-  { href: "/campanhas", label: "Campanhas" },
-  { href: "/reservas", label: "Reservas" },
-  { href: "/verba", label: "Verba" },
-  { href: "/plataformas", label: "Plataformas" },
-  { href: "/propriedades", label: "Propriedades" },
+export interface NavTab {
+  href: string;
+  label: string;
+  /** True quando só o caminho exato ativa a aba (dashboards com sub-rotas). */
+  exact?: boolean;
+}
+
+/** Abas do módulo de reservas (ReservaTrack). */
+export const TABS_RESERVAS: NavTab[] = [
+  { href: "/painel", label: "dashboard", exact: true },
+  { href: "/campanhas", label: "campanhas" },
+  { href: "/reservas", label: "reservas" },
+  { href: "/verba", label: "verba" },
+  { href: "/plataformas", label: "plataformas" },
+  { href: "/propriedades", label: "propriedades" },
 ];
 
-export function NavTabs() {
+/** Abas do módulo de gastos (GrowthDirect). */
+export const TABS_GASTOS: NavTab[] = [
+  { href: "/gastos", label: "dashboard", exact: true },
+  { href: "/gastos/lancamentos", label: "lançamentos" },
+  { href: "/gastos/recorrentes", label: "recorrentes" },
+  { href: "/gastos/cartoes", label: "cartões" },
+  { href: "/gastos/naturezas", label: "naturezas" },
+];
+
+export function NavTabs({ tabs }: { tabs: NavTab[] }) {
   const pathname = usePathname();
 
   return (
     <nav className="flex gap-1 overflow-x-auto">
       {tabs.map((tab) => {
-        const active =
-          tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+        const active = tab.exact
+          ? pathname === tab.href
+          : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
         return (
           <Link
             key={tab.href}
             href={tab.href}
             className={cn(
-              "whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+              "whitespace-nowrap rounded-full px-4 py-2 text-sm font-normal lowercase transition-colors duration-300",
               active
-                ? "bg-colonial text-branco"
-                : "text-colonial/70 hover:bg-colonial-50 hover:text-colonial",
+                ? "bg-carvao text-branco"
+                : "text-muted-fg hover:bg-carvao-50 hover:text-carvao",
             )}
           >
             {tab.label}

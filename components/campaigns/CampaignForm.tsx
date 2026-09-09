@@ -85,7 +85,7 @@ export function CampaignForm({ open, onClose, campanha }: CampaignFormProps) {
     >
       <SheetContent side="right" className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle className="font-display text-xl text-colonial">
+          <SheetTitle className="font-brand text-xl text-carvao">
             {editando ? "Editar campanha" : "Nova campanha"}
           </SheetTitle>
           <SheetDescription>

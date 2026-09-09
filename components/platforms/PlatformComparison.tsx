@@ -37,11 +37,11 @@ export function PlatformComparison({
                 className="h-3 w-3 rounded-full"
                 style={{ background: PLATAFORMA_CORES[m.plataforma] }}
               />
-              <h3 className="font-display text-lg font-semibold text-colonial">
+              <h3 className="font-brand text-lg font-normal text-carvao">
                 {PLATAFORMA_LABELS[m.plataforma]}
               </h3>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-colonial-50">
+            <div className="h-2 overflow-hidden rounded-full bg-carvao-50">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -73,28 +73,28 @@ export function PlatformComparison({
       </div>
 
       <Card className="p-6">
-        <h2 className="mb-4 font-display text-xl font-semibold text-colonial">
+        <h2 className="mb-4 font-brand text-xl font-normal text-carvao">
           Comparativo geral
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-colonial/50">
-                <th className="px-3 py-2 font-semibold">Plataforma</th>
-                <th className="px-3 py-2 text-right font-semibold">Investido</th>
-                <th className="px-3 py-2 text-right font-semibold">Reservas</th>
-                <th className="px-3 py-2 text-right font-semibold">Receita</th>
-                <th className="px-3 py-2 text-right font-semibold">ROI</th>
-                <th className="px-3 py-2 text-right font-semibold">ROAS</th>
-                <th className="px-3 py-2 text-right font-semibold">
+              <tr className="text-left text-xs uppercase tracking-wide text-subtle-fg">
+                <th className="px-3 py-2 font-normal">Plataforma</th>
+                <th className="px-3 py-2 text-right font-normal">Investido</th>
+                <th className="px-3 py-2 text-right font-normal">Reservas</th>
+                <th className="px-3 py-2 text-right font-normal">Receita</th>
+                <th className="px-3 py-2 text-right font-normal">ROI</th>
+                <th className="px-3 py-2 text-right font-normal">ROAS</th>
+                <th className="px-3 py-2 text-right font-normal">
                   Custo/reserva
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-black/5">
               {metricas.map((m) => (
-                <tr key={m.plataforma} className="hover:bg-colonial-50/50">
-                  <td className="px-3 py-3 font-medium text-colonial">
+                <tr key={m.plataforma} className="hover:bg-carvao-50/50">
+                  <td className="px-3 py-3 font-normal text-carvao">
                     <span className="inline-flex items-center gap-2">
                       <span
                         className="h-2.5 w-2.5 rounded-full"
@@ -103,34 +103,34 @@ export function PlatformComparison({
                       {PLATAFORMA_LABELS[m.plataforma]}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-right text-colonial/70">
+                  <td className="px-3 py-3 text-right text-muted-fg">
                     {formatBRL(m.investimento)}
                   </td>
-                  <td className="px-3 py-3 text-right text-colonial/70">
+                  <td className="px-3 py-3 text-right text-muted-fg">
                     {m.reservasConfirmadas}/{m.totalReservas}
                   </td>
-                  <td className="px-3 py-3 text-right font-semibold text-colonial">
+                  <td className="px-3 py-3 text-right font-normal text-carvao">
                     {formatBRL(m.receita)}
                   </td>
                   <td className="px-3 py-3 text-right">
                     {m.roi === null ? (
-                      <span className="text-colonial/40">N/A</span>
+                      <span className="text-subtle-fg">N/A</span>
                     ) : (
                       <span
                         className={
                           m.roi >= 0
-                            ? "font-semibold text-emerald-600"
-                            : "font-semibold text-rose-600"
+                            ? "font-normal text-carvao"
+                            : "font-normal text-destructive"
                         }
                       >
                         {formatPercent(m.roi)}
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-3 text-right text-colonial/70">
+                  <td className="px-3 py-3 text-right text-muted-fg">
                     {formatMultiplier(m.roas)}
                   </td>
-                  <td className="px-3 py-3 text-right text-colonial/70">
+                  <td className="px-3 py-3 text-right text-muted-fg">
                     {m.custoPorReserva === null
                       ? "N/A"
                       : formatBRL(m.custoPorReserva)}
@@ -156,16 +156,16 @@ function Item({
 }) {
   const cor =
     accent === undefined || accent === null
-      ? "text-colonial"
+      ? "text-carvao"
       : accent >= 0
-        ? "text-emerald-600"
-        : "text-rose-600";
+        ? "text-carvao"
+        : "text-destructive";
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-wide text-colonial/45">
+      <p className="text-[11px] uppercase tracking-wide text-subtle-fg">
         {label}
       </p>
-      <p className={`mt-0.5 text-sm font-semibold ${cor}`}>{value}</p>
+      <p className={`mt-0.5 text-sm font-normal ${cor}`}>{value}</p>
     </div>
   );
 }

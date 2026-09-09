@@ -41,13 +41,13 @@ export function RecentReservations({
           className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
         >
           <div className="min-w-0">
-            <p className="truncate font-semibold text-colonial">{r.codigo}</p>
-            <p className="truncate text-xs text-colonial/50">
+            <p className="truncate font-normal text-carvao">{r.codigo}</p>
+            <p className="truncate text-xs text-subtle-fg">
               {nomeCampanha(r.campanhaId)} · check-in {formatDate(r.checkIn)}
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
-            <span className="text-sm font-semibold text-colonial">
+            <span className="text-sm font-normal text-carvao">
               {formatBRL(r.valor)}
             </span>
             <Badge className={STATUS_RESERVA_BADGE[r.status]}>

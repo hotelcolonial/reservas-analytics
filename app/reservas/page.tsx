@@ -93,17 +93,17 @@ export default function ReservasPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold text-colonial">
-            Reservas
+          <h1 className="font-brand text-[clamp(34px,4.4vw,58px)] leading-[0.95] font-light tracking-[-0.045em] text-carvao lowercase">
+            reservas
           </h1>
-          <p className="mt-1 text-sm text-colonial/60">
+          <p className="mt-3 max-w-2xl text-[clamp(15px,1.1vw,17px)] leading-relaxed text-muted-fg">
             {filtradas.length} reserva(s) · receita confirmada{" "}
-            <span className="font-semibold text-colonial">
+            <span className="font-normal text-carvao">
               {formatBRL(totalFiltrado)}
             </span>
           </p>
         </div>
-        <Button onClick={abrirNova}>+ Nova Reserva</Button>
+        <Button onClick={abrirNova}>+ nova reserva</Button>
       </div>
 
       <ReservationFilters
@@ -126,7 +126,7 @@ export default function ReservasPage() {
           }
           action={
             reservas.length === 0 ? (
-              <Button onClick={abrirNova}>+ Nova Reserva</Button>
+              <Button onClick={abrirNova}>+ nova reserva</Button>
             ) : undefined
           }
         />

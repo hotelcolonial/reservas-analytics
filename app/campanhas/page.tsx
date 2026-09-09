@@ -132,17 +132,17 @@ export default function CampanhasPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold text-colonial">
-            Campanhas
+          <h1 className="font-brand text-[clamp(34px,4.4vw,58px)] leading-[0.95] font-light tracking-[-0.045em] text-carvao lowercase">
+            campanhas
           </h1>
-          <p className="mt-1 text-sm text-colonial/60">
+          <p className="mt-3 max-w-2xl text-[clamp(15px,1.1vw,17px)] leading-relaxed text-muted-fg">
             Crie, edite e acompanhe o desempenho de cada campanha. Arraste pelo{" "}
             <span aria-hidden>⋮⋮</span> para reordenar.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <ViewToggle view={view} onChange={aplicarView} />
-          <Button onClick={abrirNova}>+ Nova Campanha</Button>
+          <Button onClick={abrirNova}>+ nova campanha</Button>
         </div>
       </div>
 
@@ -152,7 +152,7 @@ export default function CampanhasPage() {
         <EmptyState
           title="Nenhuma campanha ainda"
           description="Cadastre sua primeira campanha para começar a medir reservas e retorno."
-          action={<Button onClick={abrirNova}>+ Nova Campanha</Button>}
+          action={<Button onClick={abrirNova}>+ nova campanha</Button>}
         />
       ) : (
         <DndContext
@@ -163,9 +163,9 @@ export default function CampanhasPage() {
           <div className="space-y-8">
             {grupos.map((g) => (
               <section key={g.key} className="space-y-3">
-                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                <h2 className="flex items-center gap-2 text-sm font-normal uppercase tracking-wide text-muted-foreground">
                   {g.titulo}
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
                     {g.itens.length}
                   </span>
                 </h2>
@@ -229,8 +229,8 @@ function ViewToggle({
 }) {
   const baseBtn =
     "inline-flex h-9 w-9 items-center justify-center rounded-lg transition-colors";
-  const ativo = "bg-colonial text-branco";
-  const inativo = "text-colonial/60 hover:bg-colonial-50 hover:text-colonial";
+  const ativo = "bg-carvao text-branco";
+  const inativo = "text-muted-fg hover:bg-carvao-50 hover:text-carvao";
 
   return (
     <div

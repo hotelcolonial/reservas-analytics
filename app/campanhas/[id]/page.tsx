@@ -94,7 +94,7 @@ export default function CampanhaDetalhePage() {
       <div className="space-y-6">
         <Link
           href="/campanhas"
-          className="text-sm font-medium text-laranja-dark hover:underline"
+          className="text-sm font-normal text-coral-dark hover:underline"
         >
           ← Voltar para campanhas
         </Link>
@@ -132,7 +132,7 @@ export default function CampanhaDetalhePage() {
     <div className="space-y-6">
       <Link
         href="/campanhas"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-laranja-dark hover:underline"
+        className="inline-flex items-center gap-1.5 text-sm font-normal text-coral-dark hover:underline"
       >
         <svg
           width="16"
@@ -151,14 +151,14 @@ export default function CampanhaDetalhePage() {
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="font-display text-3xl font-semibold text-colonial">
+          <h1 className="font-brand text-[clamp(34px,4.4vw,58px)] leading-[0.95] font-light tracking-[-0.045em] text-carvao lowercase">
             {campanha.nome}
           </h1>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <Badge className="bg-colonial-50 text-colonial">
+            <Badge className="bg-carvao-50 text-carvao">
               {PLATAFORMA_LABELS[campanha.plataforma]}
             </Badge>
-            <Badge className="bg-colonial-50 text-colonial/70">
+            <Badge className="bg-carvao-50 text-muted-fg">
               {TIPO_CAMPANHA_LABELS[campanha.tipo]}
             </Badge>
             <Badge className={STATUS_CAMPANHA_BADGE[campanha.status]}>
@@ -248,13 +248,13 @@ export default function CampanhaDetalhePage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="font-display text-lg text-colonial">
+            <CardTitle className="font-brand text-lg text-carvao">
               Verba gasta por data
             </CardTitle>
             <CardAction>
               <p className="text-sm text-muted-foreground">
                 Total{" "}
-                <span className="font-semibold text-colonial">
+                <span className="font-normal text-carvao">
                   {formatBRL(totalGasto)}
                 </span>
               </p>

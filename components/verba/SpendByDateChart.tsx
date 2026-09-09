@@ -40,10 +40,10 @@ export function SpendByDateChart({ gastos }: { gastos: GastoDiario[] }) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-        <CartesianGrid vertical={false} stroke="#e7e1d6" />
+        <CartesianGrid vertical={false} stroke="rgba(16,17,19,0.10)" />
         <XAxis
           dataKey="rotulo"
-          tick={{ fontSize: 11, fill: "#6b7280" }}
+          tick={{ fontSize: 11, fill: "#5e6166" }}
           axisLine={false}
           tickLine={false}
           dy={6}
@@ -51,13 +51,13 @@ export function SpendByDateChart({ gastos }: { gastos: GastoDiario[] }) {
         />
         <YAxis
           tickFormatter={(v) => formatBRLCompact(v)}
-          tick={{ fontSize: 11, fill: "#9ca3af" }}
+          tick={{ fontSize: 11, fill: "#9da0a5" }}
           axisLine={false}
           tickLine={false}
           width={64}
         />
         <Tooltip
-          cursor={{ fill: "rgba(18,43,28,0.06)" }}
+          cursor={{ fill: "rgba(16,17,19,0.06)" }}
           formatter={(v) => [formatBRL(Number(v)), "Verba gasta"]}
           labelFormatter={(_, payload) =>
             payload && payload[0]
@@ -66,11 +66,11 @@ export function SpendByDateChart({ gastos }: { gastos: GastoDiario[] }) {
           }
           contentStyle={{
             borderRadius: 12,
-            border: "1px solid rgba(0,0,0,0.06)",
+            border: "1px solid rgba(16,17,19,0.10)",
             fontSize: 13,
           }}
         />
-        <Bar dataKey="valor" fill="#f3a42c" radius={[6, 6, 0, 0]} maxBarSize={44} />
+        <Bar dataKey="valor" fill="#f95738" radius={[6, 6, 0, 0]} maxBarSize={44} />
       </BarChart>
     </ResponsiveContainer>
   );

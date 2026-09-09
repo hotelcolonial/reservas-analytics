@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card";
 
 /**
@@ -20,7 +20,7 @@ export function SectionCardHeader({
 }) {
   return (
     <CardHeader>
-      <CardTitle className="font-display text-lg tracking-tight text-colonial">
+      <CardTitle className="font-brand text-[clamp(19px,1.7vw,24px)] leading-tight font-light tracking-[-0.03em] text-carvao lowercase">
         {title}
       </CardTitle>
       {subtitle && <CardDescription>{subtitle}</CardDescription>}
@@ -29,10 +29,10 @@ export function SectionCardHeader({
         <CardAction>
           <Link
             href={href}
-            aria-label={`Ver ${title}`}
-            className="flex size-8 items-center justify-center rounded-full text-colonial/40 transition-colors hover:bg-accent hover:text-colonial"
+            aria-label={`ver ${title}`}
+            className="flex size-9 items-center justify-center rounded-full text-subtle-fg transition-colors duration-300 hover:bg-coral hover:text-branco"
           >
-            <ChevronRight className="size-5" />
+            <ArrowUpRight className="size-4.5" />
           </Link>
         </CardAction>
       )}

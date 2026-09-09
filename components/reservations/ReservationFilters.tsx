@@ -157,7 +157,7 @@ export function ReservationFilters({
         <Button
           variant="link"
           onClick={() => onChange(filtrosVazios)}
-          className="h-auto px-0 text-laranja-dark"
+          className="h-auto px-0 text-coral-dark"
         >
           Limpar filtros
         </Button>
@@ -181,7 +181,7 @@ function DateRange({
 }) {
   return (
     <div>
-      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <p className="mb-1.5 text-xs font-normal uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
       <div className="flex items-center gap-2">

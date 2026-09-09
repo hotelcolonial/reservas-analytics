@@ -29,39 +29,39 @@ export function CampaignSummaryTable({
     <div className="-mx-2 overflow-x-auto">
       <table className="w-full min-w-[640px] border-collapse text-sm">
         <thead>
-          <tr className="text-left text-xs uppercase tracking-wide text-colonial/50">
-            <th className="px-3 py-2 font-semibold">Campanha</th>
-            <th className="px-3 py-2 font-semibold">Plataforma</th>
-            <th className="px-3 py-2 text-right font-semibold">Investido</th>
-            <th className="px-3 py-2 text-right font-semibold">Reservas</th>
-            <th className="px-3 py-2 text-right font-semibold">Receita</th>
-            <th className="px-3 py-2 text-right font-semibold">ROI</th>
-            <th className="px-3 py-2 text-right font-semibold">ROAS</th>
+          <tr className="text-left text-xs uppercase tracking-wide text-subtle-fg">
+            <th className="px-3 py-2 font-normal">Campanha</th>
+            <th className="px-3 py-2 font-normal">Plataforma</th>
+            <th className="px-3 py-2 text-right font-normal">Investido</th>
+            <th className="px-3 py-2 text-right font-normal">Reservas</th>
+            <th className="px-3 py-2 text-right font-normal">Receita</th>
+            <th className="px-3 py-2 text-right font-normal">ROI</th>
+            <th className="px-3 py-2 text-right font-normal">ROAS</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-black/5">
           {ordenadas.map((m) => (
-            <tr key={m.campanha.id} className="hover:bg-colonial-50/50">
-              <td className="px-3 py-3 font-medium text-colonial">
+            <tr key={m.campanha.id} className="hover:bg-carvao-50/50">
+              <td className="px-3 py-3 font-normal text-carvao">
                 {m.campanha.nome}
               </td>
-              <td className="px-3 py-3 text-colonial/70">
+              <td className="px-3 py-3 text-muted-fg">
                 {PLATAFORMA_LABELS[m.campanha.plataforma]}
               </td>
-              <td className="px-3 py-3 text-right text-colonial/70">
+              <td className="px-3 py-3 text-right text-muted-fg">
                 {formatBRL(m.investimento)}
               </td>
-              <td className="px-3 py-3 text-right text-colonial/70">
+              <td className="px-3 py-3 text-right text-muted-fg">
                 {m.reservasConfirmadas}
-                <span className="text-colonial/40">/{m.totalReservas}</span>
+                <span className="text-subtle-fg">/{m.totalReservas}</span>
               </td>
-              <td className="px-3 py-3 text-right font-semibold text-colonial">
+              <td className="px-3 py-3 text-right font-normal text-carvao">
                 {formatBRL(m.receita)}
               </td>
               <td className="px-3 py-3 text-right">
                 <RoiPill value={m.roi} />
               </td>
-              <td className="px-3 py-3 text-right text-colonial/70">
+              <td className="px-3 py-3 text-right text-muted-fg">
                 {formatMultiplier(m.roas)}
               </td>
             </tr>
@@ -74,15 +74,15 @@ export function CampaignSummaryTable({
 
 function RoiPill({ value }: { value: number | null }) {
   if (value === null) {
-    return <span className="text-colonial/40">N/A</span>;
+    return <span className="text-subtle-fg">N/A</span>;
   }
   const positivo = value >= 0;
   return (
     <span
       className={
         positivo
-          ? "font-semibold text-emerald-600"
-          : "font-semibold text-rose-600"
+          ? "font-normal text-carvao"
+          : "font-normal text-destructive"
       }
     >
       {formatPercent(value)}

@@ -125,7 +125,7 @@ export function ReservationForm({
     >
       <SheetContent side="right" className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle className="font-display text-xl text-colonial">
+          <SheetTitle className="font-brand text-xl text-carvao">
             {editando ? "Editar reserva" : "Nova reserva"}
           </SheetTitle>
           <SheetDescription>

@@ -202,22 +202,22 @@ export const STATUS_RESERVA_LABELS: Record<StatusReserva, string> = {
 /* ---------- Estilos de badge por status ---------- */
 
 export const STATUS_CAMPANHA_BADGE: Record<StatusCampanha, string> = {
-  ativa: "bg-colonial text-branco",
-  pausada: "bg-laranja/15 text-laranja-dark",
-  finalizada: "bg-neutral-200 text-neutral-600",
+  ativa: "bg-carvao text-branco",
+  pausada: "bg-coral/12 text-coral-dark",
+  finalizada: "bg-carvao-50 text-subtle-fg",
 };
 
 export const STATUS_RESERVA_BADGE: Record<StatusReserva, string> = {
-  confirmada: "bg-emerald-100 text-emerald-700",
-  pendente: "bg-amber-100 text-amber-700",
-  cancelada: "bg-rose-100 text-rose-700",
+  confirmada: "bg-carvao text-branco",
+  pendente: "bg-coral/12 text-coral-dark",
+  cancelada: "bg-destructive/10 text-destructive",
 };
 
-/** Paleta usada nos gráficos por plataforma (tons da marca). */
+/** Paleta dos gráficos: escala de cinzas do DS + coral como único acento. */
 export const PLATAFORMA_CORES: Record<Plataforma, string> = {
-  google_ads: "#122b1c", // verde principal
-  meta_ads: "#233d20", // verde secundário
-  organico: "#6b8f71", // verde médio
-  whatsapp_direto: "#f3a42c", // laranja destaque
-  outro: "#c9bfae", // bege
+  google_ads: "#101113", // carvão
+  meta_ads: "#5e6166", // cinza médio
+  organico: "#9da0a5", // cinza claro
+  whatsapp_direto: "#f95738", // coral: o único acento
+  outro: "#eae3da", // areia
 };

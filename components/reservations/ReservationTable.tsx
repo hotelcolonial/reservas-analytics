@@ -71,10 +71,10 @@ export function ReservationTable({
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-display text-base font-bold text-colonial">
+                <p className="font-brand text-base font-normal text-carvao">
                   {r.codigo}
                 </p>
-                <p className="mt-0.5 truncate text-sm text-colonial/60">
+                <p className="mt-0.5 truncate text-sm text-muted-fg">
                   {nomeCampanha(r.campanhaId)}
                 </p>
               </div>
@@ -84,7 +84,7 @@ export function ReservationTable({
             </div>
 
             {r.campanhaId && !r.veioDaCampanha && (
-              <span className="mt-2 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+              <span className="mt-2 inline-block rounded bg-coral/12 px-1.5 py-0.5 text-[10px] font-normal text-coral-dark">
                 data não coincide
               </span>
             )}
@@ -101,14 +101,14 @@ export function ReservationTable({
             <div className="mt-3 flex items-center justify-end gap-2 border-t border-black/5 pt-3">
               <button
                 onClick={() => onEdit(r)}
-                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-colonial/70 transition-colors hover:bg-colonial-50 hover:text-colonial"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-normal text-muted-fg transition-colors hover:bg-carvao-50 hover:text-carvao"
               >
                 <EditIcon />
                 Editar
               </button>
               <button
                 onClick={() => onDelete(r)}
-                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-colonial/50 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-normal text-subtle-fg transition-colors hover:bg-destructive/8 hover:text-destructive"
               >
                 <TrashIcon />
                 Excluir
@@ -122,53 +122,53 @@ export function ReservationTable({
       <div className="hidden overflow-x-auto rounded-xl border border-border bg-card shadow-sm md:block">
         <table className="w-full min-w-[880px] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-colonial/45">
-              <th className="px-4 py-3.5 font-semibold">Reserva</th>
-              <th className="px-4 py-3.5 font-semibold">Data reserva</th>
-              <th className="px-4 py-3.5 font-semibold">Campanha</th>
-              <th className="px-4 py-3.5 font-semibold">Plataforma</th>
-              <th className="px-4 py-3.5 font-semibold">Check-in</th>
-              <th className="px-4 py-3.5 font-semibold">Check-out</th>
-              <th className="px-4 py-3.5 text-right font-semibold">Pax</th>
-              <th className="px-4 py-3.5 text-right font-semibold">Noites</th>
-              <th className="px-4 py-3.5 text-right font-semibold">Valor</th>
-              <th className="px-4 py-3.5 font-semibold">Status</th>
-              <th className="px-4 py-3.5 text-right font-semibold">Ações</th>
+            <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-subtle-fg">
+              <th className="px-4 py-3.5 font-normal">Reserva</th>
+              <th className="px-4 py-3.5 font-normal">Data reserva</th>
+              <th className="px-4 py-3.5 font-normal">Campanha</th>
+              <th className="px-4 py-3.5 font-normal">Plataforma</th>
+              <th className="px-4 py-3.5 font-normal">Check-in</th>
+              <th className="px-4 py-3.5 font-normal">Check-out</th>
+              <th className="px-4 py-3.5 text-right font-normal">Pax</th>
+              <th className="px-4 py-3.5 text-right font-normal">Noites</th>
+              <th className="px-4 py-3.5 text-right font-normal">Valor</th>
+              <th className="px-4 py-3.5 font-normal">Status</th>
+              <th className="px-4 py-3.5 text-right font-normal">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-black/5">
             {reservas.map((r) => (
-              <tr key={r.id} className="hover:bg-colonial-50/60">
-                <td className="px-4 py-3.5 font-semibold text-colonial">
+              <tr key={r.id} className="hover:bg-carvao-50/60">
+                <td className="px-4 py-3.5 font-normal text-carvao">
                   {r.codigo}
                 </td>
-                <td className="px-4 py-3.5 text-colonial/70">
+                <td className="px-4 py-3.5 text-muted-fg">
                   {formatDate(r.dataReserva)}
                 </td>
-                <td className="px-4 py-3.5 text-colonial/70">
+                <td className="px-4 py-3.5 text-muted-fg">
                   <span>{nomeCampanha(r.campanhaId)}</span>
                   {r.campanhaId && !r.veioDaCampanha && (
-                    <span className="ml-1.5 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                    <span className="ml-1.5 inline-block rounded bg-coral/12 px-1.5 py-0.5 text-[10px] font-normal text-coral-dark">
                       data não coincide
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3.5 text-colonial/70">
+                <td className="px-4 py-3.5 text-muted-fg">
                   {PLATAFORMA_LABELS[r.plataforma]}
                 </td>
-                <td className="px-4 py-3.5 text-colonial/70">
+                <td className="px-4 py-3.5 text-muted-fg">
                   {formatDate(r.checkIn)}
                 </td>
-                <td className="px-4 py-3.5 text-colonial/70">
+                <td className="px-4 py-3.5 text-muted-fg">
                   {formatDate(r.checkOut)}
                 </td>
-                <td className="px-4 py-3.5 text-right text-colonial/70">
+                <td className="px-4 py-3.5 text-right text-muted-fg">
                   {r.pax}
                 </td>
-                <td className="px-4 py-3.5 text-right text-colonial/70">
+                <td className="px-4 py-3.5 text-right text-muted-fg">
                   {r.noites}
                 </td>
-                <td className="px-4 py-3.5 text-right font-semibold text-colonial">
+                <td className="px-4 py-3.5 text-right font-normal text-carvao">
                   {formatBRL(r.valor)}
                 </td>
                 <td className="px-4 py-3.5">
@@ -180,14 +180,14 @@ export function ReservationTable({
                   <div className="flex items-center justify-end gap-1">
                     <button
                       onClick={() => onEdit(r)}
-                      className="rounded-lg p-1.5 text-colonial/50 transition-colors hover:bg-colonial-50 hover:text-colonial"
+                      className="rounded-lg p-1.5 text-subtle-fg transition-colors hover:bg-carvao-50 hover:text-carvao"
                       aria-label="Editar reserva"
                     >
                       <EditIcon />
                     </button>
                     <button
                       onClick={() => onDelete(r)}
-                      className="rounded-lg p-1.5 text-colonial/40 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                      className="rounded-lg p-1.5 text-subtle-fg transition-colors hover:bg-destructive/8 hover:text-destructive"
                       aria-label="Excluir reserva"
                     >
                       <TrashIcon />
@@ -214,14 +214,14 @@ function Field({
 }) {
   return (
     <div className="min-w-0">
-      <dt className="text-[11px] uppercase tracking-wide text-colonial/45">
+      <dt className="text-[11px] uppercase tracking-wide text-subtle-fg">
         {label}
       </dt>
       <dd
         className={
           strong
-            ? "truncate font-semibold text-colonial"
-            : "truncate text-colonial/75"
+            ? "truncate font-normal text-carvao"
+            : "truncate text-muted-fg"
         }
       >
         {value}

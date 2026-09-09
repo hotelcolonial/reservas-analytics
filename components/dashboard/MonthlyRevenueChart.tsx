@@ -88,30 +88,30 @@ export function MonthlyRevenueChart({
   return (
     <ResponsiveContainer width="100%" height={280}>
       <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-        <CartesianGrid vertical={false} stroke="#e7e1d6" />
+        <CartesianGrid vertical={false} stroke="rgba(16,17,19,0.10)" />
         <XAxis
           dataKey="rotulo"
-          tick={{ fontSize: 12, fill: "#6b7280" }}
+          tick={{ fontSize: 12, fill: "#5e6166" }}
           axisLine={false}
           tickLine={false}
           dy={6}
         />
         <YAxis
           tickFormatter={(v) => formatBRLCompact(v)}
-          tick={{ fontSize: 11, fill: "#9ca3af" }}
+          tick={{ fontSize: 11, fill: "#9da0a5" }}
           axisLine={false}
           tickLine={false}
           width={64}
         />
         <Tooltip
-          cursor={{ fill: "rgba(18,43,28,0.06)" }}
+          cursor={{ fill: "rgba(16,17,19,0.06)" }}
           formatter={(v, name) => [
             formatBRL(Number(v)),
             name === "receita" ? "Receita" : "Investimento",
           ]}
           contentStyle={{
             borderRadius: 12,
-            border: "1px solid rgba(0,0,0,0.06)",
+            border: "1px solid rgba(16,17,19,0.10)",
             fontSize: 13,
           }}
         />
@@ -121,10 +121,10 @@ export function MonthlyRevenueChart({
           }
           wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
         />
-        <Bar dataKey="receita" fill="#122b1c" barSize={20} radius={[6, 6, 0, 0]} />
+        <Bar dataKey="receita" fill="#101113" barSize={20} radius={[6, 6, 0, 0]} />
         <Bar
           dataKey="investimento"
-          fill="#f3a42c"
+          fill="#f95738"
           barSize={20}
           radius={[6, 6, 0, 0]}
         />

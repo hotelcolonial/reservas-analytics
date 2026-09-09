@@ -17,7 +17,7 @@ function DragHandle({
     <button
       type="button"
       aria-label="Arrastar para reordenar"
-      className="cursor-grab touch-none rounded-md p-1.5 text-colonial/45 transition-colors hover:bg-colonial-50 hover:text-colonial active:cursor-grabbing"
+      className="cursor-grab touch-none rounded-md p-1.5 text-subtle-fg transition-colors hover:bg-carvao-50 hover:text-carvao active:cursor-grabbing"
       {...attributes}
       {...listeners}
     >

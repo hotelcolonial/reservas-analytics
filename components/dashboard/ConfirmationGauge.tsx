@@ -32,7 +32,7 @@ export function ConfirmationGauge({ confirmadas, total }: ConfirmationGaugeProps
               cy={cy}
               r={r}
               fill="none"
-              stroke="#e6ded2"
+              stroke="rgba(16,17,19,0.10)"
               strokeWidth={stroke}
               strokeDasharray={trackDash}
               strokeLinecap="round"
@@ -42,7 +42,7 @@ export function ConfirmationGauge({ confirmadas, total }: ConfirmationGaugeProps
               cy={cy}
               r={r}
               fill="none"
-              stroke="#f3a42c"
+              stroke="#f95738"
               strokeWidth={stroke}
               strokeDasharray={progressDash}
               strokeLinecap="round"
@@ -50,19 +50,19 @@ export function ConfirmationGauge({ confirmadas, total }: ConfirmationGaugeProps
           </g>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xs font-medium text-colonial/45">Confirmação</span>
-          <span className="font-display text-3xl font-extrabold tracking-tight text-colonial">
+          <span className="text-xs font-normal text-subtle-fg">Confirmação</span>
+          <span className="font-brand text-3xl font-light tracking-tight text-carvao">
             {Math.round(pct * 100)}%
           </span>
         </div>
       </div>
 
       <div className="text-center sm:text-left">
-        <p className="font-display text-3xl font-extrabold tracking-tight text-colonial">
+        <p className="font-brand text-3xl font-light tracking-tight text-carvao">
           {confirmadas}
-          <span className="text-xl font-semibold text-colonial/35"> / {total}</span>
+          <span className="text-xl font-normal text-subtle-fg"> / {total}</span>
         </p>
-        <p className="mt-1 text-sm text-colonial/55">
+        <p className="mt-3 max-w-2xl text-[clamp(15px,1.1vw,17px)] leading-relaxed text-muted-fg">
           reservas confirmadas do total registrado
         </p>
       </div>

@@ -72,10 +72,10 @@ export default function PropriedadesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl font-semibold text-colonial">
-          Propriedades
+        <h1 className="font-brand text-[clamp(34px,4.4vw,58px)] leading-[0.95] font-light tracking-[-0.045em] text-carvao lowercase">
+          propriedades
         </h1>
-        <p className="mt-1 text-sm text-colonial/60">
+        <p className="mt-3 max-w-2xl text-[clamp(15px,1.1vw,17px)] leading-relaxed text-muted-fg">
           Cada propriedade (hotel/pousada) tem seu próprio painel. Use o seletor
           no topo para trocar de propriedade; os dados são sempre isolados.
         </p>
@@ -147,18 +147,18 @@ export default function PropriedadesPage() {
                       </div>
                     ) : (
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-display text-lg font-semibold text-colonial">
+                        <span className="font-brand text-lg font-normal text-carvao">
                           {p.nome}
                         </span>
                         {ativa && (
-                          <Badge className="bg-primary/15 text-brand-dark">
+                          <Badge className="bg-primary/15 text-coral-dark">
                             Ativa
                           </Badge>
                         )}
                       </div>
                     )}
                     {c && (
-                      <p className="mt-1 text-xs text-colonial/50">
+                      <p className="mt-1 text-xs text-subtle-fg">
                         {c.campanhas} campanha(s) · {c.reservas} reserva(s) ·{" "}
                         {c.gastos} lançamento(s) de verba
                       </p>

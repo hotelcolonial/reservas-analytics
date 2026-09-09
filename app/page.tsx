@@ -1,142 +1,67 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useStore } from "@/lib/store";
-import { metricasDashboard, metricasTodasCampanhas } from "@/lib/calculations";
-import { PERIODO_TUDO, dentroDoPeriodo, type Periodo } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
-import { SectionCardHeader } from "@/components/ui/section-card";
-import { Button } from "@/components/ui/button";
-import { PeriodFilter } from "@/components/ui/PeriodFilter";
-import { Hero } from "@/components/dashboard/Hero";
-import { MetricsGrid } from "@/components/dashboard/MetricsGrid";
-import { CampaignSummaryTable } from "@/components/dashboard/CampaignSummaryTable";
-import { MonthlyRevenueChart } from "@/components/dashboard/MonthlyRevenueChart";
-import { ReservationsByPlatformChart } from "@/components/dashboard/ReservationsByPlatformChart";
-import { ConfirmationGauge } from "@/components/dashboard/ConfirmationGauge";
-import { CampaignRanking } from "@/components/dashboard/CampaignRanking";
-import { RecentReservations } from "@/components/dashboard/RecentReservations";
-import { ReservationForm } from "@/components/reservations/ReservationForm";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
-export default function DashboardPage() {
-  const campanhas = useStore((s) => s.campanhas);
-  const reservas = useStore((s) => s.reservas);
-  const gastos = useStore((s) => s.gastos);
-  const [reservaOpen, setReservaOpen] = useState(false);
-  const [periodo, setPeriodo] = useState<Periodo>(PERIODO_TUDO);
+/**
+ * Hub de entrada da plataforma: escolhe entre os dois módulos.
+ *
+ * Segue o padrão editorial do DS: headline 300 grande com uma palavra em
+ * coral, ar generoso, tudo em minúscula, e os módulos como blocos cinza de
+ * raio grande em vez de cards com sombra.
+ */
 
-  const reservasFiltradas = useMemo(
-    () => reservas.filter((r) => dentroDoPeriodo(r.dataReserva, periodo)),
-    [reservas, periodo],
-  );
-  const gastosFiltrados = useMemo(
-    () => gastos.filter((g) => dentroDoPeriodo(g.data, periodo)),
-    [gastos, periodo],
-  );
+const modulos = [
+  {
+    href: "/painel",
+    titulo: "reservatrack",
+    subtitulo: "análise de campanhas e reservas.",
+    numero: "01",
+  },
+  {
+    href: "/gastos",
+    titulo: "gastos",
+    subtitulo: "controle de despesas do escritório.",
+    numero: "02",
+  },
+];
 
-  const dashboard = useMemo(
-    () => metricasDashboard(campanhas, reservasFiltradas, gastosFiltrados),
-    [campanhas, reservasFiltradas, gastosFiltrados],
-  );
-  const metricasCampanhas = useMemo(
-    () => metricasTodasCampanhas(campanhas, reservasFiltradas, gastosFiltrados),
-    [campanhas, reservasFiltradas, gastosFiltrados],
-  );
-  const confirmadas = useMemo(
-    () => reservasFiltradas.filter((r) => r.status === "confirmada").length,
-    [reservasFiltradas],
-  );
-
+export default function HubPage() {
   return (
-    <div className="space-y-6">
-      <Hero>
-        <Button onClick={() => setReservaOpen(true)}>+ Nova Reserva</Button>
-      </Hero>
+    <div className="reveal flex min-h-[calc(100dvh-10.5rem)] flex-col justify-center">
+      <p className="text-xs font-normal tracking-[0.18em] text-subtle-fg uppercase">
+        growthdirect
+      </p>
+      <h1 className="mt-5 max-w-4xl font-brand text-[clamp(42px,6.2vw,100px)] leading-[0.9] font-light tracking-[-0.045em] text-carvao lowercase">
+        o que você quer <span className="text-coral">abrir</span> hoje?
+      </h1>
 
-      <PeriodFilter periodo={periodo} onChange={setPeriodo} />
+      <div className="mt-[clamp(36px,4.5vw,64px)] grid grid-cols-1 gap-[clamp(16px,1.8vw,28px)] md:grid-cols-2">
+        {modulos.map(({ href, titulo, subtitulo, numero }) => (
+          <Link
+            key={href}
+            href={href}
+            className="group block rounded-[clamp(28px,3vw,44px)] bg-carvao-50 p-[clamp(32px,4vw,56px)] transition-colors duration-500 hover:bg-carvao"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-xs font-normal tracking-[0.18em] text-subtle-fg uppercase transition-colors duration-500 group-hover:text-branco/50">
+                {numero}
+              </span>
+              {/* Seta padrão do DS (§7) dentro do badge circular do nav. */}
+              <span className="flex size-11 items-center justify-center rounded-full bg-branco text-carvao transition-colors duration-500 group-hover:bg-coral group-hover:text-branco">
+                <ArrowUpRight className="size-5 transition-transform duration-500 group-hover:rotate-45" />
+              </span>
+            </div>
 
-      <MetricsGrid m={dashboard} />
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <SectionCardHeader
-            title="Receita × Investimento por mês"
-            subtitle="Receita confirmada e verba gasta, por mês."
-            href="/reservas"
-          />
-          <CardContent>
-            <MonthlyRevenueChart
-              reservas={reservasFiltradas}
-              gastos={gastosFiltrados}
-            />
-          </CardContent>
-        </Card>
-        <Card>
-          <SectionCardHeader
-            title="Reservas por plataforma"
-            subtitle="Distribuição de origem."
-            href="/plataformas"
-          />
-          <CardContent>
-            <ReservationsByPlatformChart reservas={reservasFiltradas} />
-          </CardContent>
-        </Card>
+            <h2 className="mt-[clamp(48px,7vw,110px)] font-brand text-[clamp(32px,4vw,58px)] leading-[0.95] font-light tracking-[-0.045em] text-carvao lowercase transition-colors duration-500 group-hover:text-branco">
+              {titulo}
+            </h2>
+            <p className="mt-3 text-[clamp(15px,1.1vw,17px)] leading-relaxed font-normal text-muted-fg transition-colors duration-500 group-hover:text-branco/70">
+              {subtitulo}
+            </p>
+          </Link>
+        ))}
       </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card>
-          <SectionCardHeader
-            title="Taxa de confirmação"
-            subtitle="Reservas confirmadas."
-          />
-          <CardContent>
-            <ConfirmationGauge
-              confirmadas={confirmadas}
-              total={dashboard.totalReservas}
-            />
-          </CardContent>
-        </Card>
-        <Card>
-          <SectionCardHeader
-            title="Ranking de campanhas"
-            subtitle="As que mais geram receita."
-            href="/campanhas"
-          />
-          <CardContent>
-            <CampaignRanking metricas={metricasCampanhas} />
-          </CardContent>
-        </Card>
-        <Card>
-          <SectionCardHeader
-            title="Reservas recentes"
-            subtitle="Últimos registros."
-            href="/reservas"
-          />
-          <CardContent>
-            <RecentReservations
-              reservas={reservasFiltradas}
-              campanhas={campanhas}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <SectionCardHeader
-          title="Resumo de campanhas"
-          subtitle="Resultado consolidado por campanha, ordenado por receita."
-          href="/campanhas"
-        />
-        <CardContent>
-          <CampaignSummaryTable metricas={metricasCampanhas} />
-        </CardContent>
-      </Card>
-
-      <ReservationForm
-        key={`dash-res-${reservaOpen}`}
-        open={reservaOpen}
-        onClose={() => setReservaOpen(false)}
-      />
     </div>
   );
 }

@@ -47,10 +47,10 @@ export function PeriodFilter({
             key={p.key}
             onClick={() => aplicar(p.key)}
             className={cn(
-              "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+              "rounded-lg px-3 py-1.5 text-sm font-normal transition-colors",
               ativo(p.key)
-                ? "bg-colonial text-branco"
-                : "text-colonial/70 hover:bg-colonial-50 hover:text-colonial",
+                ? "bg-carvao text-branco"
+                : "text-muted-fg hover:bg-carvao-50 hover:text-carvao",
             )}
           >
             {p.label}
@@ -66,7 +66,7 @@ export function PeriodFilter({
           onChange={(e) => onChange({ ...periodo, de: e.target.value })}
           className="h-9 w-auto py-1.5"
         />
-        <span className="text-colonial/40">—</span>
+        <span className="text-subtle-fg">—</span>
         <Input
           type="date"
           aria-label="Até"
@@ -77,7 +77,7 @@ export function PeriodFilter({
       </div>
 
       {(periodo.de || periodo.ate) && (
-        <p className="w-full text-xs text-colonial/45 sm:w-auto">
+        <p className="w-full text-xs text-subtle-fg sm:w-auto">
           {periodo.de ? formatDate(periodo.de) : "início"} até{" "}
           {periodo.ate ? formatDate(periodo.ate) : "hoje"}
         </p>

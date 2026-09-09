@@ -1,14 +1,27 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
+import { Inter } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Header } from "@/components/layout/Header";
 
+/**
+ * O DS pede HelveticaNeueCyr 300/400 com Inter logo atrás no stack, porque o
+ * arquivo Light não traz glifos acentuados. Os .ttf não estão no repo, então
+ * Inter 300/400 carrega a marca hoje — e continua cobrindo os acentos quando
+ * a Helvetica for adicionada. Ver DESIGN.md.
+ */
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "ReservaTrack Colonial",
+  title: "GrowthDirect",
   description:
-    "Controle e análise de reservas geradas por campanhas de WhatsApp — Hotel Colonial.",
+    "Painel GrowthDirect: campanhas e reservas dos hotéis, e os gastos do escritório.",
 };
 
 export default function RootLayout({
@@ -19,7 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${GeistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">
         <Providers>

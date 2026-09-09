@@ -21,9 +21,39 @@ export function getSupabase(): SupabaseClient {
   return _client;
 }
 
-// ── Row ↔ Domain mappers ──────────────────────────────────────────────────────
+// ── Leitura paginada ──────────────────────────────────────────────────────────
 
-type Row = Record<string, unknown>;
+/** Uma linha crua vinda do PostgREST, antes de passar por um mapper. */
+export type Row = Record<string, unknown>;
+
+/**
+ * Fetches every row of a table, paginating in batches of 1000.
+ *
+ * Supabase/PostgREST caps a single `select` at 1000 rows by default, so a
+ * plain `.select("*")` silently drops anything beyond the first 1000. This
+ * loops with `.range()` until fewer than a full page comes back.
+ */
+export async function fetchAll(
+  table: string,
+  orderColumn: string,
+): Promise<{ data: Row[]; error: string | null }> {
+  const PAGE = 1000;
+  const all: Row[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await getSupabase()
+      .from(table)
+      .select("*")
+      .order(orderColumn, { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) return { data: all, error: error.message };
+    if (!data || data.length === 0) break;
+    all.push(...(data as Row[]));
+    if (data.length < PAGE) break;
+  }
+  return { data: all, error: null };
+}
+
+// ── Row ↔ Domain mappers ──────────────────────────────────────────────────────
 
 export function rowToPropriedade(row: Row): Propriedade {
   return {

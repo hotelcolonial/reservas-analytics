@@ -14,7 +14,7 @@ export function Pagination({ page, totalPages, onPage }: PaginationProps) {
       <button
         onClick={() => onPage(page - 1)}
         disabled={page <= 1}
-        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-black/10 bg-branco px-3.5 text-sm font-medium text-colonial transition-colors hover:bg-colonial-50 disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-black/10 bg-branco px-3.5 text-sm font-normal text-carvao transition-colors hover:bg-carvao-50 disabled:cursor-not-allowed disabled:opacity-40"
       >
         <svg
           width="16"
@@ -31,15 +31,15 @@ export function Pagination({ page, totalPages, onPage }: PaginationProps) {
         Anterior
       </button>
 
-      <span className="text-sm text-colonial/60">
-        Página <span className="font-semibold text-colonial">{page}</span> de{" "}
+      <span className="text-sm text-muted-fg">
+        Página <span className="font-normal text-carvao">{page}</span> de{" "}
         {totalPages}
       </span>
 
       <button
         onClick={() => onPage(page + 1)}
         disabled={page >= totalPages}
-        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-black/10 bg-branco px-3.5 text-sm font-medium text-colonial transition-colors hover:bg-colonial-50 disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-black/10 bg-branco px-3.5 text-sm font-normal text-carvao transition-colors hover:bg-carvao-50 disabled:cursor-not-allowed disabled:opacity-40"
       >
         Próxima
         <svg

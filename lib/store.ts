@@ -3,6 +3,7 @@ import type { Campanha, Reserva, GastoDiario, Propriedade } from "./types";
 import {
   supabaseConfigured,
   getSupabase,
+  fetchAll,
   rowToPropriedade,
   rowToCampanha,
   rowToReserva,
@@ -24,8 +25,6 @@ function novoId(): string {
 function db() {
   return getSupabase();
 }
-
-type Row = Record<string, unknown>;
 
 /** Propriedade padrão para o modo mock (sem Supabase configurado). */
 const PROPRIEDADES_MOCK: Propriedade[] = [
@@ -67,33 +66,6 @@ function escopar(
     reservas: reservasAll.filter((r) => r.propriedadeId === propId),
     gastos: gastosAll.filter((g) => g.propriedadeId === propId),
   };
-}
-
-/**
- * Fetches every row of a table, paginating in batches of 1000.
- *
- * Supabase/PostgREST caps a single `select` at 1000 rows by default, so a
- * plain `.select("*")` silently drops anything beyond the first 1000. This
- * loops with `.range()` until fewer than a full page comes back.
- */
-async function fetchAll(
-  table: string,
-  orderColumn: string,
-): Promise<{ data: Row[]; error: string | null }> {
-  const PAGE = 1000;
-  const all: Row[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await db()
-      .from(table)
-      .select("*")
-      .order(orderColumn, { ascending: true })
-      .range(from, from + PAGE - 1);
-    if (error) return { data: all, error: error.message };
-    if (!data || data.length === 0) break;
-    all.push(...(data as Row[]));
-    if (data.length < PAGE) break;
-  }
-  return { data: all, error: null };
 }
 
 interface AppState {

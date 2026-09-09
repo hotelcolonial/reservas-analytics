@@ -39,15 +39,15 @@ export function CampaignCard({
         <div className="min-w-0">
           <Link
             href={`/campanhas/${c.id}`}
-            className="font-display text-lg font-semibold text-colonial hover:text-laranja-dark hover:underline"
+            className="font-brand text-lg font-normal text-carvao hover:text-coral-dark hover:underline"
           >
             {c.nome}
           </Link>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <Badge className="bg-colonial-50 text-colonial">
+            <Badge className="bg-carvao-50 text-carvao">
               {PLATAFORMA_LABELS[c.plataforma]}
             </Badge>
-            <Badge className="bg-colonial-50 text-colonial/70">
+            <Badge className="bg-carvao-50 text-muted-fg">
               {TIPO_CAMPANHA_LABELS[c.tipo]}
             </Badge>
             <Badge className={STATUS_CAMPANHA_BADGE[c.status]}>
@@ -92,7 +92,7 @@ export function CampaignCard({
         </Button>
         <button
           onClick={onDelete}
-          className="ml-auto rounded-lg p-2 text-colonial/40 transition-colors hover:bg-rose-50 hover:text-rose-600"
+          className="ml-auto rounded-lg p-2 text-subtle-fg transition-colors hover:bg-destructive/8 hover:text-destructive"
           aria-label="Excluir campanha"
         >
           <svg
@@ -124,16 +124,16 @@ function Metric({
 }) {
   const cor =
     accent === undefined || accent === null
-      ? "text-colonial"
+      ? "text-carvao"
       : accent >= 0
-        ? "text-emerald-600"
-        : "text-rose-600";
+        ? "text-carvao"
+        : "text-destructive";
   return (
     <div className="bg-branco px-3 py-2.5">
-      <p className="text-[11px] uppercase tracking-wide text-colonial/45">
+      <p className="text-[11px] uppercase tracking-wide text-subtle-fg">
         {label}
       </p>
-      <p className={`mt-0.5 text-sm font-semibold ${cor}`}>{value}</p>
+      <p className={`mt-0.5 text-sm font-normal ${cor}`}>{value}</p>
     </div>
   );
 }

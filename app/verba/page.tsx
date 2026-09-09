@@ -148,10 +148,10 @@ export default function VerbaPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl font-semibold text-colonial">
+        <h1 className="font-brand text-[clamp(34px,4.4vw,58px)] leading-[0.95] font-light tracking-[-0.045em] text-carvao lowercase">
           Verba diária
         </h1>
-        <p className="mt-1 text-sm text-colonial/60">
+        <p className="mt-3 max-w-2xl text-[clamp(15px,1.1vw,17px)] leading-relaxed text-muted-fg">
           Registre quanto foi gasto em cada campanha, por dia. O investimento de
           cada campanha é a soma desses lançamentos.
         </p>
@@ -171,7 +171,7 @@ export default function VerbaPage() {
             }`}
           >
             <CardHeader>
-              <CardTitle className="font-display text-lg text-colonial">
+              <CardTitle className="font-brand text-lg text-carvao">
                 {editId ? "Editar gasto" : "Lançar gasto do dia"}
               </CardTitle>
             </CardHeader>
@@ -252,13 +252,13 @@ export default function VerbaPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="font-display text-lg text-colonial">
+              <CardTitle className="font-brand text-lg text-carvao">
                 Verba gasta por data
               </CardTitle>
               <CardAction>
                 <p className="text-sm text-muted-foreground">
                   Total no período{" "}
-                  <span className="font-semibold text-colonial">
+                  <span className="font-normal text-carvao">
                     {formatBRL(total)}
                   </span>
                 </p>
@@ -271,13 +271,13 @@ export default function VerbaPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="font-display text-lg text-colonial">
+              <CardTitle className="font-brand text-lg text-carvao">
                 Lançamentos
               </CardTitle>
               <CardAction>
                 <p className="text-sm text-muted-foreground">
                   {filtrados.length} lançamento(s) · total{" "}
-                  <span className="font-semibold text-colonial">
+                  <span className="font-normal text-carvao">
                     {formatBRL(total)}
                   </span>
                 </p>
@@ -293,39 +293,39 @@ export default function VerbaPage() {
               <div className="-mx-2 overflow-x-auto">
                 <table className="w-full min-w-[560px] border-collapse text-sm">
                   <thead>
-                    <tr className="text-left text-xs uppercase tracking-wide text-colonial/50">
-                      <th className="px-3 py-2 font-semibold">Data</th>
-                      <th className="px-3 py-2 font-semibold">Campanha</th>
-                      <th className="px-3 py-2 font-semibold">Plataforma</th>
-                      <th className="px-3 py-2 text-right font-semibold">Valor</th>
-                      <th className="px-3 py-2 text-right font-semibold">Ações</th>
+                    <tr className="text-left text-xs uppercase tracking-wide text-subtle-fg">
+                      <th className="px-3 py-2 font-normal">Data</th>
+                      <th className="px-3 py-2 font-normal">Campanha</th>
+                      <th className="px-3 py-2 font-normal">Plataforma</th>
+                      <th className="px-3 py-2 text-right font-normal">Valor</th>
+                      <th className="px-3 py-2 text-right font-normal">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black/5">
                     {paginados.map((g) => (
-                      <tr key={g.id} className="hover:bg-colonial-50/50">
-                        <td className="px-3 py-3 font-medium text-colonial">
+                      <tr key={g.id} className="hover:bg-carvao-50/50">
+                        <td className="px-3 py-3 font-normal text-carvao">
                           {formatDate(g.data)}
                         </td>
                         <td className="px-3 py-3">
                           <Link
                             href={`/campanhas/${g.campanhaId}`}
-                            className="font-medium text-colonial hover:text-laranja-dark hover:underline"
+                            className="font-normal text-carvao hover:text-coral-dark hover:underline"
                           >
                             {nomeCampanha(g.campanhaId)}
                           </Link>
                         </td>
-                        <td className="px-3 py-3 text-colonial/70">
+                        <td className="px-3 py-3 text-muted-fg">
                           {plataformaCampanha(g.campanhaId)}
                         </td>
-                        <td className="px-3 py-3 text-right font-semibold text-colonial">
+                        <td className="px-3 py-3 text-right font-normal text-carvao">
                           {formatBRL(g.valor)}
                         </td>
                         <td className="px-3 py-3">
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => editar(g)}
-                              className="rounded-lg p-1.5 text-colonial/50 transition-colors hover:bg-colonial-50 hover:text-colonial"
+                              className="rounded-lg p-1.5 text-subtle-fg transition-colors hover:bg-carvao-50 hover:text-carvao"
                               aria-label="Editar gasto"
                             >
                               <svg
@@ -343,7 +343,7 @@ export default function VerbaPage() {
                             </button>
                             <button
                               onClick={() => setExcluir(g)}
-                              className="rounded-lg p-1.5 text-colonial/40 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                              className="rounded-lg p-1.5 text-subtle-fg transition-colors hover:bg-destructive/8 hover:text-destructive"
                               aria-label="Excluir gasto"
                             >
                               <svg

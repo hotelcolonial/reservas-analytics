@@ -1,32 +1,52 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────────────────
+   GrowthDirect — Design System
+   Adaptado do site institucional para um painel de dados. Ver DESIGN.md
+   para o que foi trazido, o que foi adaptado e o que ficou de fora.
+   ───────────────────────────────────────────────────────────────────────── */
+
 @theme {
-  /* Superfícies / neutros */
-  --color-neutro: #f4efea; /* fundo neutro claro da marca */
-  --color-branco: #ffffff;
+  /* Superfícies */
+  --color-branco: #ffffff; /* --bg */
+  --color-carvao-50: #f6f6f6; /* --bg-elev-1: blocos elevados */
+  --color-carvao-100: #ececec; /* separadores suaves */
+  --color-carvao-700: #1e2024; /* --bg-deep */
+  --color-carvao: #101113; /* --fg / --bg-elev-2: preto carvão */
 
-  /* Verde Colonial (texto forte e superfícies escuras) */
-  --color-colonial: #122b1c; /* verde principal / dominante */
-  --color-colonial-50: #eef2ef;
-  --color-colonial-100: #d4ddd6;
-  --color-colonial-700: #1c3a28;
-  --color-natural: #233d20; /* verde secundário / dominante 2 */
+  /* Texto secundário — o DS pede tokens, não opacidade do preto. */
+  --color-muted-fg: #5e6166; /* --fg-muted: descrições */
+  --color-subtle-fg: #9da0a5; /* --fg-subtle: meta, placeholders */
 
-  /* Acento de destaque / CTA (laranja) */
-  --color-brand: #f3a42c;
-  --color-brand-dark: #db9117;
-  --color-laranja: #f3a42c;
-  --color-laranja-dark: #db9117;
+  /* Acento. O DS traz dois corais convivendo; a nota da §2 manda unificar
+     em #F95738, e é o que fazemos — um acento só em todo o painel. */
+  --color-coral: #f95738;
+  --color-coral-dark: #d63516; /* --accent-deep: hover de botão sólido */
 
-  /* Fontes padrão do shadcn/ui (Geist). Títulos usam a mesma família, mais forte. */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Paleta creme (decks / superfícies quentes) */
+  --color-creme: #f4efea;
+  --color-areia: #eae3da;
+
+  /* Tipografia. O DS pede HelveticaNeueCyr 300/400 com Inter logo atrás,
+     porque o arquivo Light não traz glifos acentuados (é, ã, ç). Os .ttf
+     não estão no repo (ver DESIGN.md), então Inter carrega a marca hoje e
+     assume os acentos quando a Helvetica chegar. */
+  --font-brand: var(--font-inter), "HelveticaNeueCyr", "Helvetica Neue",
+    Helvetica, Arial, sans-serif;
+  --font-sans: var(--font-brand);
+  --font-display: var(--font-brand);
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+
+  /* Motion (§5) */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ── Tokens shadcn/ui, mapeados à marca Colonial ─────────────────────────────
-   Geram utilidades bg-primary, bg-card, border-border, ring-ring, etc. usadas
-   pelos componentes shadcn. As cores da marca acima continuam válidas. */
+/* Tokens shadcn/ui mapeados à paleta GrowthDirect. É o que faz Button,
+   Card, Input, Select, Sheet, Dialog e Badge seguirem o DS sem reescrita. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -45,57 +65,121 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Escala de raio no padrão shadcn (new-york) */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  /* Raios do DS (§4): cards 18–22px · blocos 28–44px · pills 999px. */
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
+  --radius-2xl: calc(var(--radius) + 16px);
 }
 
 :root {
-  --radius: 0.625rem; /* raio base shadcn new-york */
+  --radius: 1.25rem; /* 20px — dentro da faixa de card do DS */
 
-  --background: #f8f9f7; /* off-white limpo, leve tom verde */
-  --foreground: #122b1c; /* verde Colonial (texto) */
+  --background: #ffffff;
+  --foreground: #101113;
 
   --card: #ffffff;
-  --card-foreground: #122b1c;
+  --card-foreground: #101113;
   --popover: #ffffff;
-  --popover-foreground: #122b1c;
+  --popover-foreground: #101113;
 
-  --primary: #f3a42c; /* laranja CTA */
-  --primary-foreground: #122b1c; /* texto verde sobre laranja */
-  --secondary: #eef2ef; /* superfície verde clara */
-  --secondary-foreground: #122b1c;
+  --primary: #f95738; /* coral: só CTA, ativo e destaque */
+  --primary-foreground: #ffffff; /* --on-accent */
+  --secondary: #f6f6f6;
+  --secondary-foreground: #101113;
 
-  --muted: #f1f4f1;
-  --muted-foreground: #61756a; /* verde-acinzentado para texto secundário */
-  --accent: #eef2ef;
-  --accent-foreground: #122b1c;
+  --muted: #f6f6f6;
+  --muted-foreground: #5e6166;
+  --accent: #f6f6f6;
+  --accent-foreground: #101113;
 
-  --destructive: #dc2626;
+  /* O DS não define destrutivo. Um vermelho mais fechado que o coral, para
+     "excluir" nunca ser confundido com o CTA principal. */
+  --destructive: #b3261e;
   --destructive-foreground: #ffffff;
 
-  --border: #e4e9e4; /* borda sutil verde-acinzentada */
-  --input: #e4e9e4;
-  --ring: #d0942a; /* foco laranja discreto */
+  --border: rgba(16, 17, 19, 0.1);
+  --border-strong: rgba(16, 17, 19, 0.2);
+  --input: rgba(16, 17, 19, 0.1);
+  --ring: #f95738; /* foco coral */
 }
 
-/* Reset base do shadcn: a classe `border` usa --border, foco usa --ring. */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: -0.02em; /* o DS aperta o tracking em toda a escala */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* §3: nunca bold. O peso máximo do sistema é 400; títulos grandes usam
+     300. Isto trava o limite mesmo se algum utilitário escapar. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 300;
+    letter-spacing: -0.045em;
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+@layer utilities {
+  /* Destaque tipo marcador do DS (§2): sem border-radius, coral sólido. */
+  .marcador {
+    color: #fff;
+    background: var(--color-coral);
+    padding: 0.02em 0.16em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  /* Sublinhado hover dos links (§5) */
+  .link-sublinhado {
+    position: relative;
+  }
+  .link-sublinhado::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.75s var(--ease-out-expo);
+  }
+  .link-sublinhado:hover::after {
+    transform: scaleX(1);
+  }
+
+  /* Scroll reveal (§5). Sem IntersectionObserver aqui: num painel de dados
+     o conteúdo troca o tempo todo, então o reveal roda na entrada e pronto. */
+  .reveal {
+    animation: revealIn 0.75s var(--ease-smooth) both;
+  }
+
+  @keyframes revealIn {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.99);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 /* Esconde as setas dos inputs number */
@@ -108,15 +192,29 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Scrollbar discreta */
+/* Scrollbar discreta, na escala de cinzas do DS */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cfd8cf;
+  background: #d8d8d8;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b9c4b9;
+  background: var(--color-subtle-fg);
+}
+
+/* §5: prefers-reduced-motion desliga tudo. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal {
+    animation: none;
+  }
 }

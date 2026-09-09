@@ -13,11 +13,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   if (!hydrated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-branco">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-colonial/20 border-t-colonial" />
-          <p className="font-display text-lg text-colonial">
-            ReservaTrack Colonial
+          <div className="size-9 animate-spin rounded-full border-2 border-border-strong border-t-coral" />
+          <p className="font-brand text-lg font-light tracking-tighter text-carvao lowercase">
+            growthdirect<span className="text-coral">.</span>
           </p>
         </div>
       </div>

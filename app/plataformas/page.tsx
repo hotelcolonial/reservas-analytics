@@ -31,10 +31,10 @@ export default function PlataformasPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl font-semibold text-colonial">
-          Comparativo por plataforma
+        <h1 className="font-brand text-[clamp(34px,4.4vw,58px)] leading-[0.95] font-light tracking-[-0.045em] text-carvao lowercase">
+          comparativo por plataforma
         </h1>
-        <p className="mt-1 text-sm text-colonial/60">
+        <p className="mt-3 max-w-2xl text-[clamp(15px,1.1vw,17px)] leading-relaxed text-muted-fg">
           Veja onde o investimento rende mais: Google Ads, Meta Ads, Orgânico,
           WhatsApp Direto e outros.
         </p>
