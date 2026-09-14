@@ -41,6 +41,25 @@ export function formatDate(iso: string | null | undefined): string {
   return `${day}/${month}/${year}`;
 }
 
+/**
+ * Timestamp ISO (timestamptz do Postgres, ex. `2026-09-14T02:30:00+00:00`) →
+ * `dd/mm/aaaa às hh:mm` no fuso LOCAL de quem lê. Um registro criado às 23:30
+ * em São Paulo é 02:30 UTC do dia seguinte: cortar a string em `T` mostraria
+ * o dia errado, por isso passa por `Date` e pelos getters locais (nunca por
+ * `toISOString`). Uma data pura (`yyyy-mm-dd`, sem hora) vai para `formatDate`
+ * sem passar por `Date`, que a leria como UTC e recuaria um dia.
+ */
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  if (!iso.includes("T")) return formatDate(iso);
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return formatDate(iso);
+  const data = formatDate(localISO(d));
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${data} às ${hh}:${mm}`;
+}
+
 export function formatPercent(value: number | null): string {
   if (value === null || Number.isNaN(value)) return "N/A";
   return `${value.toLocaleString("pt-BR", {
@@ -73,8 +92,16 @@ export function calcNoites(checkIn: string, checkOut: string): number {
   return dias > 0 ? dias : 0;
 }
 
+/**
+ * Data de hoje em ISO (`yyyy-mm-dd`) no fuso LOCAL de quem abre a página.
+ *
+ * ⚠️ Nunca trocar por `new Date().toISOString()`: ele devolve a data em UTC.
+ * No Brasil (UTC-3), das 21:00 à meia-noite isso vira o dia SEGUINTE — e o
+ * app passa a marcar lançamento como atrasado um dia antes e a sugerir a
+ * competência errada no fim do dia.
+ */
 export function todayISO(): string {
-  return new Date().toISOString().split("T")[0];
+  return localISO(new Date());
 }
 
 /* ---------- Período (filtro por datas) ---------- */

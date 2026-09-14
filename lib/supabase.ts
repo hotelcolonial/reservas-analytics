@@ -1,6 +1,13 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Campanha, Reserva, GastoDiario, Propriedade } from "./types";
+import type {
+  Campanha,
+  Reserva,
+  GastoDiario,
+  Propriedade,
+  Perfil,
+  Auditoria,
+} from "./types";
 
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -66,8 +73,31 @@ export async function fetchAll(
 
 // ── Row ↔ Domain mappers ──────────────────────────────────────────────────────
 
+/**
+ * Colunas de auditoria (trigger no banco). Só entram no sentido row → domínio;
+ * nenhum `xToRow` as inclui, de propósito.
+ */
+export function rowToAuditoria(row: Row): Auditoria {
+  return {
+    criadoPor: (row.criado_por as string | null) ?? null,
+    criadoEm: (row.criado_em as string | null) ?? null,
+    atualizadoEm: (row.atualizado_em as string | null) ?? null,
+  };
+}
+
+export function rowToPerfil(row: Row): Perfil {
+  return {
+    id: row.id as string,
+    nome: ((row.nome as string | null) ?? "").trim(),
+    email: ((row.email as string | null) ?? "").trim(),
+    papel: (row.papel as string | null) ?? "",
+    ativo: Boolean(row.ativo ?? true),
+  };
+}
+
 export function rowToPropriedade(row: Row): Propriedade {
   return {
+    ...rowToAuditoria(row),
     id: row.id as string,
     nome: row.nome as string,
     ordem: Number(row.ordem ?? 0),
@@ -84,6 +114,7 @@ export function propriedadeToRow(p: Propriedade) {
 
 export function rowToCampanha(row: Row): Campanha {
   return {
+    ...rowToAuditoria(row),
     id: row.id as string,
     propriedadeId: (row.propriedade_id as string | null) ?? "",
     nome: row.nome as string,
@@ -108,6 +139,7 @@ export function campanhaToRow(c: Campanha) {
 
 export function rowToReserva(row: Row): Reserva {
   return {
+    ...rowToAuditoria(row),
     id: row.id as string,
     propriedadeId: (row.propriedade_id as string | null) ?? "",
     codigo: row.codigo as string,
@@ -144,6 +176,7 @@ export function reservaToRow(r: Reserva) {
 
 export function rowToGasto(row: Row): GastoDiario {
   return {
+    ...rowToAuditoria(row),
     id: row.id as string,
     propriedadeId: (row.propriedade_id as string | null) ?? "",
     campanhaId: row.campanha_id as string,

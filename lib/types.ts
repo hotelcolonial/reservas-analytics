@@ -18,14 +18,36 @@ export type StatusCampanha = "ativa" | "pausada" | "finalizada";
 
 export type StatusReserva = "confirmada" | "pendente" | "cancelada";
 
+/**
+ * Quem criou e quando (e quando mexeu por último). As 8 tabelas têm estas
+ * colunas, preenchidas por TRIGGER no banco: o app só LÊ. Nunca mandar em
+ * insert/update (o trigger de update ignora e força os valores anteriores).
+ * Opcionais porque registros anteriores à auditoria não têm autor, e porque
+ * um registro recém-criado (otimista) só ganha os valores no próximo load.
+ */
+export interface Auditoria {
+  readonly criadoPor?: string | null; // uuid → perfis.id
+  readonly criadoEm?: string | null; // timestamptz ISO
+  readonly atualizadoEm?: string | null; // timestamptz ISO
+}
+
+/** Usuário do painel (public.perfis). Só leitura; quem cadastra é o Supabase. */
+export interface Perfil {
+  id: string; // uuid (auth.users.id)
+  nome: string;
+  email: string;
+  papel: string;
+  ativo: boolean;
+}
+
 /** Um negócio/hotel medido no painel (multipropriedade). */
-export interface Propriedade {
+export interface Propriedade extends Auditoria {
   id: string;
   nome: string;
   ordem: number; // ordem no seletor de propriedade
 }
 
-export interface Campanha {
+export interface Campanha extends Auditoria {
   id: string;
   propriedadeId: string; // a qual propriedade pertence
   nome: string;
@@ -36,7 +58,7 @@ export interface Campanha {
 }
 
 /** Verba gastada numa campanha num dia específico (o investimento é variável). */
-export interface GastoDiario {
+export interface GastoDiario extends Auditoria {
   id: string;
   propriedadeId: string;
   campanhaId: string;
@@ -44,7 +66,7 @@ export interface GastoDiario {
   valor: number; // em BRL
 }
 
-export interface Reserva {
+export interface Reserva extends Auditoria {
   id: string;
   propriedadeId: string;
   codigo: string; // identificador legível da reserva, ex.: "RES-0001"

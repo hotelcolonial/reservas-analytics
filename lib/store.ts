@@ -1,10 +1,17 @@
 import { create } from "zustand";
-import type { Campanha, Reserva, GastoDiario, Propriedade } from "./types";
+import type {
+  Campanha,
+  Reserva,
+  GastoDiario,
+  Propriedade,
+  Perfil,
+} from "./types";
 import {
   supabaseConfigured,
   getSupabase,
   fetchAll,
   rowToPropriedade,
+  rowToPerfil,
   rowToCampanha,
   rowToReserva,
   rowToGasto,
@@ -126,6 +133,16 @@ interface AppState {
   propriedades: Propriedade[];
   propriedadeAtivaId: string;
 
+  /**
+   * Usuários do painel (public.perfis), carregados junto com os dados para
+   * resolver `criadoPor` → nome sem uma consulta por linha. Vivem aqui, e não
+   * no store de gastos, porque os dois módulos precisam deles e este store é
+   * o que o `Providers` global hidrata em toda rota logada.
+   */
+  perfis: Perfil[];
+  /** Resolve o uuid de `criadoPor`; null se não existir (ou em modo mock). */
+  perfilPorId: (id: string | null | undefined) => Perfil | null;
+
   hydrated: boolean;
 
   loadData: () => Promise<void>;
@@ -172,6 +189,9 @@ export const useStore = create<AppState>()((set, get) => ({
   gastos: [],
   propriedades: [],
   propriedadeAtivaId: "",
+  perfis: [],
+  perfilPorId: (id) =>
+    id ? (get().perfis.find((p) => p.id === id) ?? null) : null,
   hydrated: false,
 
   // ── Load ──────────────────────────────────────────────────────────────────
@@ -208,16 +228,20 @@ export const useStore = create<AppState>()((set, get) => ({
       { data: campanhasData, error: e1 },
       { data: reservasData, error: e2 },
       { data: gastosData, error: e3 },
+      { data: perfisData, error: e4 },
     ] = await Promise.all([
       fetchAll("propriedades", "ordem"),
       fetchAll("campanhas", "created_at"),
       fetchAll("reservas", "created_at"),
       fetchAll("gastos", "data"),
+      fetchAll("perfis", "nome"),
     ]);
     if (e0) console.error("Supabase fetch propriedades:", e0);
     if (e1) console.error("Supabase fetch campanhas:", e1);
     if (e2) console.error("Supabase fetch reservas:", e2);
     if (e3) console.error("Supabase fetch gastos:", e3);
+    // Perfis são só para exibir autoria: falhar aqui não impede o painel.
+    if (e4) console.error("Supabase fetch perfis:", e4);
 
     const propriedades = (propsData?.map(rowToPropriedade) ?? []).sort(
       (a, b) => a.ordem - b.ordem,
@@ -225,6 +249,7 @@ export const useStore = create<AppState>()((set, get) => ({
     const campanhasAll = campanhasData?.map(rowToCampanha) ?? [];
     const reservasAll = reservasData?.map(rowToReserva) ?? [];
     const gastosAll = gastosData?.map(rowToGasto) ?? [];
+    const perfis = perfisData?.map(rowToPerfil) ?? [];
     const ativo = escolherPropriedade(propriedades, lerPropriedadeSalva());
 
     set({
@@ -233,6 +258,7 @@ export const useStore = create<AppState>()((set, get) => ({
       campanhasAll,
       reservasAll,
       gastosAll,
+      perfis,
       ...escopar(campanhasAll, reservasAll, gastosAll, ativo),
       hydrated: true,
     });

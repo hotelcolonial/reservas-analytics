@@ -10,6 +10,7 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Autoria } from "@/components/ui/Autoria";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -490,6 +491,15 @@ export function DespesaRecorrenteForm({
         </div>
 
         <SheetFooter>
+          {/* Só na edição: um registro novo ainda não tem autoria. */}
+          {despesa && (
+            <Autoria
+              criadoPor={despesa.criadoPor}
+              criadoEm={despesa.criadoEm}
+              atualizadoEm={despesa.atualizadoEm}
+              className="mb-1"
+            />
+          )}
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={onClose}>
               Cancelar

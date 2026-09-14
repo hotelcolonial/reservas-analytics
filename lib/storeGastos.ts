@@ -5,6 +5,7 @@ import type {
   DespesaRecorrente,
   Lancamento,
 } from "./typesGastos";
+import type { Auditoria } from "./types";
 import { supabaseConfigured, getSupabase, fetchAll } from "./supabase";
 import { apagarComprovante } from "./storageGastos";
 import { escreverOtimista } from "./escritaOtimista";
@@ -62,14 +63,6 @@ function db() {
   return getSupabase();
 }
 
-/** Data de hoje em ISO local, para carimbar `criadoEm`. */
-function hojeISO(): string {
-  const d = new Date();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dia = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${dia}`;
-}
-
 interface GastosState {
   cartoes: Cartao[];
   naturezas: Natureza[];
@@ -111,14 +104,15 @@ interface GastosState {
   // Lançamentos
   /**
    * `id` é opcional: quem anexa comprovante precisa gerá-lo antes (o caminho
-   * no Storage inclui o id). Sem ele, o store gera um.
+   * no Storage inclui o id). Sem ele, o store gera um. `criadoEm` e os demais
+   * campos de auditoria não entram: são do trigger.
    */
   addLancamento: (
-    data: Omit<Lancamento, "id" | "criadoEm"> & { id?: string },
+    data: Omit<Lancamento, "id" | keyof Auditoria> & { id?: string },
   ) => void;
   updateLancamento: (
     id: string,
-    data: Partial<Omit<Lancamento, "id" | "criadoEm">>,
+    data: Partial<Omit<Lancamento, "id" | keyof Auditoria>>,
   ) => void;
   removeLancamento: (id: string) => void;
 }
@@ -390,11 +384,7 @@ export const useGastosStore = create<GastosState>()((set, get) => ({
   // ── Lançamentos ───────────────────────────────────────────────────────────
 
   addLancamento: (data) => {
-    const novo: Lancamento = {
-      ...data,
-      id: data.id ?? novoId(),
-      criadoEm: hojeISO(),
-    };
+    const novo: Lancamento = { ...data, id: data.id ?? novoId() };
     escreverOtimista({
       acao: `salvar o lançamento "${novo.descricao}"`,
       aplicar: () =>

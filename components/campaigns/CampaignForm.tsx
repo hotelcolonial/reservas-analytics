@@ -10,6 +10,7 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Autoria } from "@/components/ui/Autoria";
 import { Input } from "@/components/ui/input";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
@@ -186,6 +187,15 @@ export function CampaignForm({ open, onClose, campanha }: CampaignFormProps) {
         </div>
 
         <SheetFooter>
+          {/* Só na edição: um registro novo ainda não tem autoria. */}
+          {campanha && (
+            <Autoria
+              criadoPor={campanha.criadoPor}
+              criadoEm={campanha.criadoEm}
+              atualizadoEm={campanha.atualizadoEm}
+              className="mb-1"
+            />
+          )}
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={onClose}>
               Cancelar

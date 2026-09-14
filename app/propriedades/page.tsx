@@ -11,6 +11,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Autoria } from "@/components/ui/Autoria";
 
 export default function PropriedadesPage() {
   const propriedades = useStore((s) => s.propriedades);
@@ -162,6 +163,16 @@ export default function PropriedadesPage() {
                         {c.campanhas} campanha(s) · {c.reservas} reserva(s) ·{" "}
                         {c.gastos} lançamento(s) de verba
                       </p>
+                    )}
+                    {/* Não há Sheet aqui: a "edição" é inline, e a autoria
+                        segue a mesma regra dos formulários (só ao editar). */}
+                    {editId === p.id && (
+                      <Autoria
+                        criadoPor={p.criadoPor}
+                        criadoEm={p.criadoEm}
+                        atualizadoEm={p.atualizadoEm}
+                        className="mt-1"
+                      />
                     )}
                   </div>
 

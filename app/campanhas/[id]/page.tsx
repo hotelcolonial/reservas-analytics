@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
+import { Autoria } from "@/components/ui/Autoria";
 import { metricasCampanha } from "@/lib/calculations";
 import type { Reserva } from "@/lib/types";
 import {
@@ -165,6 +166,12 @@ export default function CampanhaDetalhePage() {
               {STATUS_CAMPANHA_LABELS[campanha.status]}
             </Badge>
           </div>
+          <Autoria
+            criadoPor={campanha.criadoPor}
+            criadoEm={campanha.criadoEm}
+            atualizadoEm={campanha.atualizadoEm}
+            className="mt-3"
+          />
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setEditCampOpen(true)}>

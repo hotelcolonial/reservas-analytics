@@ -5,7 +5,7 @@
  * `lib/supabase.ts` e são reusados daqui — não duplicar nem o cliente nem a
  * paginação de 1000 linhas.
  */
-import type { Row } from "./supabase";
+import { rowToAuditoria, type Row } from "./supabase";
 import type {
   Cartao,
   Natureza,
@@ -27,6 +27,7 @@ function inteiroOuNull(value: unknown): number | null {
 
 export function rowToCartao(row: Row): Cartao {
   return {
+    ...rowToAuditoria(row),
     id: row.id as string,
     nome: row.nome as string,
     bandeira: row.bandeira as Cartao["bandeira"],
@@ -53,6 +54,7 @@ export function cartaoToRow(c: Cartao) {
 
 export function rowToNatureza(row: Row): Natureza {
   return {
+    ...rowToAuditoria(row),
     id: row.id as string,
     nome: row.nome as string,
     grupo: row.grupo as Natureza["grupo"],
@@ -75,6 +77,7 @@ export function naturezaToRow(n: Natureza) {
 
 export function rowToDespesaRecorrente(row: Row): DespesaRecorrente {
   return {
+    ...rowToAuditoria(row),
     id: row.id as string,
     nome: row.nome as string,
     descricao: texto(row.descricao),
@@ -115,6 +118,7 @@ export function despesaRecorrenteToRow(d: DespesaRecorrente) {
 
 export function rowToLancamento(row: Row): Lancamento {
   return {
+    ...rowToAuditoria(row),
     id: row.id as string,
     descricao: row.descricao as string,
     naturezaId: texto(row.natureza_id),
@@ -129,7 +133,6 @@ export function rowToLancamento(row: Row): Lancamento {
     comprovanteUrl: (row.comprovante_url as string | null) ?? null,
     observacoes: texto(row.observacoes),
     despesaRecorrenteId: (row.despesa_recorrente_id as string | null) ?? null,
-    criadoEm: row.criado_em as string,
   };
 }
 
@@ -149,6 +152,6 @@ export function lancamentoToRow(l: Lancamento) {
     comprovante_url: l.comprovanteUrl,
     observacoes: l.observacoes,
     despesa_recorrente_id: l.despesaRecorrenteId,
-    criado_em: l.criadoEm,
+    // criado_em / criado_por / atualizado_em: NUNCA — são do trigger.
   };
 }

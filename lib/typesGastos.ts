@@ -6,6 +6,8 @@
  * ARQUITETURA.md.
  */
 
+import type { Auditoria } from "./types";
+
 export type Bandeira = "visa" | "mastercard" | "elo" | "amex" | "outro";
 
 export type GrupoNatureza = "interno" | "plataformas" | "outro";
@@ -22,7 +24,7 @@ export type FormaPagamento =
 export type StatusLancamento = "pendente" | "pago" | "cancelado";
 
 /** Cartão usado para pagar despesas. */
-export interface Cartao {
+export interface Cartao extends Auditoria {
   id: string;
   nome: string;
   bandeira: Bandeira;
@@ -33,7 +35,7 @@ export interface Cartao {
 }
 
 /** Categoria de gasto. `cor` alimenta os gráficos. */
-export interface Natureza {
+export interface Natureza extends Auditoria {
   id: string;
   nome: string;
   grupo: GrupoNatureza;
@@ -42,7 +44,7 @@ export interface Natureza {
 }
 
 /** Modelo de gasto que se repete. Gera lançamentos. */
-export interface DespesaRecorrente {
+export interface DespesaRecorrente extends Auditoria {
   id: string;
   nome: string;
   descricao: string;
@@ -60,8 +62,12 @@ export interface DespesaRecorrente {
   fim: string | null; // ISO date, nullable
 }
 
-/** Um gasto concreto. */
-export interface Lancamento {
+/**
+ * Um gasto concreto. `criadoEm` vem de `Auditoria`: era carimbado pelo app
+ * (data `yyyy-mm-dd`), hoje é o timestamptz do trigger, como nas outras
+ * tabelas. O app não escreve mais essa coluna.
+ */
+export interface Lancamento extends Auditoria {
   id: string;
   descricao: string;
   naturezaId: string;
@@ -76,7 +82,6 @@ export interface Lancamento {
   comprovanteUrl: string | null;
   observacoes: string;
   despesaRecorrenteId: string | null; // null = gasto avulso
-  criadoEm: string; // ISO date
 }
 
 /* ---------- Labels PT-BR e ordens para os selects ---------- */
