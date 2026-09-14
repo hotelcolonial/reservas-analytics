@@ -35,7 +35,7 @@ export const cartoesMock: Cartao[] = [
   },
 ];
 
-/** Mesmas naturezas semeadas por `supabase/schema-gastos.sql`. */
+/** Mesmas naturezas semeadas por `supabase/003-schema-gastos.sql`. */
 export const naturezasMock: Natureza[] = [
   {
     id: "nat-material-escritorio",

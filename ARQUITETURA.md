@@ -203,7 +203,7 @@ nunca devolver `0` ni `Infinity` desde una métrica nueva.
 
 ## 7. Base de datos y seguridad
 
-`supabase/schema.sql` crea las tablas; `supabase/migration-multipropriedade.sql` fue el paso
+`supabase/001-schema.sql` crea las tablas; `supabase/002-migration-multipropriedade.sql` fue el paso
 que agregó `propriedades` y la columna `propriedade_id` a las otras tres.
 
 **Autenticación (Supabase Auth).** La app exige login por e-mail y contraseña; los
@@ -212,9 +212,9 @@ las rutas están protegidas por `proxy.ts` (ver §3), pero eso protege la **app*
 **base**: la anon key sigue siendo pública y las policies RLS son las que deciden qué puede
 hacer una request directa a PostgREST.
 
-⚠️ **Inconsistencia real a tener en cuenta:** las políticas RLS que escribe `schema.sql`
+⚠️ **Inconsistencia real a tener en cuenta:** las políticas RLS que escribe `001-schema.sql`
 exigen `auth.role() = 'authenticated'`, mientras que la migración de propiedades y
-`schema-gastos.sql` usan `using (true)`. Las políticas vivas en el proyecto real son las
+`003-schema-gastos.sql` usan `using (true)`. Las políticas vivas en el proyecto real son las
 permisivas, o sea: **los datos siguen accesibles para cualquiera que tenga la anon key**,
 aunque la app ya pida login. Ahora que el navegador manda el token del usuario en cada
 request, endurecer las policies a `authenticated` es posible y es la **fase siguiente**
@@ -292,7 +292,7 @@ radios, pesos, escritura en minúscula, colores de status y paleta de gráficos)
 ## 11. Checklist para agregar una feature
 
 1. ¿Necesita un campo nuevo? → `lib/types.ts` **+** los dos mappers en `lib/supabase.ts`
-   **+** `ALTER TABLE` en `supabase/schema.sql` (y correrlo a mano en el SQL Editor;
+   **+** una migración numerada nueva en `supabase/` (después de la última) (y correrlo a mano en el SQL Editor;
    **no hay migraciones automáticas**) **+** el formulario correspondiente.
 2. ¿Necesita una acción nueva? → agregarla a la interfaz `AppState` y a la implementación,
    copiando el patrón: `set()` con `escopar()` + escritura optimista a Supabase.

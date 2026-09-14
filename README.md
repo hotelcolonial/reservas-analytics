@@ -31,13 +31,16 @@ português (`campanha`, `reserva`, `gasto`, `lancamento`, `propriedade`).
   cada request e barra quem não está logado. Não há Route Handlers nem Server Actions,
   então continua não havendo lugar para segredos de terceiros.
 - **Login com e-mail e senha (Supabase Auth).** Sem sessão, qualquer rota redireciona
-  para `/login`. Não há roles: todo usuário autenticado vê e edita tudo. Os usuários são
-  criados no Dashboard do Supabase (Authentication → Users), não pelo app. As policies
-  RLS ainda são permissivas (próxima fase). Não cadastre dados pessoais de hóspedes.
+  para `/login`. Não há roles: todo usuário autenticado **e ativo** (`perfis.ativo`) vê e
+  edita tudo. Os usuários são criados no Dashboard do Supabase (Authentication → Users),
+  não pelo app; o perfil nasce sozinho por trigger. As policies RLS exigem sessão + perfil
+  ativo em todas as tabelas e no bucket; o role `anon` não lê nada. Ainda assim, não
+  cadastre dados pessoais de hóspedes.
 - **Carga completa em memória.** Ao abrir, o app baixa as tabelas inteiras (paginando de
   1000 em 1000) e todo filtro, ordenação, paginação e cálculo acontece no navegador.
-- **Escrita otimista, sem rollback.** Cada ação atualiza o estado local primeiro e dispara
-  a gravação no Supabase sem `await`; um erro vai só para o `console.error`.
+- **Escrita otimista, com rollback.** Cada ação atualiza o estado local primeiro e dispara
+  a gravação no Supabase sem `await`. Se falhar, a tela volta ao estado anterior e um
+  toast persistente oferece "Tentar novamente" (`lib/escritaOtimista.ts`).
 - **Modo mock.** Sem as variáveis de ambiente, o app roda com os dados de exemplo de
   `data/mockData.ts` e `data/mockDataGastos.ts`, em memória e sem persistência — e sem
   login: o proxy deixa tudo passar, porque não há sessão possível.
@@ -77,19 +80,27 @@ auto-confirmar o e-mail. Todos os usuários têm o mesmo acesso.
 ### Banco de dados
 
 Não há ferramenta de migração: os scripts de `supabase/` são executados **à mão, no SQL
-Editor do Supabase**, uma vez cada, nesta ordem:
+Editor do Supabase**, uma vez cada, **nesta ordem**. Rodá-los do zero num projeto vazio
+reproduz o estado atual do banco.
 
-1. `supabase/schema.sql` — tabelas do ReservaTrack (`propriedades`, `campanhas`,
-   `reservas`, `gastos`).
-2. `supabase/migration-multipropriedade.sql` — só para projetos criados antes da
-   multipropriedade: adiciona `propriedades` e a coluna `propriedade_id`.
-3. `supabase/schema-gastos.sql` — tabelas do módulo Gastos (`cartoes`, `naturezas`,
-   `despesas_recorrentes`, `lancamentos`) e as naturezas iniciais.
+| # | Arquivo | O que faz |
+|---|---|---|
+| 001 | `001-schema.sql` | Tabelas do ReservaTrack (`propriedades`, `campanhas`, `reservas`, `gastos`) e índices |
+| 002 | `002-migration-multipropriedade.sql` | Só para projetos criados antes da multipropriedade: adiciona `propriedades` e `propriedade_id`. Num projeto vazio é inofensivo (tudo `if not exists`) |
+| 003 | `003-schema-gastos.sql` | Tabelas do módulo Gastos (`cartoes`, `naturezas`, `despesas_recorrentes`, `lancamentos`) e as naturezas iniciais |
+| 004 | `004-perfis.sql` | `public.perfis` (um por usuário do Auth), criada sozinha pelo trigger `ao_criar_usuario` em `auth.users`; leitura para `authenticated` |
+| 005 | `005-acesso-autenticado.sql` | `usuario_ativo()`; remove as policies permissivas de 001–003; policy única "acesso autenticado" (sessão + perfil ativo) nas 8 tabelas e no bucket `comprovantes`; `revoke` de tudo para `anon` |
+| 006 | `006-auditoria.sql` | `criado_por`, `criado_em`, `atualizado_em` nas 8 tabelas (com a conversão de `lancamentos.criado_em` de `text` para `timestamptz`), FKs para `perfis`, e os triggers `ao_inserir`/`ao_atualizar` que preenchem tudo — o app nunca escreve essas colunas |
 
-O anexo de comprovantes usa o bucket **`comprovantes`** do Supabase Storage, **privado**.
-Ele não é criado por nenhum script: crie-o no Dashboard (Storage → New bucket) e adicione
-uma policy em `storage.objects` liberando `select`, `insert`, `update` e `delete` para o
-role `authenticated` nesse bucket. O app nunca usa URL pública: para exibir um arquivo pede
+004–006 foram extraídos do banco real com `supabase/extrair-estado.sql` (uma consulta só
+de leitura sobre `pg_policies`, `pg_proc`, `pg_trigger` e `pg_attribute`). Se a base mudar
+de novo à mão, rode essa consulta e atualize os arquivos a partir do resultado — não
+escreva migração de memória.
+
+**Passo manual — bucket de comprovantes.** Nenhum SQL cria buckets. Antes de anexar o
+primeiro comprovante, no Dashboard: **Storage → New bucket**, nome `comprovantes`,
+**"Public bucket" desligado** (privado). A policy que libera o bucket para
+`authenticated` já está em `005`. O app nunca usa URL pública: para exibir um arquivo pede
 uma URL assinada de 1 hora (`urlAssinada` em `lib/storageGastos.ts`).
 
 ## Scripts
@@ -154,5 +165,6 @@ data/
   mockData.ts           Dados de exemplo do ReservaTrack (modo mock)
   mockDataGastos.ts     Dados de exemplo do módulo Gastos (modo mock)
 supabase/
-  schema.sql  migration-multipropriedade.sql  schema-gastos.sql
+  001-schema.sql … 006-auditoria.sql   Migrações, na ordem (ver "Banco de dados")
+  extrair-estado.sql                   Consulta que lê o estado real do banco
 ```

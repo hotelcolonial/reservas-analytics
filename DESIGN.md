@@ -134,6 +134,6 @@ aberto aparece como texto ao lado: `reservatrack · campanhas e reservas`.
   `-Roman.ttf` em `public/fonts/`, declarar os `@font-face` (300 e 400) e pôr
   `"HelveticaNeueCyr"` na frente de Inter em `--font-brand`. O stack já está
   montado para isso: é uma linha em `globals.css`.
-- **Cores das naturezas já gravadas.** O seed novo em `schema-gastos.sql` usa a
+- **Cores das naturezas já gravadas.** O seed novo em `003-schema-gastos.sql` usa a
   paleta do DS, mas as 6 linhas que já estão no Supabase mantêm as cores
   verdes antigas até serem editadas em `/gastos/naturezas` (ou por um `update`).
