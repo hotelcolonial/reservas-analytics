@@ -1,15 +1,25 @@
 /**
  * Anexo de comprovante de um lançamento (Supabase Storage).
  *
- * ⚠️ O bucket `comprovantes` é PÚBLICO. Qualquer pessoa com a URL abre o
- * arquivo, sem autenticação — coerente com o resto do app, que também lê e
- * escreve com a chave anon (ver ARQUITETURA.md §7). O que protege na prática é
- * o caminho: ele carrega o id (UUID) do lançamento, então a URL não é
- * adivinhável. Ainda assim, não suba aqui documento que não possa vazar.
+ * O bucket `comprovantes` é PRIVADO. Quem controla o acesso é a policy de
+ * `storage.objects` para o role `authenticated`: só quem está logado no
+ * painel lê, grava ou apaga. Por isso o arquivo nunca tem URL fixa — para
+ * exibir, pede-se uma URL assinada de curta duração (`urlAssinada`).
+ *
+ * O que o lançamento guarda em `comprovanteUrl` é o CAMINHO dentro do bucket
+ * (`${competencia}/${lancamentoId}-${nome}`), não uma URL. O nome do campo
+ * ficou por compatibilidade com a coluna `comprovante_url` do banco.
+ *
+ * Compatibilidade: lançamentos antigos guardaram a URL pública da época em que
+ * o bucket era público. Todas as funções que recebem `valor` aceitam os dois
+ * formatos — `caminhoDaUrl` normaliza — e nada precisa ser migrado no banco.
  */
-import { getSupabase, supabaseConfigured } from "./supabase";
+import { getSupabase } from "./supabase";
 
 export const BUCKET_COMPROVANTES = "comprovantes";
+
+/** Validade da URL assinada, em segundos (1 hora). */
+export const VALIDADE_URL_ASSINADA = 60 * 60;
 
 /** Tipos aceitos: imagem (jpg, png, webp) e PDF. */
 export const TIPOS_COMPROVANTE = [
@@ -66,75 +76,116 @@ export function caminhoComprovante(
   return `${competencia}/${lancamentoId}-${sanitizarNome(nomeArquivo)}`;
 }
 
-/** Extrai o caminho no bucket a partir da URL pública, para poder apagar. */
-export function caminhoDaUrl(url: string): string | null {
-  const marca = `/object/public/${BUCKET_COMPROVANTES}/`;
-  const i = url.indexOf(marca);
-  if (i < 0) return null;
-  const caminho = url.slice(i + marca.length).split("?")[0];
-  return caminho ? decodeURIComponent(caminho) : null;
+/** Marca da URL pública antiga, de quando o bucket era público. */
+const MARCA_URL_PUBLICA = `/object/public/${BUCKET_COMPROVANTES}/`;
+
+/**
+ * Normaliza o que está guardado em `comprovanteUrl` para o caminho no bucket.
+ *
+ *  - URL pública antiga (`…/object/public/comprovantes/<caminho>`) → extrai o
+ *    caminho, como sempre fez.
+ *  - Caminho direto (formato atual) → devolve como está, sem barra inicial.
+ *  - Qualquer outra URL absoluta → null: não é nosso, não dá para assinar.
+ */
+export function caminhoDaUrl(valor: string): string | null {
+  const i = valor.indexOf(MARCA_URL_PUBLICA);
+  if (i >= 0) {
+    const caminho = valor.slice(i + MARCA_URL_PUBLICA.length).split("?")[0];
+    return caminho ? decodeURIComponent(caminho) : null;
+  }
+  if (/^https?:\/\//i.test(valor)) return null;
+  const caminho = valor.replace(/^\/+/, "");
+  return caminho || null;
 }
 
-/** Nome legível do arquivo, para mostrar quando é PDF. */
-export function nomeDoArquivo(url: string): string {
-  const caminho = caminhoDaUrl(url) ?? url;
+/** Nome legível do arquivo, para mostrar quando é PDF. Aceita URL ou caminho. */
+export function nomeDoArquivo(valor: string): string {
+  const caminho = caminhoDaUrl(valor) ?? valor;
   const nome = caminho.split("/").pop() ?? "comprovante";
   // Tira o prefixo do id, que não interessa a quem lê.
   return nome.replace(/^[0-9a-f-]{36}-/i, "");
 }
 
-export function ehPdf(url: string): boolean {
-  return nomeDoArquivo(url).toLowerCase().endsWith(".pdf");
+/** Aceita URL ou caminho. */
+export function ehPdf(valor: string): boolean {
+  return nomeDoArquivo(valor).toLowerCase().endsWith(".pdf");
 }
 
 export interface ResultadoUpload {
-  url?: string;
+  /** Caminho dentro do bucket. É isto que vai para `comprovanteUrl`. */
+  caminho?: string;
   erro?: string;
 }
 
 /**
- * Sobe o comprovante e devolve a URL pública.
+ * Sobe o comprovante e devolve o CAMINHO no bucket (não uma URL).
  *
  * Esta é a ÚNICA escrita do módulo que espera resposta (`await`), e é uma
  * exceção consciente ao padrão otimista descrito em ARQUITETURA.md §5. Motivo:
  * o resto do app grava um dado que ele mesmo já tem em mãos, então um erro só
- * custa uma linha desatualizada até o próximo reload. Aqui não — a URL só
- * existe DEPOIS que o servidor aceita o arquivo. Salvar otimista guardaria uma
- * `comprovanteUrl` que aponta para um arquivo que nunca chegou, e o lançamento
- * ficaria com um link quebrado para sempre.
+ * custa uma linha desatualizada até o próximo reload. Aqui não — o caminho só
+ * vale DEPOIS que o servidor aceita o arquivo. Salvar otimista guardaria um
+ * caminho que aponta para um arquivo que nunca chegou.
+ *
+ * Nunca lança: falha (inclusive Supabase sem configurar) vira `erro`.
  */
 export async function subirComprovante(
   file: File,
   competencia: string,
   lancamentoId: string,
 ): Promise<ResultadoUpload> {
-  if (!supabaseConfigured) {
-    return { erro: "Supabase não configurado: não é possível anexar arquivos." };
-  }
   const caminho = caminhoComprovante(competencia, lancamentoId, file.name);
-  const { error } = await getSupabase()
-    .storage.from(BUCKET_COMPROVANTES)
-    .upload(caminho, file, { upsert: true, contentType: file.type });
-
-  if (error) return { erro: `Falha ao enviar o comprovante: ${error.message}` };
-
-  const { data } = getSupabase()
-    .storage.from(BUCKET_COMPROVANTES)
-    .getPublicUrl(caminho);
-
-  return { url: data.publicUrl };
+  try {
+    const { error } = await getSupabase()
+      .storage.from(BUCKET_COMPROVANTES)
+      .upload(caminho, file, { upsert: true, contentType: file.type });
+    if (error) return { erro: `Falha ao enviar o comprovante: ${error.message}` };
+    return { caminho };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { erro: `Falha ao enviar o comprovante: ${msg}` };
+  }
 }
 
 /**
- * Apaga o arquivo do bucket. Diferente do upload, esta pode ser disparada sem
- * `await`: um arquivo órfão é lixo, não um dado errado na tela.
+ * URL assinada, válida por 1 hora, para exibir ou baixar o comprovante.
+ * Aceita URL antiga ou caminho. Devolve null se não der para assinar (valor
+ * inválido, arquivo inexistente, sem sessão, rede…). Não guarde o resultado
+ * além da vida da tela: ele expira.
  */
-export async function apagarComprovante(url: string | null): Promise<void> {
-  if (!url || !supabaseConfigured) return;
-  const caminho = caminhoDaUrl(url);
+export async function urlAssinada(valor: string): Promise<string | null> {
+  const caminho = caminhoDaUrl(valor);
+  if (!caminho) return null;
+  try {
+    const { data, error } = await getSupabase()
+      .storage.from(BUCKET_COMPROVANTES)
+      .createSignedUrl(caminho, VALIDADE_URL_ASSINADA);
+    if (error) {
+      console.error("Supabase createSignedUrl:", error.message);
+      return null;
+    }
+    return data?.signedUrl ?? null;
+  } catch (err) {
+    console.error("Supabase createSignedUrl:", err);
+    return null;
+  }
+}
+
+/**
+ * Apaga o arquivo do bucket. Aceita URL antiga ou caminho. Diferente do
+ * upload, esta pode ser disparada sem `await`: um arquivo órfão é lixo, não um
+ * dado errado na tela.
+ */
+export async function apagarComprovante(valor: string | null): Promise<void> {
+  if (!valor) return;
+  const caminho = caminhoDaUrl(valor);
   if (!caminho) return;
-  const { error } = await getSupabase()
-    .storage.from(BUCKET_COMPROVANTES)
-    .remove([caminho]);
-  if (error) console.error("Supabase remove comprovante:", error.message);
+  try {
+    const { error } = await getSupabase()
+      .storage.from(BUCKET_COMPROVANTES)
+      .remove([caminho]);
+    if (error) console.error("Supabase remove comprovante:", error.message);
+  } catch (err) {
+    console.error("Supabase remove comprovante:", err);
+  }
 }

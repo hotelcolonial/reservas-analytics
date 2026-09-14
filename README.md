@@ -86,8 +86,11 @@ Editor do Supabase**, uma vez cada, nesta ordem:
 3. `supabase/schema-gastos.sql` — tabelas do módulo Gastos (`cartoes`, `naturezas`,
    `despesas_recorrentes`, `lancamentos`) e as naturezas iniciais.
 
-O anexo de comprovantes usa o bucket **`comprovantes`** do Supabase Storage. Ele não é
-criado por nenhum script: crie-o no Dashboard (Storage → New bucket), como bucket público.
+O anexo de comprovantes usa o bucket **`comprovantes`** do Supabase Storage, **privado**.
+Ele não é criado por nenhum script: crie-o no Dashboard (Storage → New bucket) e adicione
+uma policy em `storage.objects` liberando `select`, `insert`, `update` e `delete` para o
+role `authenticated` nesse bucket. O app nunca usa URL pública: para exibir um arquivo pede
+uma URL assinada de 1 hora (`urlAssinada` em `lib/storageGastos.ts`).
 
 ## Scripts
 

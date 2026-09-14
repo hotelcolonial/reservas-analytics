@@ -20,17 +20,16 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Paperclip, FileText, X, Loader2 } from "lucide-react";
+import { Paperclip, X, Loader2 } from "lucide-react";
 import { useGastosStore, novoId } from "@/lib/storeGastos";
 import {
   ACCEPT_COMPROVANTE,
   TAMANHO_MAXIMO_MB,
   apagarComprovante,
-  ehPdf,
-  nomeDoArquivo,
   subirComprovante,
   validarComprovante,
 } from "@/lib/storageGastos";
+import { ComprovantePreview } from "@/components/gastos/Comprovante";
 import type {
   FormaPagamento,
   Lancamento,
@@ -110,8 +109,8 @@ export function LancamentoForm({
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [erroArquivo, setErroArquivo] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-  // URL que já estava salva quando o Sheet abriu — serve para apagar o
-  // arquivo antigo do bucket depois de trocar ou remover o comprovante.
+  // Caminho (ou URL antiga) que já estava salvo quando o Sheet abriu — serve
+  // para apagar o arquivo antigo do bucket depois de trocar ou remover.
   const urlOriginal = lancamento?.comprovanteUrl ?? null;
 
   const editando = Boolean(lancamento);
@@ -214,25 +213,26 @@ export function LancamentoForm({
 
     if (arquivo) {
       // Único ponto do módulo que espera resposta do servidor. Ver o comentário
-      // em `subirComprovante`: sem o await, salvaríamos uma URL que aponta para
-      // um arquivo que talvez nunca tenha chegado.
+      // em `subirComprovante`: sem o await, salvaríamos um caminho que aponta
+      // para um arquivo que talvez nunca tenha chegado.
       setEnviando(true);
       setErro(null);
-      const { url, erro: erroUpload } = await subirComprovante(
+      const { caminho, erro: erroUpload } = await subirComprovante(
         arquivo,
         form.competencia,
         id,
       );
       setEnviando(false);
 
-      if (erroUpload || !url) {
+      if (erroUpload || !caminho) {
         // Não salva com link quebrado: a pessoa remove o arquivo e salva sem ele.
         setErroArquivo(
           `${erroUpload ?? "Não foi possível enviar o comprovante."} O lançamento não foi salvo. Tente de novo ou remova o arquivo para salvar sem comprovante.`,
         );
         return;
       }
-      comprovanteUrl = url;
+      // `comprovanteUrl` guarda o caminho no bucket (ver lib/storageGastos.ts).
+      comprovanteUrl = caminho;
     }
 
     // Trocou ou removeu o comprovante: o arquivo antigo vira lixo no bucket.
@@ -464,36 +464,7 @@ export function LancamentoForm({
 
               {form.comprovanteUrl ? (
                 <div className="rounded-xl border border-border bg-card p-3">
-                  {ehPdf(form.comprovanteUrl) ? (
-                    <a
-                      href={form.comprovanteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm font-normal text-coral-dark hover:underline"
-                    >
-                      <FileText className="size-4 shrink-0" />
-                      <span className="truncate">
-                        {nomeDoArquivo(form.comprovanteUrl)}
-                      </span>
-                    </a>
-                  ) : (
-                    <a
-                      href={form.comprovanteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={form.comprovanteUrl}
-                        alt={nomeDoArquivo(form.comprovanteUrl)}
-                        className="max-h-48 w-full rounded-lg object-contain"
-                      />
-                      <span className="mt-2 block truncate text-xs text-subtle-fg">
-                        {nomeDoArquivo(form.comprovanteUrl)}
-                      </span>
-                    </a>
-                  )}
+                  <ComprovantePreview valor={form.comprovanteUrl} />
 
                   <Button
                     variant="ghost"
@@ -517,8 +488,8 @@ export function LancamentoForm({
                     }
                   />
                   <p className="text-xs text-muted-foreground">
-                    JPG, PNG, WEBP ou PDF, até {TAMANHO_MAXIMO_MB} MB. O arquivo
-                    fica num bucket público: quem tiver o link consegue abrir.
+                    JPG, PNG, WEBP ou PDF, até {TAMANHO_MAXIMO_MB} MB. Só quem
+                    está logado no painel consegue abrir.
                   </p>
                 </>
               )}

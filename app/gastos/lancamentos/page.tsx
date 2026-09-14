@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Trash2, Paperclip } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useGastosStore } from "@/lib/storeGastos";
 import type { Lancamento } from "@/lib/typesGastos";
 import { FORMA_PAGAMENTO_LABELS } from "@/lib/typesGastos";
@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Pagination } from "@/components/ui/Pagination";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { LancamentoForm } from "@/components/gastos/LancamentoForm";
+import { ComprovanteLink } from "@/components/gastos/Comprovante";
 import {
   LancamentoFilters,
   filtrosVazios,
@@ -229,16 +230,10 @@ export default function LancamentosPage() {
                           <p className="flex items-center gap-1.5 font-normal text-carvao">
                             <span className="min-w-0">{l.descricao}</span>
                             {l.comprovanteUrl && (
-                              <a
-                                href={l.comprovanteUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title="Abrir comprovante"
-                                aria-label={`Abrir comprovante de ${l.descricao}`}
-                                className="shrink-0 text-subtle-fg transition-colors hover:text-coral-dark"
-                              >
-                                <Paperclip className="size-4" />
-                              </a>
+                              <ComprovanteLink
+                                valor={l.comprovanteUrl}
+                                descricao={l.descricao}
+                              />
                             )}
                           </p>
                           {l.fornecedor && (
