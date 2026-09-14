@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useGastosStore } from "@/lib/storeGastos";
+import { Logo } from "@/components/layout/Logo";
 
 /**
  * Carga do módulo Gastos.
@@ -22,10 +23,8 @@ export function GastosProviders({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="size-9 animate-spin rounded-full border-2 border-border-strong border-t-coral" />
-          <p className="font-brand text-lg font-light tracking-tighter text-carvao lowercase">
-            growthdirect<span className="text-coral">.</span>
-          </p>
+          <Logo variante="simbolo" className="h-10" />
+          <div className="size-6 animate-spin rounded-full border-2 border-border-strong border-t-coral" />
         </div>
       </div>
     );

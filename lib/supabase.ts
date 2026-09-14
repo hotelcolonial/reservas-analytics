@@ -1,12 +1,23 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Campanha, Reserva, GastoDiario, Propriedade } from "./types";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
 /** True when Supabase credentials are present. Falls back to mock data if false. */
-export const supabaseConfigured = Boolean(url && key);
+export const supabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
+/**
+ * Cliente de NAVEGADOR (`@supabase/ssr`). É o único que o código `"use client"`
+ * usa, e a API de queries é a mesma do `createClient` de antes — por isso os
+ * stores e os mappers não mudaram.
+ *
+ * A diferença está na sessão: `createBrowserClient` guarda os tokens em
+ * cookies em vez de `localStorage`, e é isso que permite ao `proxy.ts` (que
+ * roda no servidor) saber se há alguém logado antes de renderizar a rota.
+ * O par de servidor vive em `lib/supabaseServer.ts`.
+ */
 // Lazy initialization — avoids "supabaseUrl is required" error at build time
 // when env vars are not set.
 let _client: SupabaseClient | null = null;
@@ -16,7 +27,7 @@ export function getSupabase(): SupabaseClient {
     if (!supabaseConfigured) {
       throw new Error("Supabase credentials not configured");
     }
-    _client = createClient(url, key);
+    _client = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
   return _client;
 }

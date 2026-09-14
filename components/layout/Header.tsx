@@ -14,14 +14,18 @@ import {
 } from "@/components/ui/select";
 import { useStore } from "@/lib/store";
 import { useGastosStore } from "@/lib/storeGastos";
+import { ROTA_LOGIN } from "@/lib/rotasAuth";
 import { NavTabs, TABS_RESERVAS, TABS_GASTOS } from "./NavTabs";
+import { UserMenu } from "./UserMenu";
+import { Logo } from "./Logo";
 import { CampaignForm } from "@/components/campaigns/CampaignForm";
 import { ReservationForm } from "@/components/reservations/ReservationForm";
 
-/** Qual módulo está aberto, derivado do pathname. */
-type Modulo = "hub" | "reservas" | "gastos";
+/** Qual módulo está aberto, derivado do pathname. `login` não tem header. */
+type Modulo = "login" | "hub" | "reservas" | "gastos";
 
 function moduloDoPathname(pathname: string): Modulo {
+  if (pathname === ROTA_LOGIN) return "login";
   if (pathname === "/") return "hub";
   if (pathname === "/gastos" || pathname.startsWith("/gastos/")) return "gastos";
   return "reservas";
@@ -29,23 +33,31 @@ function moduloDoPathname(pathname: string): Modulo {
 
 /**
  * Marca. Sempre leva ao hub ("/") para trocar de módulo.
- * `nome` acompanha o módulo aberto: "ReservaTrack" no painel de reservas,
- * "GrowthDirect" (a marca guarda-chuva) no hub e no módulo de gastos.
+ * O logotipo é o mesmo em todo lugar (marca guarda-chuva); `modulo` e
+ * `descricao` dizem onde a pessoa está: "reservatrack · campanhas e reservas".
  */
-function Marca({ nome, subtitulo }: { nome: string; subtitulo?: string }) {
+function Marca({
+  modulo,
+  descricao,
+}: {
+  modulo?: string;
+  descricao?: string;
+}) {
   return (
-    <Link href="/" className="group flex items-center gap-2.5">
-      {/* O logotipo é a marca em minúscula com o ponto coral (§1). Quando o
-          logo-growthdirect-t.png entrar no repo, ele substitui este bloco. */}
-      <span className="font-brand text-lg font-light tracking-tighter text-carvao lowercase sm:text-xl">
-        {nome}
-        <span className="text-coral">.</span>
-      </span>
-      {subtitulo && (
+    <Link href="/" className="group flex min-w-0 items-center gap-3">
+      <Logo className="h-7 shrink-0 sm:h-8" />
+      {modulo && (
         <>
-          <span className="hidden h-4 w-px bg-border lg:block" />
-          <span className="hidden text-xs font-normal text-subtle-fg lowercase lg:block">
-            {subtitulo}
+          <span className="hidden h-5 w-px shrink-0 bg-border sm:block" />
+          <span className="hidden min-w-0 items-baseline gap-1.5 truncate sm:flex">
+            <span className="text-sm font-normal text-carvao lowercase">
+              {modulo}
+            </span>
+            {descricao && (
+              <span className="hidden text-xs font-normal text-subtle-fg lowercase lg:inline">
+                · {descricao}
+              </span>
+            )}
           </span>
         </>
       )}
@@ -102,13 +114,17 @@ export function Header() {
     if (pathname !== ROTA_LANCAMENTOS) router.push(ROTA_LANCAMENTOS);
   }
 
-  // Hub: só a marca, sem nav e sem seletor de propriedade.
+  // Login: a página desenha a própria marca; sem header.
+  if (modulo === "login") return null;
+
+  // Hub: só a marca e o menu do usuário, sem nav e sem seletor de propriedade.
   if (modulo === "hub") {
     return (
       <header className="sticky top-0 z-30 border-b border-border bg-branco/78 backdrop-blur-[14px] backdrop-saturate-150">
         <div className={barra}>
-          <div className="flex h-16 items-center">
-            <Marca nome="GrowthDirect" />
+          <div className="flex h-16 items-center justify-between gap-4">
+            <Marca />
+            <UserMenu />
           </div>
         </div>
       </header>
@@ -122,10 +138,13 @@ export function Header() {
       <header className="sticky top-0 z-30 border-b border-border bg-branco/78 backdrop-blur-[14px] backdrop-saturate-150">
         <div className={barra}>
           <div className="flex h-16 items-center justify-between gap-4">
-            <Marca nome="GrowthDirect" subtitulo="gastos do escritório" />
-            <Button size="sm" onClick={novoLancamento}>
-              + novo lançamento
-            </Button>
+            <Marca modulo="gastos" descricao="despesas do escritório" />
+            <div className="flex items-center gap-3">
+              <Button size="sm" onClick={novoLancamento}>
+                + novo lançamento
+              </Button>
+              <UserMenu />
+            </div>
           </div>
           <div className="pb-3">
             <NavTabs tabs={TABS_GASTOS} />
@@ -142,7 +161,7 @@ export function Header() {
         <div className={barra}>
           <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
-              <Marca nome="ReservaTrack" subtitulo="campanhas e reservas" />
+              <Marca modulo="reservatrack" descricao="campanhas e reservas" />
               <span className="hidden h-6 w-px bg-border sm:block" />
               <PropriedadeSelector />
             </div>
@@ -158,6 +177,7 @@ export function Header() {
               <Button size="sm" onClick={() => setReservaOpen(true)}>
                 + nova reserva
               </Button>
+              <UserMenu />
             </div>
           </div>
 

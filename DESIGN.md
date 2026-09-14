@@ -43,7 +43,7 @@ tom, escrita) e deixamos de fora tudo que é espetáculo de primeira visita.
 - **Tipografia.** O DS pede HelveticaNeueCyr 300/400. Os `.ttf` não estão no
   repo (a §9 os lista como assets a copiar). Como o próprio DS manda pôr Inter
   logo atrás no stack — porque o arquivo Light não traz glifos acentuados —,
-  **Inter 300/400 carrega a marca hoje**. Ver §6 abaixo para ativar a Helvetica.
+  **Inter 300/400 carrega a marca hoje**. Ver §7 abaixo para ativar a Helvetica.
 
 - **Texto secundário.** O DS diz "títulos sempre em `--fg` pleno, nunca
   opacidade". O painel usava `text-colonial/70`, `/50`, `/45`… Tudo virou os
@@ -107,15 +107,33 @@ Input, Select, Sheet, Dialog e Badge seguirem o DS sem reescrita.
 `Hotel Colonial`, `camp-colonial-junino`) em `lib/store.ts` e `data/mockData.ts`.
 Isso é o nome de um hotel cliente, não um token. Não renomeie.
 
-## 6. Pendências
+## 6. Logotipo
+
+Os arquivos vivem em `public/logo/` (PNG, fundo transparente, recortados ao
+conteúdo) e entram na UI só por `components/layout/Logo.tsx`, que expõe as
+quatro variantes. O tamanho se controla pela **altura** (`h-8`, `h-32`); a
+largura acompanha.
+
+| Variante | Arquivo | Onde |
+|---|---|---|
+| `horizontal` | `growthdirect.png` | `Header`, em todos os módulos (`h-7`/`h-8`) |
+| `vertical` | `growthdirect-vertical.png` | `/login`, centrado (`h-28`/`h-32`) |
+| `simbolo` | `growthdirect-simbolo.png` | spinners de carga (`h-10`) e `app/icon.png` (favicon 256px) |
+| `mono` | `growthdirect-mono.png` | reservado: impressão e fundos coloridos. Sem uso na UI hoje |
+
+O símbolo traz o coral `#F95738` do DS; por isso ele **é** o acento da tela
+onde aparece e não pede outro ponto coral ao lado. A marca tipográfica
+(`growthdirect` + ponto) que fazia as vezes de logo saiu do código.
+
+No `Header`, o logo é sempre o da GrowthDirect (marca guarda-chuva); o módulo
+aberto aparece como texto ao lado: `reservatrack · campanhas e reservas`.
+
+## 7. Pendências
 
 - **Fontes da marca.** Colocar `HelveticaNeueCyr-Light.ttf` e
   `-Roman.ttf` em `public/fonts/`, declarar os `@font-face` (300 e 400) e pôr
   `"HelveticaNeueCyr"` na frente de Inter em `--font-brand`. O stack já está
   montado para isso: é uma linha em `globals.css`.
-- **Logotipo.** Hoje a marca é tipográfica (`growthdirect` + ponto coral) no
-  `Header`. Quando `logo-growthdirect-t.png` entrar em `public/`, ele
-  substitui o bloco marcado em `components/layout/Header.tsx`.
 - **Cores das naturezas já gravadas.** O seed novo em `schema-gastos.sql` usa a
   paleta do DS, mas as 6 linhas que já estão no Supabase mantêm as cores
   verdes antigas até serem editadas em `/gastos/naturezas` (ou por um `update`).

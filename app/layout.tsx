@@ -19,7 +19,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GrowthDirect",
+  title: "GrowthDirect · painel administrativo",
   description:
     "Painel GrowthDirect: campanhas e reservas dos hotéis, e os gastos do escritório.",
 };

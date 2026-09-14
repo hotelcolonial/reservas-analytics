@@ -25,17 +25,22 @@ português (`campanha`, `reserva`, `gasto`, `lancamento`, `propriedade`).
 
 ## Como funciona
 
-- **100% client-side.** Toda página é `"use client"`. Não há Route Handlers, Server
-  Actions, middleware nem sessão. O navegador fala com o Supabase usando a anon key
-  pública — por isso não há lugar para segredos de terceiros nem autenticação.
-- **Sem login.** Quem tem a URL vê e edita tudo. As policies RLS do projeto são
-  permissivas. Não cadastre dados pessoais de hóspedes.
+- **Dados no navegador; sessão no servidor.** Toda página é `"use client"` e toda
+  leitura/escrita de dados vai direto do navegador ao Supabase com a anon key. O único
+  código de servidor é o `proxy.ts` (o "middleware" do Next 16), que renova a sessão a
+  cada request e barra quem não está logado. Não há Route Handlers nem Server Actions,
+  então continua não havendo lugar para segredos de terceiros.
+- **Login com e-mail e senha (Supabase Auth).** Sem sessão, qualquer rota redireciona
+  para `/login`. Não há roles: todo usuário autenticado vê e edita tudo. Os usuários são
+  criados no Dashboard do Supabase (Authentication → Users), não pelo app. As policies
+  RLS ainda são permissivas (próxima fase). Não cadastre dados pessoais de hóspedes.
 - **Carga completa em memória.** Ao abrir, o app baixa as tabelas inteiras (paginando de
   1000 em 1000) e todo filtro, ordenação, paginação e cálculo acontece no navegador.
 - **Escrita otimista, sem rollback.** Cada ação atualiza o estado local primeiro e dispara
   a gravação no Supabase sem `await`; um erro vai só para o `console.error`.
 - **Modo mock.** Sem as variáveis de ambiente, o app roda com os dados de exemplo de
-  `data/mockData.ts` e `data/mockDataGastos.ts`, em memória e sem persistência.
+  `data/mockData.ts` e `data/mockDataGastos.ts`, em memória e sem persistência — e sem
+  login: o proxy deixa tudo passar, porque não há sessão possível.
 
 Os detalhes (modelo de dados, padrão do store, regras de cálculo e convenções de UI)
 estão em **`ARQUITETURA.md`**. O módulo de gastos está em **`GASTOS.md`**. A identidade
@@ -62,6 +67,12 @@ Acesse **http://localhost:3000**.
 
 As duas são expostas ao navegador (prefixo `NEXT_PUBLIC_`). Os arquivos `.env*` são
 ignorados pelo git, exceto o `.env.example`. Se faltar alguma, o app sobe em modo mock.
+
+### Usuários
+
+O login usa **Supabase Auth com e-mail e senha**. Não há tela de cadastro: crie cada
+pessoa no Dashboard do Supabase (Authentication → Users → Add user), com a opção de
+auto-confirmar o e-mail. Todos os usuários têm o mesmo acesso.
 
 ### Banco de dados
 
@@ -92,6 +103,7 @@ npm run typecheck   # tsc --noEmit
 
 | Rota | O que faz |
 |---|---|
+| `/login` | Entrar com e-mail e senha. Única rota pública |
 | `/` | Hub: escolhe entre ReservaTrack e Gastos |
 | `/painel` | Dashboard do ReservaTrack: filtro de período, métricas, gráficos, ranking e resumo de campanhas |
 | `/campanhas` · `/campanhas/[id]` | Cadastro de campanhas (grid ou lista, drag & drop) e detalhe de cada uma |
@@ -107,22 +119,28 @@ npm run typecheck   # tsc --noEmit
 ## Estrutura do projeto
 
 ```
+proxy.ts                Código de servidor: renova a sessão e protege as rotas
 app/
   layout.tsx            Shell (fontes, Providers, Header)
   page.tsx              Hub de módulos
-  providers.tsx         Carga inicial do store do ReservaTrack
+  providers.tsx         Carga inicial do store do ReservaTrack (ignora /login)
+  login/                Tela de login
   painel/ campanhas/ reservas/ verba/ plataformas/ propriedades/
   gastos/               Módulo Gastos, com layout.tsx e providers.tsx próprios
 components/
   ui/                   Primitivas shadcn + ConfirmDialog, EmptyState, Pagination, PeriodFilter
-  dashboard/ campaigns/ reservations/ platforms/ verba/ layout/
+  layout/               Header, NavTabs, UserMenu
+  dashboard/ campaigns/ reservations/ platforms/ verba/
   gastos/               Formulários, filtros e gráficos do módulo Gastos
 lib/
   types.ts              Tipos do domínio ReservaTrack
   typesGastos.ts        Tipos do domínio Gastos
   store.ts              Store Zustand do ReservaTrack (escopo por propriedade)
   storeGastos.ts        Store Zustand do módulo Gastos
-  supabase.ts           Cliente Supabase, leitura paginada e mappers row ↔ domínio
+  supabase.ts           Cliente Supabase de navegador, leitura paginada e mappers
+  supabaseServer.ts     Cliente Supabase de servidor (cookies), usado só pelo proxy
+  auth.ts               Login, logout e hook do usuário logado
+  rotasAuth.ts          Constantes de rota da autenticação
   supabaseGastos.ts     Mappers do módulo Gastos
   storageGastos.ts      Upload de comprovantes (Supabase Storage)
   calculations.ts       Métricas do ReservaTrack

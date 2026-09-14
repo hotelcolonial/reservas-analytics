@@ -9,8 +9,8 @@
 
 ## 1. Qué es
 
-Panel interno (sin login) para medir el retorno de campañas de marketing que generan
-reservas de hotel. El equipo carga a mano: campañas, verba gastada por día, y reservas.
+Panel interno (con login por e-mail y contraseña, sin roles) para medir el retorno de
+campañas de marketing que generan reservas de hotel. El equipo carga a mano: campañas, verba gastada por día, y reservas.
 La app cruza esos tres datos y calcula ROI / ROAS / ticket medio / costo por reserva,
 por campaña y por plataforma, con filtro de período.
 
@@ -31,22 +31,36 @@ convención en todo lo nuevo.
 | Estado | **Zustand** (store único, sin middleware `persist`) |
 | Gráficos | **Recharts 3** |
 | Drag & drop | `@dnd-kit` (reordenar campañas) |
-| Backend | **Supabase** (PostgREST) llamado **directo desde el navegador** con la anon key |
+| Backend | **Supabase** (PostgREST) llamado **directo desde el navegador** con la anon key, vía `@supabase/ssr` (`createBrowserClient`) |
+| Auth | **Supabase Auth**, e-mail + contraseña. Sesión en cookies; `proxy.ts` la renueva y protege las rutas. Sin roles |
 | Tests / CI | **no hay** |
 
 ## 3. Restricción arquitectónica #1 (la más importante)
 
-**Toda la app es cliente.** Cada `page.tsx` empieza con `"use client"`. No hay Server
-Components con datos, no hay Route Handlers (`app/api/**`), no hay Server Actions, no hay
-sesión ni middleware. El navegador habla con Supabase usando `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+**Los datos viven en el cliente; el servidor solo cuida la sesión.** Cada `page.tsx`
+empieza con `"use client"`. No hay Server Components con datos, no hay Route Handlers
+(`app/api/**`), no hay Server Actions. El navegador habla con Supabase usando
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+La **única** pieza de servidor es `proxy.ts` en la raíz (el `middleware.ts` de versiones
+anteriores; Next 16 lo renombró). Corre antes de cada request, renueva el token de
+Supabase leyendo/escribiendo cookies (`lib/supabaseServer.ts`, `createServerClient`) y
+redirige: sin sesión → `/login`; con sesión en `/login` → `/`. No hace queries de datos.
+En modo mock (sin env vars) deja pasar todo.
 
 Consecuencias para cualquier feature nueva:
 
 - No existe lugar para secretos (API keys de terceros, webhooks, envío de mail). Si una
   modificación los necesita → hay que **crear** la capa de servidor (Route Handler o
-  Server Action) que hoy no existe, y decidirlo explícitamente con la usuaria.
-- No hay autenticación: quien tenga la URL ve y edita todo. Las políticas RLS reales del
-  proyecto son permisivas (ver §7).
+  Server Action) que hoy no existe, y decidirlo explícitamente con la usuaria. El
+  `proxy.ts` no sirve para eso: no debe hacer fetch lento ni lógica de negocio.
+- Hay autenticación pero **no autorización**: todo usuario logueado ve y edita todo. Las
+  políticas RLS reales del proyecto siguen siendo permisivas (ver §7); ajustarlas es la
+  fase siguiente.
+- La sesión vive en **cookies**, no en `localStorage`: es lo que permite que el proxy la
+  vea. El cliente de navegador (`lib/supabase.ts`) es `createBrowserClient` de
+  `@supabase/ssr`; la API de queries es la misma que la de `createClient`, por eso los
+  stores no cambiaron. Login/logout y el hook `useUsuario()` están en `lib/auth.ts`.
 - Los datos se cargan **completos** al arrancar (las 4 tablas enteras) y todo el filtrado,
   ordenamiento, paginación y agregación ocurre en memoria. Escala bien hasta unos pocos
   miles de filas; más allá hay que mover el trabajo al servidor.
@@ -133,7 +147,8 @@ helper y mostrar un toast).
 `app/providers.tsx` llama `loadData()` una vez y bloquea la app con un spinner hasta
 `hydrated: true`. `loadData` trae las 4 tablas en paralelo con `fetchAll()`, que **pagina de
 a 1000 filas** (PostgREST corta silenciosamente en 1000 con un `select` plano — no volver a
-un `.select("*")` suelto).
+un `.select("*")` suelto). En `/login` el `Providers` no carga ni bloquea: renderiza los
+hijos directo, y dispara `loadData()` recién cuando la ruta cambia al hub.
 
 ### Modo mock
 
@@ -191,15 +206,22 @@ nunca devolver `0` ni `Infinity` desde una métrica nueva.
 `supabase/schema.sql` crea las tablas; `supabase/migration-multipropriedade.sql` fue el paso
 que agregó `propriedades` y la columna `propriedade_id` a las otras tres.
 
+**Autenticación (Supabase Auth).** La app exige login por e-mail y contraseña; los
+usuarios se crean a mano en el Dashboard (Authentication → Users). No hay roles. La UI y
+las rutas están protegidas por `proxy.ts` (ver §3), pero eso protege la **app**, no la
+**base**: la anon key sigue siendo pública y las policies RLS son las que deciden qué puede
+hacer una request directa a PostgREST.
+
 ⚠️ **Inconsistencia real a tener en cuenta:** las políticas RLS que escribe `schema.sql`
-exigen `auth.role() = 'authenticated'`, pero la app **no autentica** — usa la anon key. Si
-esas políticas estuvieran activas tal cual, la app no leería nada. La migración de
-propiedades, en cambio, usa `using (true)`. O sea: las políticas vivas en el proyecto real
-son permisivas y **los datos son accesibles para cualquiera que tenga la anon key**. Es
-aceptable para una herramienta interna, pero es la razón por la que no se debe cargar en
+exigen `auth.role() = 'authenticated'`, mientras que la migración de propiedades y
+`schema-gastos.sql` usan `using (true)`. Las políticas vivas en el proyecto real son las
+permisivas, o sea: **los datos siguen accesibles para cualquiera que tenga la anon key**,
+aunque la app ya pida login. Ahora que el navegador manda el token del usuario en cada
+request, endurecer las policies a `authenticated` es posible y es la **fase siguiente**
+(no hacerlo a medias: si una tabla queda con `authenticated` y otra con `true`, el app
+sigue funcionando pero la protección es ilusoria). Hasta entonces no se debe cargar en
 esta app ningún dato personal de huésped (de hecho `cliente` y `telefone` fueron removidos
-de `reservas` en el commit `35c5e62`). Cualquier feature que reintroduzca datos personales
-requiere resolver auth primero.
+de `reservas` en el commit `35c5e62`).
 
 Los `.env*` están gitignoreados. La anon key es publicable, pero igual no conviene pegarla
 en archivos versionados.
@@ -208,6 +230,7 @@ en archivos versionados.
 
 | Ruta | Archivo | Qué hace |
 |---|---|---|
+| `/login` | `app/login/page.tsx` | **Única ruta pública.** E-mail + contraseña (`signInWithPassword`), estados de loading y error en pt-BR. Sin `Header` y sin carga de datos. Al entrar → `/`. En modo mock muestra un aviso y un link al hub |
 | `/` | `app/page.tsx` | **Hub** de selección de módulo: dos bloques que llevan a `/painel` (ReservaTrack) y a `/gastos` (Gastos). Sin nav ni selector de propiedad |
 | `/painel` | `app/painel/page.tsx` | Dashboard: filtro de período, 8 métricas, gráfico receita×investimento mensual, reservas por plataforma, gauge de confirmación, ranking, últimas reservas, tabla resumen |
 | `/campanhas` | `app/campanhas/page.tsx` | Grid o lista (toggle persistido), agrupadas en **Ativas / Pausadas**, drag & drop dentro de cada grupo, alta/edición en `Sheet`, borrado con confirmación |
@@ -220,10 +243,13 @@ en archivos versionados.
 Las rutas del módulo Gastos (`/gastos/**`) están en `GASTOS.md`.
 
 Layout: `app/layout.tsx` → `Providers` (carga) → `Header` → `main` con `max-w-7xl`. El
-`Header` deriva el módulo del pathname: en `/` muestra solo la marca; en el módulo de
-reservas muestra selector de propiedad, botones "nova campanha"/"nova reserva" y las
-`NavTabs` de ReservaTrack (la pestaña "dashboard" apunta a `/painel`); en `/gastos/**`
-muestra el botón "novo lançamento" y las `NavTabs` de Gastos.
+`Header` deriva el módulo del pathname: en `/login` no renderiza nada; en `/` muestra la
+marca y el menú de usuario; en el módulo de reservas muestra selector de propiedad, botones
+"nova campanha"/"nova reserva" y las `NavTabs` de ReservaTrack (la pestaña "dashboard"
+apunta a `/painel`); en `/gastos/**` muestra el botón "novo lançamento" y las `NavTabs` de
+Gastos. El menú de usuario (`components/layout/UserMenu.tsx`, `DropdownMenu` de
+`radix-ui`) muestra el e-mail y la opción "sair", que hace `signOut` y navega a `/login`
+con recarga completa (así se descartan los stores en memoria).
 
 **Nota sobre el filtro de período:** el componente `PeriodFilter` (presets Tudo / Hoje /
 Ontem / 7 dias / Este mês / Este ano + rango manual) filtra las reservas por
