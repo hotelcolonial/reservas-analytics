@@ -14,6 +14,27 @@ import {
   gastoToRow,
 } from "./supabase";
 import { campanhasMock, reservasMock, gastosMock } from "@/data/mockData";
+import { escreverOtimista } from "./escritaOtimista";
+import {
+  acrescentar,
+  localizar,
+  localizarTodos,
+  porOrdem,
+  reinserir,
+  reinserirVarios,
+  semId,
+  substituir,
+} from "./listas";
+import { formatDate } from "./utils";
+
+/**
+ * Toda escrita passa por `escreverOtimista` (ver lib/escritaOtimista.ts):
+ * `aplicar` faz o `set()` na hora, `executar` grava no Supabase, e se a
+ * gravação falhar `desfazer` devolve o store ao estado anterior e um toast
+ * oferece "Tentar novamente". Os estados anterior/posterior são capturados
+ * ANTES do `set()`, e `aplicar`/`desfazer` usam `set(fn)` com helpers
+ * idempotentes de `lib/listas.ts`, para funcionarem também no retry.
+ */
 
 function novoId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -65,6 +86,28 @@ function escopar(
     campanhas: campanhasAll.filter((c) => c.propriedadeId === propId),
     reservas: reservasAll.filter((r) => r.propriedadeId === propId),
     gastos: gastosAll.filter((g) => g.propriedadeId === propId),
+  };
+}
+
+/**
+ * Patch parcial das listas completas + o re-escopo obrigatório (ARQUITETURA.md
+ * §5, trampa 1). Todo `set()` que mexa em `*All` passa por aqui.
+ */
+function comEscopo(
+  st: Pick<
+    AppState,
+    "campanhasAll" | "reservasAll" | "gastosAll" | "propriedadeAtivaId"
+  >,
+  parcial: Partial<Pick<AppState, "campanhasAll" | "reservasAll" | "gastosAll">>,
+) {
+  const campanhasAll = parcial.campanhasAll ?? st.campanhasAll;
+  const reservasAll = parcial.reservasAll ?? st.reservasAll;
+  const gastosAll = parcial.gastosAll ?? st.gastosAll;
+  return {
+    campanhasAll,
+    reservasAll,
+    gastosAll,
+    ...escopar(campanhasAll, reservasAll, gastosAll, st.propriedadeAtivaId),
   };
 }
 
@@ -207,38 +250,40 @@ export const useStore = create<AppState>()((set, get) => ({
 
   addPropriedade: (data) => {
     const nova: Propriedade = { ...data, id: novoId() };
-    set((s) => ({
-      propriedades: [...s.propriedades, nova].sort((a, b) => a.ordem - b.ordem),
-    }));
-    if (supabaseConfigured) {
-      db()
-        .from("propriedades")
-        .insert(propriedadeToRow(nova))
-        .then(({ error }) => {
-          if (error) console.error("Supabase insert propriedade:", error.message);
-        });
-    }
+    escreverOtimista({
+      acao: `salvar a propriedade "${nova.nome}"`,
+      aplicar: () =>
+        set((s) => ({
+          propriedades: porOrdem(acrescentar(s.propriedades, nova)),
+        })),
+      desfazer: () =>
+        set((s) => ({ propriedades: semId(s.propriedades, nova.id) })),
+      executar: () => db().from("propriedades").insert(propriedadeToRow(nova)),
+    });
   },
 
   updatePropriedade: (id, data) => {
-    set((s) => ({
-      propriedades: s.propriedades
-        .map((p) => (p.id === id ? { ...p, ...data } : p))
-        .sort((a, b) => a.ordem - b.ordem),
-    }));
-    if (supabaseConfigured) {
-      const updated = get().propriedades.find((p) => p.id === id);
-      if (updated) {
+    const anterior = get().propriedades.find((p) => p.id === id);
+    if (!anterior) return;
+    const atualizada: Propriedade = { ...anterior, ...data };
+    escreverOtimista({
+      acao: `atualizar a propriedade "${atualizada.nome}"`,
+      aplicar: () =>
+        set((s) => ({
+          propriedades: porOrdem(substituir(s.propriedades, atualizada)),
+        })),
+      // A lista já estava ordenada: devolver o objeto e reordenar restaura a
+      // ordem original (sort é estável).
+      desfazer: () =>
+        set((s) => ({
+          propriedades: porOrdem(substituir(s.propriedades, anterior)),
+        })),
+      executar: () =>
         db()
           .from("propriedades")
-          .update(propriedadeToRow(updated))
-          .eq("id", id)
-          .then(({ error }) => {
-            if (error)
-              console.error("Supabase update propriedade:", error.message);
-          });
-      }
-    }
+          .update(propriedadeToRow(atualizada))
+          .eq("id", id),
+    });
   },
 
   removePropriedade: (id) => {
@@ -250,28 +295,45 @@ export const useStore = create<AppState>()((set, get) => ({
       s.gastosAll.some((g) => g.propriedadeId === id);
     if (temDados) return;
 
-    set((st) => {
-      const propriedades = st.propriedades.filter((p) => p.id !== id);
-      const novaAtiva =
-        st.propriedadeAtivaId === id
-          ? (propriedades[0]?.id ?? "")
-          : st.propriedadeAtivaId;
-      if (novaAtiva !== st.propriedadeAtivaId) salvarPropriedade(novaAtiva);
-      return {
-        propriedades,
-        propriedadeAtivaId: novaAtiva,
-        ...escopar(st.campanhasAll, st.reservasAll, st.gastosAll, novaAtiva),
-      };
+    const removida = localizar(s.propriedades, id);
+    if (!removida) return;
+    // A propriedade ativa pode mudar junto; o desfazer devolve as duas coisas.
+    const ativaAnterior = s.propriedadeAtivaId;
+
+    escreverOtimista({
+      acao: `excluir a propriedade "${removida.item.nome}"`,
+      aplicar: () =>
+        set((st) => {
+          const propriedades = semId(st.propriedades, id);
+          const novaAtiva =
+            st.propriedadeAtivaId === id
+              ? (propriedades[0]?.id ?? "")
+              : st.propriedadeAtivaId;
+          if (novaAtiva !== st.propriedadeAtivaId) salvarPropriedade(novaAtiva);
+          return {
+            propriedades,
+            propriedadeAtivaId: novaAtiva,
+            ...escopar(st.campanhasAll, st.reservasAll, st.gastosAll, novaAtiva),
+          };
+        }),
+      desfazer: () =>
+        set((st) => {
+          if (st.propriedadeAtivaId !== ativaAnterior) {
+            salvarPropriedade(ativaAnterior);
+          }
+          return {
+            propriedades: reinserir(st.propriedades, removida),
+            propriedadeAtivaId: ativaAnterior,
+            ...escopar(
+              st.campanhasAll,
+              st.reservasAll,
+              st.gastosAll,
+              ativaAnterior,
+            ),
+          };
+        }),
+      executar: () => db().from("propriedades").delete().eq("id", id),
     });
-    if (supabaseConfigured) {
-      db()
-        .from("propriedades")
-        .delete()
-        .eq("id", id)
-        .then(({ error }) => {
-          if (error) console.error("Supabase delete propriedade:", error.message);
-        });
-    }
   },
 
   // ── Campanhas ─────────────────────────────────────────────────────────────
@@ -289,122 +351,145 @@ export const useStore = create<AppState>()((set, get) => ({
       ordem: proximaOrdem,
       id: novoId(),
     };
-    set((st) => {
-      const campanhasAll = [...st.campanhasAll, nova];
-      return {
-        campanhasAll,
-        ...escopar(campanhasAll, st.reservasAll, st.gastosAll, st.propriedadeAtivaId),
-      };
+    escreverOtimista({
+      acao: `salvar a campanha "${nova.nome}"`,
+      aplicar: () =>
+        set((st) =>
+          comEscopo(st, { campanhasAll: acrescentar(st.campanhasAll, nova) }),
+        ),
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, { campanhasAll: semId(st.campanhasAll, nova.id) }),
+        ),
+      executar: () => db().from("campanhas").insert(campanhaToRow(nova)),
     });
-    if (supabaseConfigured) {
-      db()
-        .from("campanhas")
-        .insert(campanhaToRow(nova))
-        .then(({ error }) => {
-          if (error) console.error("Supabase insert campanha:", error.message);
-        });
-    }
   },
 
   updateCampanha: (id, data) => {
-    set((s) => {
-      const campanhasAll = s.campanhasAll.map((c) =>
-        c.id === id ? { ...c, ...data } : c,
-      );
-      return {
-        campanhasAll,
-        ...escopar(campanhasAll, s.reservasAll, s.gastosAll, s.propriedadeAtivaId),
-      };
+    const anterior = get().campanhasAll.find((c) => c.id === id);
+    if (!anterior) return;
+    const atualizada: Campanha = { ...anterior, ...data };
+    escreverOtimista({
+      acao: `atualizar a campanha "${atualizada.nome}"`,
+      aplicar: () =>
+        set((st) =>
+          comEscopo(st, {
+            campanhasAll: substituir(st.campanhasAll, atualizada),
+          }),
+        ),
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, { campanhasAll: substituir(st.campanhasAll, anterior) }),
+        ),
+      executar: () =>
+        db().from("campanhas").update(campanhaToRow(atualizada)).eq("id", id),
     });
-    if (supabaseConfigured) {
-      const updated = get().campanhasAll.find((c) => c.id === id);
-      if (updated) {
-        db()
-          .from("campanhas")
-          .update(campanhaToRow(updated))
-          .eq("id", id)
-          .then(({ error }) => {
-            if (error) console.error("Supabase update campanha:", error.message);
-          });
-      }
-    }
   },
 
   removeCampanha: (id) => {
-    set((s) => {
-      const campanhasAll = s.campanhasAll.filter((c) => c.id !== id);
-      // Reservas linked to this campaign lose the link (mirrors ON DELETE SET NULL)
-      const reservasAll = s.reservasAll.map((r) =>
-        r.campanhaId === id ? { ...r, campanhaId: null } : r,
-      );
-      // Gastos dessa campanha são removidos (mirrors ON DELETE CASCADE)
-      const gastosAll = s.gastosAll.filter((g) => g.campanhaId !== id);
-      return {
-        campanhasAll,
-        reservasAll,
-        gastosAll,
-        ...escopar(campanhasAll, reservasAll, gastosAll, s.propriedadeAtivaId),
-      };
+    const s = get();
+    const removida = localizar(s.campanhasAll, id);
+    if (!removida) return;
+    // Efeitos locais que espelham o banco e precisam ser desfeitos junto:
+    // reservas perdem o vínculo (ON DELETE SET NULL) e gastos somem (CASCADE).
+    const reservasDesvinculadas = new Set(
+      s.reservasAll.filter((r) => r.campanhaId === id).map((r) => r.id),
+    );
+    const gastosRemovidos = localizarTodos(
+      s.gastosAll,
+      (g) => g.campanhaId === id,
+    );
+
+    escreverOtimista({
+      acao: `excluir a campanha "${removida.item.nome}"`,
+      aplicar: () =>
+        set((st) =>
+          comEscopo(st, {
+            campanhasAll: semId(st.campanhasAll, id),
+            reservasAll: st.reservasAll.map((r) =>
+              r.campanhaId === id ? { ...r, campanhaId: null } : r,
+            ),
+            gastosAll: st.gastosAll.filter((g) => g.campanhaId !== id),
+          }),
+        ),
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, {
+            campanhasAll: reinserir(st.campanhasAll, removida),
+            reservasAll: st.reservasAll.map((r) =>
+              reservasDesvinculadas.has(r.id) ? { ...r, campanhaId: id } : r,
+            ),
+            gastosAll: reinserirVarios(st.gastosAll, gastosRemovidos),
+          }),
+        ),
+      executar: () => db().from("campanhas").delete().eq("id", id),
     });
-    if (supabaseConfigured) {
-      db()
-        .from("campanhas")
-        .delete()
-        .eq("id", id)
-        .then(({ error }) => {
-          if (error) console.error("Supabase delete campanha:", error.message);
-        });
-    }
   },
 
   toggleCampanhaStatus: (id) => {
-    set((s) => {
-      const campanhasAll: Campanha[] = s.campanhasAll.map((c) =>
-        c.id === id
-          ? { ...c, status: c.status === "ativa" ? "pausada" : "ativa" }
-          : c,
-      );
-      return {
-        campanhasAll,
-        ...escopar(campanhasAll, s.reservasAll, s.gastosAll, s.propriedadeAtivaId),
-      };
-    });
-    if (supabaseConfigured) {
-      const updated = get().campanhasAll.find((c) => c.id === id);
-      if (updated) {
+    const anterior = get().campanhasAll.find((c) => c.id === id);
+    if (!anterior) return;
+    const atualizada: Campanha = {
+      ...anterior,
+      status: anterior.status === "ativa" ? "pausada" : "ativa",
+    };
+    const verbo = atualizada.status === "ativa" ? "reativar" : "pausar";
+    escreverOtimista({
+      acao: `${verbo} a campanha "${atualizada.nome}"`,
+      aplicar: () =>
+        set((st) =>
+          comEscopo(st, {
+            campanhasAll: substituir(st.campanhasAll, atualizada),
+          }),
+        ),
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, { campanhasAll: substituir(st.campanhasAll, anterior) }),
+        ),
+      executar: () =>
         db()
           .from("campanhas")
-          .update({ status: updated.status })
-          .eq("id", id)
-          .then(({ error }) => {
-            if (error) console.error("Supabase toggle campanha:", error.message);
-          });
-      }
-    }
+          .update({ status: atualizada.status })
+          .eq("id", id),
+    });
   },
 
   setCampanhasOrdem: (orderedIds) => {
-    const mapa = new Map(orderedIds.map((id, i) => [id, i + 1]));
-    set((s) => {
-      const campanhasAll = s.campanhasAll.map((c) =>
-        mapa.has(c.id) ? { ...c, ordem: mapa.get(c.id)! } : c,
+    const novasOrdens = new Map(orderedIds.map((id, i) => [id, i + 1]));
+    const ordensAnteriores = new Map(
+      get()
+        .campanhasAll.filter((c) => novasOrdens.has(c.id))
+        .map((c) => [c.id, c.ordem] as const),
+    );
+    const reordenar = (lista: Campanha[], ordens: Map<string, number>) =>
+      lista.map((c) =>
+        ordens.has(c.id) ? { ...c, ordem: ordens.get(c.id)! } : c,
       );
-      return {
-        campanhasAll,
-        ...escopar(campanhasAll, s.reservasAll, s.gastosAll, s.propriedadeAtivaId),
-      };
-    });
-    if (supabaseConfigured) {
-      Promise.all(
-        orderedIds.map((id, i) =>
-          db().from("campanhas").update({ ordem: i + 1 }).eq("id", id),
+
+    escreverOtimista({
+      acao: "reordenar as campanhas",
+      aplicar: () =>
+        set((st) =>
+          comEscopo(st, {
+            campanhasAll: reordenar(st.campanhasAll, novasOrdens),
+          }),
         ),
-      ).then((results) => {
-        for (const { error } of results) {
-          if (error) console.error("Supabase reorder campanhas:", error.message);
-        }
-      });
-    }
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, {
+            campanhasAll: reordenar(st.campanhasAll, ordensAnteriores),
+          }),
+        ),
+      // N updates em paralelo; o primeiro erro conta como falha do lote.
+      executar: () =>
+        Promise.all(
+          orderedIds.map((id, i) =>
+            db().from("campanhas").update({ ordem: i + 1 }).eq("id", id),
+          ),
+        ).then((resultados) => ({
+          error: resultados.find((r) => r.error)?.error ?? null,
+        })),
+    });
   },
 
   // ── Reservas ──────────────────────────────────────────────────────────────
@@ -415,64 +500,52 @@ export const useStore = create<AppState>()((set, get) => ({
       propriedadeId: get().propriedadeAtivaId,
       id: novoId(),
     };
-    set((s) => {
-      const reservasAll = [...s.reservasAll, nova];
-      return {
-        reservasAll,
-        ...escopar(s.campanhasAll, reservasAll, s.gastosAll, s.propriedadeAtivaId),
-      };
+    escreverOtimista({
+      acao: `salvar a reserva ${nova.codigo}`,
+      aplicar: () =>
+        set((st) =>
+          comEscopo(st, { reservasAll: acrescentar(st.reservasAll, nova) }),
+        ),
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, { reservasAll: semId(st.reservasAll, nova.id) }),
+        ),
+      executar: () => db().from("reservas").insert(reservaToRow(nova)),
     });
-    if (supabaseConfigured) {
-      db()
-        .from("reservas")
-        .insert(reservaToRow(nova))
-        .then(({ error }) => {
-          if (error) console.error("Supabase insert reserva:", error.message);
-        });
-    }
   },
 
   updateReserva: (id, data) => {
-    set((s) => {
-      const reservasAll = s.reservasAll.map((r) =>
-        r.id === id ? { ...r, ...data } : r,
-      );
-      return {
-        reservasAll,
-        ...escopar(s.campanhasAll, reservasAll, s.gastosAll, s.propriedadeAtivaId),
-      };
+    const anterior = get().reservasAll.find((r) => r.id === id);
+    if (!anterior) return;
+    const atualizada: Reserva = { ...anterior, ...data };
+    escreverOtimista({
+      acao: `atualizar a reserva ${atualizada.codigo}`,
+      aplicar: () =>
+        set((st) =>
+          comEscopo(st, { reservasAll: substituir(st.reservasAll, atualizada) }),
+        ),
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, { reservasAll: substituir(st.reservasAll, anterior) }),
+        ),
+      executar: () =>
+        db().from("reservas").update(reservaToRow(atualizada)).eq("id", id),
     });
-    if (supabaseConfigured) {
-      const updated = get().reservasAll.find((r) => r.id === id);
-      if (updated) {
-        db()
-          .from("reservas")
-          .update(reservaToRow(updated))
-          .eq("id", id)
-          .then(({ error }) => {
-            if (error) console.error("Supabase update reserva:", error.message);
-          });
-      }
-    }
   },
 
   removeReserva: (id) => {
-    set((s) => {
-      const reservasAll = s.reservasAll.filter((r) => r.id !== id);
-      return {
-        reservasAll,
-        ...escopar(s.campanhasAll, reservasAll, s.gastosAll, s.propriedadeAtivaId),
-      };
+    const removida = localizar(get().reservasAll, id);
+    if (!removida) return;
+    escreverOtimista({
+      acao: `excluir a reserva ${removida.item.codigo}`,
+      aplicar: () =>
+        set((st) => comEscopo(st, { reservasAll: semId(st.reservasAll, id) })),
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, { reservasAll: reinserir(st.reservasAll, removida) }),
+        ),
+      executar: () => db().from("reservas").delete().eq("id", id),
     });
-    if (supabaseConfigured) {
-      db()
-        .from("reservas")
-        .delete()
-        .eq("id", id)
-        .then(({ error }) => {
-          if (error) console.error("Supabase delete reserva:", error.message);
-        });
-    }
   },
 
   // ── Gastos diários ────────────────────────────────────────────────────────
@@ -483,63 +556,49 @@ export const useStore = create<AppState>()((set, get) => ({
       propriedadeId: get().propriedadeAtivaId,
       id: novoId(),
     };
-    set((s) => {
-      const gastosAll = [...s.gastosAll, novo];
-      return {
-        gastosAll,
-        ...escopar(s.campanhasAll, s.reservasAll, gastosAll, s.propriedadeAtivaId),
-      };
+    escreverOtimista({
+      acao: `salvar a verba de ${formatDate(novo.data)}`,
+      aplicar: () =>
+        set((st) =>
+          comEscopo(st, { gastosAll: acrescentar(st.gastosAll, novo) }),
+        ),
+      desfazer: () =>
+        set((st) => comEscopo(st, { gastosAll: semId(st.gastosAll, novo.id) })),
+      executar: () => db().from("gastos").insert(gastoToRow(novo)),
     });
-    if (supabaseConfigured) {
-      db()
-        .from("gastos")
-        .insert(gastoToRow(novo))
-        .then(({ error }) => {
-          if (error) console.error("Supabase insert gasto:", error.message);
-        });
-    }
   },
 
   updateGasto: (id, data) => {
-    set((s) => {
-      const gastosAll = s.gastosAll.map((g) =>
-        g.id === id ? { ...g, ...data } : g,
-      );
-      return {
-        gastosAll,
-        ...escopar(s.campanhasAll, s.reservasAll, gastosAll, s.propriedadeAtivaId),
-      };
+    const anterior = get().gastosAll.find((g) => g.id === id);
+    if (!anterior) return;
+    const atualizado: GastoDiario = { ...anterior, ...data };
+    escreverOtimista({
+      acao: `atualizar a verba de ${formatDate(atualizado.data)}`,
+      aplicar: () =>
+        set((st) =>
+          comEscopo(st, { gastosAll: substituir(st.gastosAll, atualizado) }),
+        ),
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, { gastosAll: substituir(st.gastosAll, anterior) }),
+        ),
+      executar: () =>
+        db().from("gastos").update(gastoToRow(atualizado)).eq("id", id),
     });
-    if (supabaseConfigured) {
-      const updated = get().gastosAll.find((g) => g.id === id);
-      if (updated) {
-        db()
-          .from("gastos")
-          .update(gastoToRow(updated))
-          .eq("id", id)
-          .then(({ error }) => {
-            if (error) console.error("Supabase update gasto:", error.message);
-          });
-      }
-    }
   },
 
   removeGasto: (id) => {
-    set((s) => {
-      const gastosAll = s.gastosAll.filter((g) => g.id !== id);
-      return {
-        gastosAll,
-        ...escopar(s.campanhasAll, s.reservasAll, gastosAll, s.propriedadeAtivaId),
-      };
+    const removido = localizar(get().gastosAll, id);
+    if (!removido) return;
+    escreverOtimista({
+      acao: `excluir a verba de ${formatDate(removido.item.data)}`,
+      aplicar: () =>
+        set((st) => comEscopo(st, { gastosAll: semId(st.gastosAll, id) })),
+      desfazer: () =>
+        set((st) =>
+          comEscopo(st, { gastosAll: reinserir(st.gastosAll, removido) }),
+        ),
+      executar: () => db().from("gastos").delete().eq("id", id),
     });
-    if (supabaseConfigured) {
-      db()
-        .from("gastos")
-        .delete()
-        .eq("id", id)
-        .then(({ error }) => {
-          if (error) console.error("Supabase delete gasto:", error.message);
-        });
-    }
   },
 }));

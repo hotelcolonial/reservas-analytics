@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Header } from "@/components/layout/Header";
+import { Toaster } from "@/components/ui/sonner";
 
 /**
  * O DS pede HelveticaNeueCyr 300/400 com Inter logo atrás no stack, porque o
@@ -41,6 +42,8 @@ export default function RootLayout({
             {children}
           </main>
         </Providers>
+        {/* Fora do Providers: precisa existir também no /login e durante a carga. */}
+        <Toaster />
       </body>
     </html>
   );

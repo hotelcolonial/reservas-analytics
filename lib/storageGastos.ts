@@ -14,6 +14,7 @@
  * o bucket era público. Todas as funções que recebem `valor` aceitam os dois
  * formatos — `caminhoDaUrl` normaliza — e nada precisa ser migrado no banco.
  */
+import { toast } from "sonner";
 import { getSupabase } from "./supabase";
 
 export const BUCKET_COMPROVANTES = "comprovantes";
@@ -127,7 +128,10 @@ export interface ResultadoUpload {
  * vale DEPOIS que o servidor aceita o arquivo. Salvar otimista guardaria um
  * caminho que aponta para um arquivo que nunca chegou.
  *
- * Nunca lança: falha (inclusive Supabase sem configurar) vira `erro`.
+ * Nunca lança: falha (inclusive Supabase sem configurar) vira `erro` — e o
+ * mesmo motivo sai num toast, para o feedback ser o das outras escritas (ver
+ * lib/escritaOtimista.ts). Sem "tentar novamente" aqui: o retry é salvar o
+ * formulário de novo, que reenvia o arquivo.
  */
 export async function subirComprovante(
   file: File,
@@ -139,12 +143,19 @@ export async function subirComprovante(
     const { error } = await getSupabase()
       .storage.from(BUCKET_COMPROVANTES)
       .upload(caminho, file, { upsert: true, contentType: file.type });
-    if (error) return { erro: `Falha ao enviar o comprovante: ${error.message}` };
+    if (error) return falhaUpload(error.message);
     return { caminho };
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return { erro: `Falha ao enviar o comprovante: ${msg}` };
+    return falhaUpload(err instanceof Error ? err.message : String(err));
   }
+}
+
+function falhaUpload(motivo: string): ResultadoUpload {
+  console.error("Supabase upload comprovante:", motivo);
+  toast.error("Não foi possível enviar o comprovante.", {
+    description: motivo,
+  });
+  return { erro: `Falha ao enviar o comprovante: ${motivo}` };
 }
 
 /**
