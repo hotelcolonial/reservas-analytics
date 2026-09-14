@@ -1,9 +1,9 @@
 # ReservaTrack — Análisis de arquitectura (base para modificaciones)
 
 > Documento de contexto. Describe **cómo funciona hoy** la app y **qué reglas hay que
-> respetar** al agregar features. Escrito el 2026-09-09 sobre el commit `c9e8239`.
-> El `README.md` está **desactualizado** (describe la etapa de `localStorage` y un
-> `lib/storage.ts` que ya no existe) — este archivo manda.
+> respetar** al agregar features. Escrito el 2026-09-09 sobre el commit `c9e8239` y
+> revisado el 2026-09-14. El `README.md` da la vista general (instalación, env, scripts,
+> rutas); ante cualquier diferencia, este archivo manda.
 
 ---
 
@@ -22,7 +22,7 @@ convención en todo lo nuevo.
 
 | Pieza | Versión / detalle |
 |---|---|
-| Next.js | **16.2.6**, App Router. `AGENTS.md` avisa: hay breaking changes vs. versiones previas — leer `node_modules/next/dist/docs/` antes de escribir código de framework |
+| Next.js | **16.3.5**, App Router. `AGENTS.md` avisa: hay breaking changes vs. versiones previas — leer `node_modules/next/dist/docs/` antes de escribir código de framework |
 | React | 19.2.4 |
 | TypeScript | strict, alias `@/*` → raíz. `npx tsc --noEmit` pasa limpio hoy |
 | Tailwind | **v4** (sin `tailwind.config`; los tokens viven en `app/globals.css` con `@theme`) |
@@ -208,7 +208,8 @@ en archivos versionados.
 
 | Ruta | Archivo | Qué hace |
 |---|---|---|
-| `/` | `app/page.tsx` | Dashboard: filtro de período, 8 métricas, gráfico receita×investimento mensual, reservas por plataforma, gauge de confirmación, ranking, últimas reservas, tabla resumen |
+| `/` | `app/page.tsx` | **Hub** de selección de módulo: dos bloques que llevan a `/painel` (ReservaTrack) y a `/gastos` (Gastos). Sin nav ni selector de propiedad |
+| `/painel` | `app/painel/page.tsx` | Dashboard: filtro de período, 8 métricas, gráfico receita×investimento mensual, reservas por plataforma, gauge de confirmación, ranking, últimas reservas, tabla resumen |
 | `/campanhas` | `app/campanhas/page.tsx` | Grid o lista (toggle persistido), agrupadas en **Ativas / Pausadas**, drag & drop dentro de cada grupo, alta/edición en `Sheet`, borrado con confirmación |
 | `/campanhas/[id]` | `app/campanhas/[id]/page.tsx` | Detalle: métricas de esa campaña, gráficos, sus gastos y sus reservas paginadas (8/pág) |
 | `/reservas` | `app/reservas/page.tsx` | Tabla paginada (8/pág) + filtros ricos: búsqueda por código, campaña ("sem" = sin campaña), plataforma, status y **tres rangos de fecha** (reserva, check-in, check-out) |
@@ -216,8 +217,13 @@ en archivos versionados.
 | `/plataformas` | `app/plataformas/page.tsx` | Comparativo por plataforma |
 | `/propriedades` | `app/propriedades/page.tsx` | ABM de propiedades. Borrar está **bloqueado** si la propiedad tiene datos vinculados |
 
-Layout: `app/layout.tsx` → `Providers` (carga) → `Header` (logo, selector de propiedad,
-botones "Nova Campanha"/"Nova Reserva", `NavTabs`) → `main` con `max-w-7xl`.
+Las rutas del módulo Gastos (`/gastos/**`) están en `GASTOS.md`.
+
+Layout: `app/layout.tsx` → `Providers` (carga) → `Header` → `main` con `max-w-7xl`. El
+`Header` deriva el módulo del pathname: en `/` muestra solo la marca; en el módulo de
+reservas muestra selector de propiedad, botones "nova campanha"/"nova reserva" y las
+`NavTabs` de ReservaTrack (la pestaña "dashboard" apunta a `/painel`); en `/gastos/**`
+muestra el botón "novo lançamento" y las `NavTabs` de Gastos.
 
 **Nota sobre el filtro de período:** el componente `PeriodFilter` (presets Tudo / Hoje /
 Ontem / 7 dias / Este mês / Este ano + rango manual) filtra las reservas por
@@ -243,29 +249,14 @@ set de filtros y no usa `PeriodFilter`.
   cero; al vaciarlos vuelven a `0`.
 - Paginación cliente con `components/ui/Pagination.tsx`.
 
-### Marca y tokens (`app/globals.css`) — ⚠️ DESACTUALIZADO, ver `DESIGN.md`
+### Marca, tokens y tipografía → `DESIGN.md`
 
-Dos capas conviven:
-
-1. **Tokens de marca** en `@theme`: `colonial` `#122b1c` (verde principal),
-   `colonial-50/100/700`, `natural` `#233d20`, `laranja`/`brand` `#f3a42c`, `laranja-dark`,
-   `neutro`, `branco`. Generan `text-colonial`, `bg-laranja`, etc. — se usan mucho.
-2. **Tokens shadcn** (`--background`, `--primary`, `--border`, `--radius`…) mapeados a esa
-   paleta. Generan `bg-primary`, `border-border`, `text-muted-foreground`.
-
-Ambos estilos aparecen mezclados en el código (herencia de la migración a shadcn del commit
-`5a4e683`). **No hay dark mode**: solo está definido `:root`. Si se pide, hay que agregar el
-bloque `.dark` completo.
-
-Fuentes: Geist Sans / Geist Mono vía el paquete `geist`. `font-display` == `font-sans`.
-
-Paleta de gráficos por plataforma: `PLATAFORMA_CORES` en `lib/utils.ts`.
+Todo lo referido a identidad visual (paleta, tokens de `app/globals.css`, tipografía,
+radios, pesos, escritura en minúscula, colores de status y paleta de gráficos) está en
+**`DESIGN.md`**, que es la fuente de verdad. No se duplica acá.
 
 ## 10. Deuda técnica conocida (contexto, no tareas)
 
-- `README.md` describe la arquitectura vieja (localStorage, `lib/storage.ts` inexistente).
-- `resetarDadosExemplo()` existe en el store pero **ningún componente la llama**: es código
-  muerto, y es destructivo (borra y reinserta los datos de la propiedad activa).
 - `CampaignCard` y `CampaignRow` duplican bastante lógica (vista grid vs. lista).
 - Sin tests, sin CI, sin manejo de errores visible para el usuario.
 - Las propiedades sembradas usan ids-slug (`colonial`, `posada-cataratas`) pero las creadas

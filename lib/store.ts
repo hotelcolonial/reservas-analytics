@@ -118,8 +118,6 @@ interface AppState {
     data: Partial<Omit<GastoDiario, "id" | "propriedadeId">>,
   ) => void;
   removeGasto: (id: string) => void;
-
-  resetarDadosExemplo: () => Promise<void>;
 }
 
 export const useStore = create<AppState>()((set, get) => ({
@@ -543,53 +541,5 @@ export const useStore = create<AppState>()((set, get) => ({
           if (error) console.error("Supabase delete gasto:", error.message);
         });
     }
-  },
-
-  // ── Utilitários ───────────────────────────────────────────────────────────
-
-  resetarDadosExemplo: async () => {
-    const propId = get().propriedadeAtivaId || "colonial";
-    const campanhas: Campanha[] = campanhasMock.map((c) => ({
-      ...c,
-      propriedadeId: propId,
-    }));
-    const reservas: Reserva[] = reservasMock.map((r) => ({
-      ...r,
-      propriedadeId: propId,
-    }));
-    const gastos: GastoDiario[] = gastosMock.map((g) => ({
-      ...g,
-      propriedadeId: propId,
-    }));
-
-    set((s) => {
-      // Substitui apenas os dados da propriedade ativa.
-      const campanhasAll = [
-        ...s.campanhasAll.filter((c) => c.propriedadeId !== propId),
-        ...campanhas,
-      ];
-      const reservasAll = [
-        ...s.reservasAll.filter((r) => r.propriedadeId !== propId),
-        ...reservas,
-      ];
-      const gastosAll = [
-        ...s.gastosAll.filter((g) => g.propriedadeId !== propId),
-        ...gastos,
-      ];
-      return {
-        campanhasAll,
-        reservasAll,
-        gastosAll,
-        ...escopar(campanhasAll, reservasAll, gastosAll, propId),
-      };
-    });
-
-    if (!supabaseConfigured) return;
-    await db().from("gastos").delete().eq("propriedade_id", propId);
-    await db().from("reservas").delete().eq("propriedade_id", propId);
-    await db().from("campanhas").delete().eq("propriedade_id", propId);
-    await db().from("campanhas").insert(campanhas.map(campanhaToRow));
-    await db().from("reservas").insert(reservas.map(reservaToRow));
-    await db().from("gastos").insert(gastos.map(gastoToRow));
   },
 }));
