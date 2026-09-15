@@ -47,6 +47,11 @@ y es deliberada.
   es día del mes 1-31.
 - `mesVencimento`: 1-12, solo para anual.
 - `inicio` / `fim`: ISO `yyyy-mm-dd`. `fim` nullable.
+- `propriedadeId`: nullable (migração 009), vazio = Escritório / Geral. A geração
+  (`montarLancamento` em `lib/recorrencia.ts`) **copia** a propriedade do molde para cada
+  lançamento gerado. Mudar a propriedade do molde **não** altera os já gerados — pela mesma
+  razão que mudar o valor não altera os anteriores. A idempotência da geração continua
+  pela chave `molde + data de vencimento`; a propriedade não entra nela.
 
 ### Lancamento
 `{ id, descricao, naturezaId, fornecedor, formaPagamento, cartaoId, valor, competencia,
@@ -73,6 +78,14 @@ y es deliberada.
   con esa descripción (empate → el más reciente); campos sin histórico quedan como están,
   todo sigue editable, y un aviso discreto dice qué se rellenó. Valor, competência,
   vencimento y status **nunca** se rellenan solos (`perfilDaDescricao`).
+- **Aviso de duplicidade** (`lib/duplicidadeGastos.ts`): ao salvar (criar ou editar), se
+  já existir outro lançamento com a mesma descrição (normalizada: sem acento, sem caixa,
+  espaços colapsados), o mesmo valor e a mesma competência, abre um `ConfirmDialog` com
+  os que colidem (até 3 + "e mais N"): descrição, valor, vencimento, status e propriedade.
+  É **aviso, não bloqueio** ("Salvar mesmo assim"); cancelados não contam; ao editar, o
+  próprio lançamento é ignorado; pergunta uma vez por tentativa; acontece **antes** do
+  upload e da escrita otimista. Sem constraint no banco. A geração de recorrentes não
+  passa por aqui (tem a própria idempotência).
 - `dataVencimento` **siempre** significa vencimiento: `atrasado` y "contas a pagar"
   dependen de eso. Para "paguei hoje, sem vencimento prévio" el formulario tiene el atajo
   **paguei hoje**, que pone `status = pago` y las dos fechas en hoy. No existe (ni debe

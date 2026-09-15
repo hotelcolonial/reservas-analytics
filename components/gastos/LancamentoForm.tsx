@@ -26,7 +26,15 @@ import { useGastosStore, novoId } from "@/lib/storeGastos";
 import { useStore } from "@/lib/store";
 import { InputSugestoes } from "@/components/ui/input-sugestoes";
 import { PontoCor } from "@/components/ui/PontoCor";
-import { PontoStatus } from "@/components/gastos/StatusLancamento";
+import {
+  PontoStatus,
+  StatusBadge,
+} from "@/components/gastos/StatusLancamento";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import {
+  encontrarDuplicatas,
+  MAX_COLISOES_EXIBIDAS,
+} from "@/lib/duplicidadeGastos";
 import {
   sugestoesDeDescricao,
   perfilDaDescricao,
@@ -51,7 +59,7 @@ import {
   STATUS_LANCAMENTO,
   STATUS_LANCAMENTO_LABELS,
 } from "@/lib/typesGastos";
-import { porOrdem, todayISO } from "@/lib/utils";
+import { formatBRL, formatDate, porOrdem, todayISO } from "@/lib/utils";
 
 interface LancamentoFormProps {
   open: boolean;
@@ -141,6 +149,9 @@ export function LancamentoForm({
   const [doHistorico, setDoHistorico] = useState<Set<keyof PerfilDescricao>>(
     () => new Set(),
   );
+  // Lançamentos com que o formulário colide (mesma descrição/valor/competência).
+  // Enquanto não for null, o ConfirmDialog está aberto.
+  const [colisoes, setColisoes] = useState<Lancamento[] | null>(null);
 
   // Comprovante: arquivo escolhido nesta edição (ainda não enviado) e o
   // estado de envio, que trava o botão enquanto o upload acontece.
@@ -277,7 +288,11 @@ export function LancamentoForm({
     set("comprovanteUrl", null);
   }
 
-  async function salvar() {
+  /**
+   * `confirmado` = a pessoa já viu o aviso de duplicidade nesta tentativa e
+   * escolheu "Salvar mesmo assim". Pergunta-se uma vez só por tentativa.
+   */
+  async function salvar(confirmado = false) {
     if (!form.descricao.trim()) {
       setErro("Informe a descrição do lançamento.");
       return;
@@ -305,6 +320,24 @@ export function LancamentoForm({
     if (form.status === "pago" && !form.dataPagamento) {
       setErro("Informe a data de pagamento.");
       return;
+    }
+
+    // Possível duplicidade: só avisa (não bloqueia), e ANTES do upload e da
+    // escrita otimista — cancelar aqui não deixa rastro em lugar nenhum.
+    if (!confirmado) {
+      const iguais = encontrarDuplicatas(
+        lancamentos,
+        {
+          descricao: form.descricao,
+          valor: form.valor,
+          competencia: form.competencia,
+        },
+        lancamento?.id,
+      );
+      if (iguais.length > 0) {
+        setColisoes(iguais);
+        return;
+      }
     }
 
     // O id precisa existir ANTES do upload: ele faz parte do caminho no bucket.
@@ -708,7 +741,7 @@ export function LancamentoForm({
             <Button variant="outline" onClick={onClose} disabled={enviando}>
               Cancelar
             </Button>
-            <Button onClick={salvar} disabled={enviando}>
+            <Button onClick={() => void salvar()} disabled={enviando}>
               {enviando && <Loader2 className="size-4 animate-spin" />}
               {enviando
                 ? "Enviando comprovante..."
@@ -719,6 +752,63 @@ export function LancamentoForm({
           </div>
         </SheetFooter>
       </SheetContent>
+
+      <ConfirmDialog
+        open={colisoes !== null}
+        title="Possível lançamento duplicado"
+        message={
+          colisoes && colisoes.length === 1
+            ? "Já existe um lançamento com a mesma descrição, o mesmo valor e a mesma competência. Se for uma compra repetida de verdade, pode salvar."
+            : `Já existem ${colisoes?.length ?? 0} lançamentos com a mesma descrição, o mesmo valor e a mesma competência. Se for uma compra repetida de verdade, pode salvar.`
+        }
+        confirmLabel="Salvar mesmo assim"
+        cancelLabel="Cancelar"
+        confirmVariant="default"
+        onClose={() => setColisoes(null)}
+        onConfirm={() => {
+          setColisoes(null);
+          void salvar(true);
+        }}
+      >
+        {colisoes && (
+          <ul className="space-y-2">
+            {colisoes.slice(0, MAX_COLISOES_EXIBIDAS).map((l) => {
+              const propriedade = l.propriedadeId
+                ? propriedades.find((p) => p.id === l.propriedadeId)
+                : null;
+              return (
+                <li
+                  key={l.id}
+                  className="rounded-xl border border-border bg-carvao-50 px-3 py-2 text-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="min-w-0 truncate font-normal text-carvao">
+                      {l.descricao}
+                    </span>
+                    <span className="shrink-0 font-normal text-carvao tabular-nums">
+                      {formatBRL(l.valor)}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-fg">
+                    <span>venc. {formatDate(l.dataVencimento)}</span>
+                    <StatusBadge lancamento={l} hoje={todayISO()} />
+                    <span className="inline-flex items-center gap-1.5">
+                      <PontoCor cor={propriedade?.cor} className="size-2" />
+                      {propriedade?.nome ?? "Escritório / Geral"}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+            {colisoes.length > MAX_COLISOES_EXIBIDAS && (
+              <li className="text-xs text-subtle-fg">
+                e mais {colisoes.length - MAX_COLISOES_EXIBIDAS} com a mesma
+                combinação.
+              </li>
+            )}
+          </ul>
+        )}
+      </ConfirmDialog>
     </Sheet>
   );
 }

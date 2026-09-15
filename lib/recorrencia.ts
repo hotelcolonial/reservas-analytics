@@ -103,6 +103,42 @@ export function descreverRecorrencia(d: DespesaRecorrente): string {
   return `Mensal, todo dia ${d.diaVencimento}`;
 }
 
+/* ---------- Lançamento a partir do molde ---------- */
+
+/** O que `addLancamento` recebe: o lançamento sem id nem auditoria. */
+export type LancamentoGerado = Omit<
+  Lancamento,
+  "id" | "criadoPor" | "criadoEm" | "atualizadoEm"
+>;
+
+/**
+ * Lançamento gerado de uma ocorrência: nasce pendente, com o valor previsto e
+ * a PROPRIEDADE do molde copiada. É uma cópia no momento da geração — mudar o
+ * molde depois não mexe nos já gerados, como acontece com o valor.
+ */
+export function montarLancamento(
+  despesa: DespesaRecorrente,
+  dataVencimento: string,
+  competencia: string,
+): LancamentoGerado {
+  return {
+    descricao: despesa.nome,
+    naturezaId: despesa.naturezaId,
+    fornecedor: despesa.fornecedor,
+    formaPagamento: despesa.formaPagamento,
+    cartaoId: despesa.cartaoId,
+    valor: despesa.valorPrevisto,
+    competencia,
+    dataVencimento,
+    dataPagamento: null,
+    status: "pendente",
+    comprovanteUrl: null,
+    observacoes: "",
+    despesaRecorrenteId: despesa.id,
+    propriedadeId: despesa.propriedadeId ?? null,
+  };
+}
+
 /* ---------- Planejamento da geração ---------- */
 
 export interface ItemGeracao {

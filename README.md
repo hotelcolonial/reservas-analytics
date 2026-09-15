@@ -93,6 +93,7 @@ reproduz o estado atual do banco.
 | 006 | `006-auditoria.sql` | `criado_por`, `criado_em`, `atualizado_em` nas 8 tabelas (com a conversão de `lancamentos.criado_em` de `text` para `timestamptz`), FKs para `perfis`, e os triggers `ao_inserir`/`ao_atualizar` que preenchem tudo — o app nunca escreve essas colunas |
 | 007 | `007-lancamento-propriedade.sql` | `lancamentos.propriedade_id` (nullable, FK para `propriedades`) + índice. NULL = gasto de escritório ou compartilhado |
 | 008 | `008-propriedade-cor.sql` | `propriedades.cor` (nullable): hex do ponto colorido ao lado do nome, como em `naturezas.cor` |
+| 009 | `009-recorrente-propriedade.sql` | `despesas_recorrentes.propriedade_id` (nullable): o molde carrega a propriedade e a geração copia para cada lançamento |
 
 004–006 foram extraídos do banco real com `supabase/extrair-estado.sql` (uma consulta só
 de leitura sobre `pg_policies`, `pg_proc`, `pg_trigger` e `pg_attribute`). Se a base mudar

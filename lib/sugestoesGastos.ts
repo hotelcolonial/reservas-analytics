@@ -9,8 +9,11 @@
  */
 import type { Lancamento } from "./typesGastos";
 
-/** Chave de agrupamento: sem acento, sem caixa, sem espaço sobrando. */
-function chave(texto: string): string {
+/**
+ * Chave de comparação de descrições: sem acento, sem caixa, espaços
+ * colapsados. Usada pelas sugestões e pelo aviso de duplicidade.
+ */
+export function chaveDescricao(texto: string): string {
   return texto
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
@@ -24,7 +27,7 @@ export function sugestoesDeDescricao(lancamentos: Lancamento[]): string[] {
   for (const l of lancamentos) {
     const texto = l.descricao.trim();
     if (!texto) continue;
-    const k = chave(texto);
+    const k = chaveDescricao(texto);
     const g = grupos.get(k);
     if (g) g.usos += 1;
     else grupos.set(k, { texto, usos: 1 });
@@ -94,9 +97,9 @@ export function perfilDaDescricao(
   lancamentos: Lancamento[],
   descricao: string,
 ): PerfilDescricao {
-  const k = chave(descricao);
+  const k = chaveDescricao(descricao);
   if (!k) return {};
-  const iguais = lancamentos.filter((l) => chave(l.descricao) === k);
+  const iguais = lancamentos.filter((l) => chaveDescricao(l.descricao) === k);
   if (iguais.length === 0) return {};
 
   const perfil: PerfilDescricao = {};

@@ -60,6 +60,11 @@ export interface DespesaRecorrente extends Auditoria {
   ativa: boolean;
   inicio: string; // ISO date (yyyy-mm-dd)
   fim: string | null; // ISO date, nullable
+  /**
+   * Propriedade copiada para cada lançamento gerado (migração 009). Null =
+   * Escritório / Geral. Mudar aqui não altera os já gerados.
+   */
+  propriedadeId?: string | null;
 }
 
 /**

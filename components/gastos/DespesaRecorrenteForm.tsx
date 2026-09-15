@@ -22,6 +22,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { useGastosStore } from "@/lib/storeGastos";
+import { useStore } from "@/lib/store";
+import { PontoCor } from "@/components/ui/PontoCor";
 import type {
   DespesaRecorrente,
   FormaPagamento,
@@ -50,6 +52,8 @@ type FormData = Omit<DespesaRecorrente, "id">;
 // Radix Select não aceita value="" — sentinels para "nada escolhido ainda".
 const SEM_CARTAO = "sem";
 const SEM_NATUREZA = "sem-natureza";
+/** Propriedade vazia = Escritório / Geral (mesma regra dos lançamentos). */
+const SEM_PROPRIEDADE = "__geral__";
 
 /** Dia padrão ao trocar de periodicidade: segunda-feira ou dia 1. */
 const DIA_SEMANA_PADRAO = 1;
@@ -70,6 +74,7 @@ function estadoInicial(d: DespesaRecorrente | null | undefined): FormData {
     ativa: d?.ativa ?? true,
     inicio: d?.inicio ?? todayISO(),
     fim: d?.fim ?? null,
+    propriedadeId: d?.propriedadeId ?? null,
   };
 }
 
@@ -80,6 +85,8 @@ export function DespesaRecorrenteForm({
 }: DespesaRecorrenteFormProps) {
   const naturezas = useGastosStore((s) => s.naturezas);
   const cartoes = useGastosStore((s) => s.cartoes);
+  // Só a lista de propriedades (Providers global já carregou); nunca a ativa.
+  const propriedades = useStore((s) => s.propriedades);
   const addDespesaRecorrente = useGastosStore((s) => s.addDespesaRecorrente);
   const updateDespesaRecorrente = useGastosStore(
     (s) => s.updateDespesaRecorrente,
@@ -274,6 +281,35 @@ export function DespesaRecorrenteForm({
                 />
               </Field>
             </div>
+
+            <Field>
+              <FieldLabel htmlFor="rec-propriedade">Propriedade</FieldLabel>
+              <Select
+                value={form.propriedadeId ?? SEM_PROPRIEDADE}
+                onValueChange={(v) =>
+                  set("propriedadeId", v === SEM_PROPRIEDADE ? null : v)
+                }
+              >
+                <SelectTrigger id="rec-propriedade" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SEM_PROPRIEDADE}>
+                    Escritório / Geral
+                  </SelectItem>
+                  {porOrdem(propriedades).map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <PontoCor cor={p.cor} />
+                      {p.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Vai para cada lançamento gerado daqui em diante. Mudar aqui não
+                altera os já gerados.
+              </p>
+            </Field>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <Field>

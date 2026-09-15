@@ -138,21 +138,19 @@ export default function GastosDashboardPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <PeriodFilterGastos
-            periodo={periodo}
-            onChange={setPeriodo}
-            mesAtual={mesAtual}
+      <PeriodFilterGastos
+        periodo={periodo}
+        onChange={setPeriodo}
+        mesAtual={mesAtual}
+        extra={
+          <FiltroPropriedade
+            valor={propriedadeFiltro}
+            onChange={setPropriedadeFiltro}
+            propriedades={propriedades}
+            className="h-9 w-56"
           />
-        </div>
-        <FiltroPropriedade
-          valor={propriedadeFiltro}
-          onChange={setPropriedadeFiltro}
-          propriedades={propriedades}
-          className="w-full lg:w-64"
-        />
-      </div>
+        }
+      />
 
       {semDadosNoFiltro && (
         <EmptyState

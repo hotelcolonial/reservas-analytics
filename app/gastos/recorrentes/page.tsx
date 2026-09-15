@@ -5,7 +5,13 @@ import { Pencil, Trash2, Sparkles } from "lucide-react";
 import { useGastosStore } from "@/lib/storeGastos";
 import type { DespesaRecorrente } from "@/lib/typesGastos";
 import { FORMA_PAGAMENTO_LABELS } from "@/lib/typesGastos";
-import { descreverRecorrencia, planejarGeracao } from "@/lib/recorrencia";
+import {
+  descreverRecorrencia,
+  montarLancamento,
+  planejarGeracao,
+} from "@/lib/recorrencia";
+import { useStore } from "@/lib/store";
+import { PontoCor } from "@/components/ui/PontoCor";
 import { formatBRL, formatDate, todayISO } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +28,8 @@ export default function RecorrentesPage() {
   const naturezas = useGastosStore((s) => s.naturezas);
   const cartoes = useGastosStore((s) => s.cartoes);
   const addLancamento = useGastosStore((s) => s.addLancamento);
+  // Lista de propriedades do ReservaTrack (Providers global já carregou).
+  const propriedades = useStore((s) => s.propriedades);
   const removeDespesaRecorrente = useGastosStore(
     (s) => s.removeDespesaRecorrente,
   );
@@ -39,6 +47,10 @@ export default function RecorrentesPage() {
   const cartaoPorId = useMemo(
     () => new Map(cartoes.map((c) => [c.id, c])),
     [cartoes],
+  );
+  const propriedadePorId = useMemo(
+    () => new Map(propriedades.map((p) => [p.id, p])),
+    [propriedades],
   );
 
   /**
@@ -84,21 +96,8 @@ export default function RecorrentesPage() {
   /** Só escreve depois do ConfirmDialog. */
   function gerar() {
     for (const { despesa, data } of plano.criar) {
-      addLancamento({
-        descricao: despesa.nome,
-        naturezaId: despesa.naturezaId,
-        fornecedor: despesa.fornecedor,
-        formaPagamento: despesa.formaPagamento,
-        cartaoId: despesa.cartaoId,
-        valor: despesa.valorPrevisto,
-        competencia,
-        dataVencimento: data,
-        dataPagamento: null,
-        status: "pendente",
-        comprovanteUrl: null,
-        observacoes: "",
-        despesaRecorrenteId: despesa.id,
-      });
+      // A propriedade do molde vai junto (ver montarLancamento).
+      addLancamento(montarLancamento(despesa, data, competencia));
     }
   }
 
@@ -228,6 +227,22 @@ export default function RecorrentesPage() {
                       <p className="text-xs text-subtle-fg">Valor previsto</p>
 
                       <div className="mt-4 flex flex-wrap gap-1.5">
+                        {/* Propriedade sempre visível: null é "escritório". */}
+                        {(() => {
+                          const propriedade = d.propriedadeId
+                            ? propriedadePorId.get(d.propriedadeId)
+                            : null;
+                          return propriedade ? (
+                            <Badge className="bg-carvao-50 text-carvao">
+                              <PontoCor cor={propriedade.cor} className="size-2" />
+                              {propriedade.nome}
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-transparent text-subtle-fg ring-1 ring-border">
+                              escritório
+                            </Badge>
+                          );
+                        })()}
                         {natureza && (
                           <Badge className="bg-carvao-50 text-carvao">
                             <span

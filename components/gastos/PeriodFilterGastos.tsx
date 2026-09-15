@@ -69,10 +69,13 @@ export function PeriodFilterGastos({
   periodo,
   onChange,
   mesAtual,
+  extra,
 }: {
   periodo: PeriodoCompetencia;
   onChange: (p: PeriodoCompetencia) => void;
   mesAtual: string;
+  /** Controle adicional na mesma barra (ex.: filtro de propriedade), à direita. */
+  extra?: React.ReactNode;
 }) {
   function aplicar(key: PresetCompetencia | "tudo") {
     onChange(
@@ -104,7 +107,13 @@ export function PeriodFilterGastos({
         ))}
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex flex-wrap items-center gap-2">
+        {extra && (
+          <>
+            {extra}
+            <span className="hidden h-6 w-px bg-border sm:block" aria-hidden />
+          </>
+        )}
         <Input
           type="month"
           aria-label="Competência de"

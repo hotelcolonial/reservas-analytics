@@ -92,6 +92,7 @@ export function rowToDespesaRecorrente(row: Row): DespesaRecorrente {
     ativa: Boolean(row.ativa),
     inicio: row.inicio as string,
     fim: (row.fim as string | null) ?? null,
+    propriedadeId: (row.propriedade_id as string | null) ?? null,
   };
 }
 
@@ -111,6 +112,7 @@ export function despesaRecorrenteToRow(d: DespesaRecorrente) {
     ativa: d.ativa,
     inicio: d.inicio,
     fim: d.fim,
+    propriedade_id: d.propriedadeId ?? null,
   };
 }
 
