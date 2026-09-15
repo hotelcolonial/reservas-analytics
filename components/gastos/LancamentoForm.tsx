@@ -27,7 +27,11 @@ import { useStore } from "@/lib/store";
 import { InputSugestoes } from "@/components/ui/input-sugestoes";
 import { PontoCor } from "@/components/ui/PontoCor";
 import { PontoStatus } from "@/components/gastos/StatusLancamento";
-import { sugestoesDeDescricao } from "@/lib/sugestoesGastos";
+import {
+  sugestoesDeDescricao,
+  perfilDaDescricao,
+  type PerfilDescricao,
+} from "@/lib/sugestoesGastos";
 import {
   ACCEPT_COMPROVANTE,
   TAMANHO_MAXIMO_MB,
@@ -62,6 +66,15 @@ const SEM_CARTAO = "sem";
 const SEM_NATUREZA = "sem-natureza";
 /** Propriedade vazia = gasto de escritório ou compartilhado (ver GASTOS.md). */
 const SEM_PROPRIEDADE = "__geral__";
+
+/** Como cada campo aparece no aviso "preenchido a partir do histórico". */
+const ROTULO_HISTORICO: Record<keyof PerfilDescricao, string> = {
+  naturezaId: "natureza",
+  fornecedor: "fornecedor",
+  propriedadeId: "propriedade",
+  formaPagamento: "forma de pagamento",
+  cartaoId: "cartão",
+};
 
 /** A competência de uma data ISO é o seu `yyyy-mm`. */
 function competenciaDe(dataISO: string): string {
@@ -123,6 +136,11 @@ export function LancamentoForm({
   // à mão desliga isto para esta edição (mesmo padrão do `noitesAuto`).
   const [competenciaAuto, setCompetenciaAuto] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  // Campos preenchidos a partir do histórico da descrição escolhida. Serve só
+  // para o aviso: cada campo sai da lista quando a pessoa o edita.
+  const [doHistorico, setDoHistorico] = useState<Set<keyof PerfilDescricao>>(
+    () => new Set(),
+  );
 
   // Comprovante: arquivo escolhido nesta edição (ainda não enviado) e o
   // estado de envio, que trava o botão enquanto o upload acontece.
@@ -143,6 +161,42 @@ export function LancamentoForm({
 
   function set<K extends keyof FormData>(key: K, value: FormData[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    // Editou à mão: deixa de ser "do histórico".
+    if (doHistorico.has(key as keyof PerfilDescricao)) {
+      setDoHistorico((s) => {
+        const n = new Set(s);
+        n.delete(key as keyof PerfilDescricao);
+        return n;
+      });
+    }
+  }
+
+  /**
+   * Ao ESCOLHER uma sugestão (nunca ao digitar): preenche natureza,
+   * fornecedor, propriedade, forma de pagamento (e cartão, se for crédito)
+   * com o mais frequente entre os lançamentos que já usaram essa descrição.
+   * É sugestão: só sobrescreve o que tem histórico, tudo continua editável.
+   * Valor, competência, vencimento e status ficam de fora de propósito.
+   */
+  function aplicarHistorico(descricao: string) {
+    const perfil = perfilDaDescricao(lancamentos, descricao);
+    const campos = Object.keys(perfil) as (keyof PerfilDescricao)[];
+    if (campos.length === 0) return;
+    setForm((f) => ({
+      ...f,
+      ...(perfil.naturezaId && { naturezaId: perfil.naturezaId }),
+      ...(perfil.fornecedor && { fornecedor: perfil.fornecedor }),
+      ...(perfil.propriedadeId && { propriedadeId: perfil.propriedadeId }),
+      ...(perfil.formaPagamento && {
+        formaPagamento: perfil.formaPagamento,
+        // Fora do crédito não existe cartão; no crédito, o do histórico se houver.
+        cartaoId:
+          perfil.formaPagamento === "cartao_credito"
+            ? (perfil.cartaoId ?? f.cartaoId)
+            : null,
+      }),
+    }));
+    setDoHistorico(new Set(campos));
   }
 
   function setDataVencimento(value: string) {
@@ -159,6 +213,12 @@ export function LancamentoForm({
   }
 
   function setFormaPagamento(value: FormaPagamento) {
+    setDoHistorico((s) => {
+      const n = new Set(s);
+      n.delete("formaPagamento");
+      n.delete("cartaoId");
+      return n;
+    });
     setForm((f) => ({
       ...f,
       formaPagamento: value,
@@ -318,9 +378,22 @@ export function LancamentoForm({
                 id="lanc-descricao"
                 value={form.descricao}
                 onChange={(v) => set("descricao", v)}
+                onEscolher={aplicarHistorico}
                 sugestoes={sugestoes}
                 placeholder="Ex.: Tráfego pago — Meta Ads"
               />
+              {doHistorico.size > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  <span className="text-atencao">
+                    {[...doHistorico]
+                      .map((c) => ROTULO_HISTORICO[c])
+                      .join(", ")}
+                  </span>{" "}
+                  {doHistorico.size === 1 ? "preenchido" : "preenchidos"} a
+                  partir dos lançamentos anteriores com esta descrição — revise
+                  se precisar.
+                </p>
+              )}
             </Field>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

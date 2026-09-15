@@ -3,6 +3,11 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useGastosStore } from "@/lib/storeGastos";
+import { useStore } from "@/lib/store";
+import {
+  FiltroPropriedade,
+  filtrarPorPropriedade,
+} from "@/components/gastos/FiltroPropriedade";
 import type { Lancamento } from "@/lib/typesGastos";
 import { FORMA_PAGAMENTO_LABELS } from "@/lib/typesGastos";
 import {
@@ -46,14 +51,27 @@ const DIAS_A_VENCER = 15;
 const TOP_GASTOS = 10;
 
 export default function GastosDashboardPage() {
-  const lancamentos = useGastosStore((s) => s.lancamentos);
+  const todosLancamentos = useGastosStore((s) => s.lancamentos);
   const naturezas = useGastosStore((s) => s.naturezas);
   const cartoes = useGastosStore((s) => s.cartoes);
+  // Lista de propriedades do ReservaTrack (Providers global já carregou).
+  const propriedades = useStore((s) => s.propriedades);
 
   const hoje = todayISO();
   const mesAtual = hoje.slice(0, 7);
 
   const [periodo, setPeriodo] = useState<PeriodoCompetencia>(COMPETENCIA_TUDO);
+  // Estado PRÓPRIO desta tela ("" = todas). Não compartilha com
+  // /gastos/lancamentos nem persiste. Filtro estrito: uma propriedade mostra
+  // só o que é dela; os gerais têm a opção "Escritório / Geral".
+  const [propriedadeFiltro, setPropriedadeFiltro] = useState("");
+
+  // Tudo abaixo — cards, gráficos mensais, quebras, top 10 e contas a pagar —
+  // parte desta lista, já recortada pela propriedade.
+  const lancamentos = useMemo(
+    () => filtrarPorPropriedade(todosLancamentos, propriedadeFiltro),
+    [todosLancamentos, propriedadeFiltro],
+  );
 
   const naturezaPorId = useMemo(
     () => new Map(naturezas.map((n) => [n.id, n])),
@@ -105,7 +123,8 @@ export default function GastosDashboardPage() {
     [filtrados],
   );
 
-  const semDados = lancamentos.length === 0;
+  const semDados = todosLancamentos.length === 0;
+  const semDadosNoFiltro = !semDados && lancamentos.length === 0;
 
   return (
     <div className="space-y-6">
@@ -119,11 +138,32 @@ export default function GastosDashboardPage() {
         </p>
       </div>
 
-      <PeriodFilterGastos
-        periodo={periodo}
-        onChange={setPeriodo}
-        mesAtual={mesAtual}
-      />
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <PeriodFilterGastos
+            periodo={periodo}
+            onChange={setPeriodo}
+            mesAtual={mesAtual}
+          />
+        </div>
+        <FiltroPropriedade
+          valor={propriedadeFiltro}
+          onChange={setPropriedadeFiltro}
+          propriedades={propriedades}
+          className="w-full lg:w-64"
+        />
+      </div>
+
+      {semDadosNoFiltro && (
+        <EmptyState
+          title="Nenhum lançamento nesta propriedade"
+          description={
+            propriedadeFiltro === "geral"
+              ? "Não há lançamentos sem propriedade atribuída."
+              : "Os lançamentos desta propriedade aparecem aqui quando forem registrados. Os gastos gerais ficam em \"Escritório / Geral\"."
+          }
+        />
+      )}
 
       {semDados ? (
         <EmptyState
@@ -138,7 +178,7 @@ export default function GastosDashboardPage() {
             </Link>
           }
         />
-      ) : (
+      ) : semDadosNoFiltro ? null : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <MetricCard

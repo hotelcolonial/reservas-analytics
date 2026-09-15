@@ -67,7 +67,12 @@ y es deliberada.
   del header. Cambiar de propriedade en el ReservaTrack nunca esconde lançamentos.
 - `descricao`: texto libre. El formulario sugiere las descripciones ya usadas (sin
   repetidas, por frecuencia, desde el store en memoria — `lib/sugestoesGastos.ts`), pero
-  nunca bloquea una nueva. No hay catálogo de descripciones.
+  nunca bloquea una nueva. No hay catálogo de descripciones. **Al escoger** una sugerencia
+  (nunca al tipear), el formulario rellena natureza, fornecedor, propriedade y forma de
+  pagamento (+ cartão si es crédito) con el valor **más frecuente** entre los lançamentos
+  con esa descripción (empate → el más reciente); campos sin histórico quedan como están,
+  todo sigue editable, y un aviso discreto dice qué se rellenó. Valor, competência,
+  vencimento y status **nunca** se rellenan solos (`perfilDaDescricao`).
 - `dataVencimento` **siempre** significa vencimiento: `atrasado` y "contas a pagar"
   dependen de eso. Para "paguei hoje, sem vencimento prévio" el formulario tiene el atajo
   **paguei hoje**, que pone `status = pago` y las dos fechas en hoy. No existe (ni debe
@@ -113,8 +118,8 @@ nova e explícita, não uma reconciliação.
 ## Rutas
 | Ruta | Qué hace |
 |---|---|
-| `/gastos` | Dashboard: cards, gráfico mensual, comparativo, por natureza y por cartão |
-| `/gastos/lancamentos` | Tabla paginada con filtros (incluido propriedade, default "todas") y alta/edición en Sheet |
+| `/gastos` | Dashboard: cards, gráfico mensual, comparativo, por natureza y por cartão. Filtro de propriedade **propio** (todas / cada una / Escritório-Geral), **estricto** (una propriedade no suma los gastos generales) y que afecta todos los números de la página |
+| `/gastos/lancamentos` | Tabla paginada con filtros (incluido propriedade, default "todas", con estado independiente del dashboard) y alta/edición en Sheet |
 | `/gastos/recorrentes` | Plantillas de gastos recurrentes + generación de lançamentos |
 | `/gastos/cartoes` | ABM de tarjetas |
 | `/gastos/naturezas` | ABM de naturezas |

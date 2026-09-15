@@ -19,6 +19,12 @@ export interface InputSugestoesProps
   extends Omit<React.ComponentProps<typeof Input>, "value" | "onChange"> {
   value: string;
   onChange: (value: string) => void;
+  /**
+   * Chamado SÓ quando a pessoa escolhe um item da lista (clique ou Enter),
+   * nunca enquanto digita texto livre. Para quem quiser reagir à escolha
+   * (ex.: preencher outros campos a partir do histórico).
+   */
+  onEscolher?: (value: string) => void;
   sugestoes: string[];
   /** Quantas mostrar no máximo. */
   limite?: number;
@@ -36,6 +42,7 @@ function chave(s: string): string {
 export function InputSugestoes({
   value,
   onChange,
+  onEscolher,
   sugestoes,
   limite = 8,
   className,
@@ -59,6 +66,7 @@ export function InputSugestoes({
 
   function escolher(texto: string) {
     onChange(texto);
+    onEscolher?.(texto);
     setAberto(false);
     setAtivo(-1);
     inputRef.current?.focus();

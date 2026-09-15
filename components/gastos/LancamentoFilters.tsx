@@ -18,8 +18,11 @@ import {
   STATUS_LANCAMENTO_LABELS,
 } from "@/lib/typesGastos";
 import { porOrdem } from "@/lib/utils";
-import { PontoCor } from "@/components/ui/PontoCor";
 import { PontoStatus } from "@/components/gastos/StatusLancamento";
+import {
+  FiltroPropriedade,
+  SEM_PROPRIEDADE,
+} from "@/components/gastos/FiltroPropriedade";
 
 export interface FiltrosLancamento {
   busca: string;
@@ -56,12 +59,8 @@ const TODOS = "__todos__";
 /** Sentinel do filtro de cartão: lançamentos que não foram no crédito. */
 export const SEM_CARTAO = "sem";
 
-/**
- * Sentinel do filtro de propriedade: só os lançamentos de escritório /
- * compartilhados (propriedadeId null). O padrão do filtro é "todas" — este
- * filtro é PRÓPRIO do módulo e não segue a propriedade ativa do ReservaTrack.
- */
-export const SEM_PROPRIEDADE = "geral";
+/** Re-exportado para a página aplicar o filtro. Vive em FiltroPropriedade. */
+export { SEM_PROPRIEDADE };
 
 /** Status derivado, não guardado: pendente e já vencido. */
 export const STATUS_ATRASADO = "atrasado";
@@ -101,24 +100,11 @@ export function LancamentoFilters({
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Select
-          value={filtros.propriedadeId === "" ? TODAS : filtros.propriedadeId}
-          onValueChange={(v) => set("propriedadeId", v === TODAS ? "" : v)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODAS}>Todas as propriedades</SelectItem>
-            <SelectItem value={SEM_PROPRIEDADE}>Escritório / Geral</SelectItem>
-            {porOrdem(propriedades).map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                <PontoCor cor={p.cor} />
-                {p.nome}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <FiltroPropriedade
+          valor={filtros.propriedadeId}
+          onChange={(v) => set("propriedadeId", v)}
+          propriedades={propriedades}
+        />
 
         <Select
           value={filtros.naturezaId === "" ? TODAS : filtros.naturezaId}
