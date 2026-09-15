@@ -51,11 +51,22 @@ tom, escrita) e deixamos de fora tudo que é espetáculo de primeira visita.
   `text-subtle-fg` (#9DA0A5) para meta.
 
 - **Cores de status.** O DS só tem coral e cinzas, e não define estados. Num
-  painel o status carrega informação, então ficou uma escala mínima e coerente:
-  carvão sólido = concluído (pago, confirmada, ativa) · coral = precisa de
-  atenção (pendente, pausada) · cinza = inativo · `--destructive #B3261E` =
-  atrasado/cancelado. O vermelho destrutivo é mais fechado que o coral **de
-  propósito**, para "excluir" nunca ser confundido com o CTA.
+  painel o status carrega informação, então há duas escalas:
+  - **ReservaTrack** (campanhas, reservas): carvão sólido = concluído
+    (confirmada, ativa) · coral = precisa de atenção (pendente, pausada) ·
+    cinza = inativo · `--destructive #B3261E` = cancelada.
+  - **Gastos** (lançamentos): semáforo, porque aqui "pendente" tem prazo.
+    `--color-sucesso #15803D` = pago · `--color-atencao #A16207` = pendente
+    ainda no prazo · `--destructive` = **atrasado** (pendente já vencido, que é
+    derivado, não guardado) · cinza = cancelado. O vermelho é reservado ao que
+    já venceu: uma conta que vence em 20 dias não grita igual a uma vencida há
+    um mês. Os dois tokens novos vivem em `globals.css`, passam de 4.5:1 sobre
+    branco, e o mapeamento único está em `STATUS_LANCAMENTO_BADGE` /
+    `STATUS_LANCAMENTO_PONTO` (`lib/utils.ts`) — nenhum componente escolhe cor
+    por conta própria.
+
+  O vermelho destrutivo é mais fechado que o coral **de propósito**, para
+  "excluir" nunca ser confundido com o CTA.
 
 - **Gráficos.** Sem paleta categórica no DS. Os charts usam a escala de cinzas
   (`#101113`, `#5E6166`, `#9DA0A5`, `#EAE3DA`) com **coral como único acento**,

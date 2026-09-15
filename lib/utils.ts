@@ -6,6 +6,7 @@ import type {
   StatusCampanha,
   StatusReserva,
 } from "./types";
+import type { StatusLancamento } from "./typesGastos";
 
 /** Junta classes condicionais e resolve conflitos de Tailwind (padrão shadcn). */
 export function cn(...inputs: ClassValue[]): string {
@@ -238,6 +239,40 @@ export const STATUS_RESERVA_BADGE: Record<StatusReserva, string> = {
   confirmada: "bg-carvao text-branco",
   pendente: "bg-coral/12 text-coral-dark",
   cancelada: "bg-destructive/10 text-destructive",
+};
+
+/**
+ * Status VISUAL de um lançamento: os três guardados + "atrasado", que é
+ * derivado (pendente já vencido — `estaAtrasado` em calculationsGastos).
+ * Cores: tokens `sucesso` / `atencao` / `destructive` de globals.css.
+ * Vermelho só para o que já venceu.
+ */
+export type StatusLancamentoVisual = StatusLancamento | "atrasado";
+
+export const STATUS_LANCAMENTO_VISUAL_LABELS: Record<
+  StatusLancamentoVisual,
+  string
+> = {
+  pago: "Pago",
+  pendente: "Pendente",
+  atrasado: "Atrasado",
+  cancelado: "Cancelado",
+};
+
+/** Pill (fundo suave + texto na cor). */
+export const STATUS_LANCAMENTO_BADGE: Record<StatusLancamentoVisual, string> = {
+  pago: "bg-sucesso/10 text-sucesso",
+  pendente: "bg-atencao/12 text-atencao",
+  atrasado: "bg-destructive/10 text-destructive",
+  cancelado: "bg-carvao-50 text-muted-fg", // subtle-fg não passa de 2.6:1
+};
+
+/** Ponto sólido, para selects e listas onde a pill seria pesada. */
+export const STATUS_LANCAMENTO_PONTO: Record<StatusLancamentoVisual, string> = {
+  pago: "bg-sucesso",
+  pendente: "bg-atencao",
+  atrasado: "bg-destructive",
+  cancelado: "bg-subtle-fg",
 };
 
 /** Paleta dos gráficos: escala de cinzas do DS + coral como único acento. */

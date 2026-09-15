@@ -19,6 +19,7 @@ import {
 } from "@/lib/typesGastos";
 import { porOrdem } from "@/lib/utils";
 import { PontoCor } from "@/components/ui/PontoCor";
+import { PontoStatus } from "@/components/gastos/StatusLancamento";
 
 export interface FiltrosLancamento {
   busca: string;
@@ -182,10 +183,14 @@ export function LancamentoFilters({
             <SelectItem value={TODOS}>Todos os status</SelectItem>
             {STATUS_LANCAMENTO.map((s) => (
               <SelectItem key={s} value={s}>
+                <PontoStatus status={s} />
                 {STATUS_LANCAMENTO_LABELS[s]}
               </SelectItem>
             ))}
-            <SelectItem value={STATUS_ATRASADO}>Atrasado</SelectItem>
+            <SelectItem value={STATUS_ATRASADO}>
+              <PontoStatus status="atrasado" />
+              Atrasado
+            </SelectItem>
           </SelectContent>
         </Select>
 

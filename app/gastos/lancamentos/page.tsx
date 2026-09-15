@@ -26,6 +26,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { LancamentoForm } from "@/components/gastos/LancamentoForm";
 import { ComprovanteLink } from "@/components/gastos/Comprovante";
+import { StatusBadge } from "@/components/gastos/StatusLancamento";
 import {
   LancamentoFilters,
   filtrosVazios,
@@ -37,6 +38,7 @@ import {
   type FiltrosLancamento,
 } from "@/components/gastos/LancamentoFilters";
 
+/** Default de itens por página (não muda). As opções estão em Pagination. */
 const POR_PAGINA = 10;
 
 /** Colunas ordenáveis. "Ações" fica de fora. */
@@ -66,6 +68,8 @@ export default function LancamentosPage() {
 
   const [filtros, setFiltros] = useState<FiltrosLancamento>(filtrosVazios);
   const [page, setPage] = useState(1);
+  // Só para a sessão da tela: não persiste em localStorage nem no banco.
+  const [porPagina, setPorPagina] = useState(POR_PAGINA);
   // null = ordem padrão (vencimento mais recente primeiro).
   const [ordenacao, setOrdenacao] = useState<Ordenacao<ColunaOrdenavel> | null>(
     null,
@@ -202,12 +206,17 @@ export default function LancamentosPage() {
     return ordenarPor(filtrados, chave, ordenacao.direcao);
   }, [filtrados, ordenacao, naturezaPorId, cartaoPorId]);
 
-  const totalPaginas = Math.max(1, Math.ceil(ordenados.length / POR_PAGINA));
+  const totalPaginas = Math.max(1, Math.ceil(ordenados.length / porPagina));
   const paginaAtual = Math.min(page, totalPaginas);
   const paginados = ordenados.slice(
-    (paginaAtual - 1) * POR_PAGINA,
-    paginaAtual * POR_PAGINA,
+    (paginaAtual - 1) * porPagina,
+    paginaAtual * porPagina,
   );
+
+  function mudarPorPagina(n: number) {
+    setPorPagina(n);
+    setPage(1);
+  }
 
   function abrirEdicao(l: Lancamento) {
     setEditando(l);
@@ -430,6 +439,8 @@ export default function LancamentosPage() {
             page={paginaAtual}
             totalPages={totalPaginas}
             onPage={setPage}
+            pageSize={porPagina}
+            onPageSize={mudarPorPagina}
           />
         </>
       )}
@@ -453,38 +464,3 @@ export default function LancamentosPage() {
 }
 
 /** Badge de status, com o "atrasado" derivado em vermelho. */
-function StatusBadge({
-  lancamento,
-  hoje,
-}: {
-  lancamento: Lancamento;
-  hoje: string;
-}) {
-  const atrasado = estaAtrasado(lancamento, hoje);
-  const label = atrasado
-    ? "Atrasado"
-    : lancamento.status === "pago"
-      ? "Pago"
-      : lancamento.status === "pendente"
-        ? "Pendente"
-        : "Cancelado";
-
-  const estilo = atrasado
-    ? "bg-destructive/10 text-destructive"
-    : lancamento.status === "pago"
-      ? "bg-carvao text-branco"
-      : lancamento.status === "pendente"
-        ? "bg-coral/12 text-coral-dark"
-        : "bg-carvao-50 text-subtle-fg";
-
-  return (
-    <span
-      className={cn(
-        "inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-normal",
-        estilo,
-      )}
-    >
-      {label}
-    </span>
-  );
-}

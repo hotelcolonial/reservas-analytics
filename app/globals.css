@@ -27,6 +27,13 @@
   --color-creme: #f4efea;
   --color-areia: #eae3da;
 
+  /* Status de lançamento (Gastos). O DS não define estados, e o vermelho
+     (--destructive) fica reservado ao que já venceu: uma conta que vence em
+     20 dias não pode gritar igual a uma vencida há um mês. Ambos passam de
+     4.5:1 sobre branco. Ver DESIGN.md §3. */
+  --color-sucesso: #15803d; /* verde: pago */
+  --color-atencao: #a16207; /* amarelo-escuro: pendente ainda no prazo */
+
   /* Tipografia. O DS pede HelveticaNeueCyr 300/400 com Inter logo atrás,
      porque o arquivo Light não traz glifos acentuados (é, ã, ç). Os .ttf
      não estão no repo (ver DESIGN.md), então Inter carrega a marca hoje e

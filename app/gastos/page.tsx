@@ -26,6 +26,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionCardHeader } from "@/components/ui/section-card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PontoStatus } from "@/components/gastos/StatusLancamento";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import {
   PeriodFilterGastos,
@@ -402,7 +403,7 @@ export default function GastosDashboardPage() {
 
                     {contas.proximos.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-xs font-normal uppercase tracking-wide text-muted-foreground">
+                        <p className="text-xs font-normal uppercase tracking-wide text-atencao">
                           Próximos ({contas.proximos.length})
                         </p>
                         <ul className="space-y-2">
@@ -464,24 +465,31 @@ function LinhaAVencer({
           : "flex items-center justify-between gap-3 px-3 py-1.5 text-sm"
       }
     >
-      <span className="min-w-0">
-        <span
-          className={
-            atrasado
-              ? "block truncate font-normal text-destructive"
-              : "block truncate font-normal text-carvao"
-          }
-        >
-          {lancamento.descricao}
-        </span>
-        <span
-          className={
-            atrasado
-              ? "block text-xs text-destructive"
-              : "block text-xs text-subtle-fg"
-          }
-        >
-          venc. {formatDate(lancamento.dataVencimento)}
+      <span className="flex min-w-0 items-start gap-2">
+        {/* Pendente no prazo = amarelo; já vencido = vermelho. */}
+        <PontoStatus
+          status={atrasado ? "atrasado" : "pendente"}
+          className="mt-1.5"
+        />
+        <span className="min-w-0">
+          <span
+            className={
+              atrasado
+                ? "block truncate font-normal text-destructive"
+                : "block truncate font-normal text-carvao"
+            }
+          >
+            {lancamento.descricao}
+          </span>
+          <span
+            className={
+              atrasado
+                ? "block text-xs text-destructive"
+                : "block text-xs text-subtle-fg"
+            }
+          >
+            venc. {formatDate(lancamento.dataVencimento)}
+          </span>
         </span>
       </span>
       <span

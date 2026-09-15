@@ -26,6 +26,7 @@ import { useGastosStore, novoId } from "@/lib/storeGastos";
 import { useStore } from "@/lib/store";
 import { InputSugestoes } from "@/components/ui/input-sugestoes";
 import { PontoCor } from "@/components/ui/PontoCor";
+import { PontoStatus } from "@/components/gastos/StatusLancamento";
 import { sugestoesDeDescricao } from "@/lib/sugestoesGastos";
 import {
   ACCEPT_COMPROVANTE,
@@ -504,6 +505,7 @@ export function LancamentoForm({
                   <SelectContent>
                     {STATUS_LANCAMENTO.map((s) => (
                       <SelectItem key={s} value={s}>
+                        <PontoStatus status={s} />
                         {STATUS_LANCAMENTO_LABELS[s]}
                       </SelectItem>
                     ))}
