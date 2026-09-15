@@ -105,6 +105,15 @@ export function todayISO(): string {
   return localISO(new Date());
 }
 
+/**
+ * True quando a tecla "ativa" um elemento clicável que não é botão nativo
+ * (linha de tabela, item de lista): Enter ou Espaço. Mantém a paridade
+ * mouse/teclado dos itens que abrem o Sheet de edição.
+ */
+export function teclaAtiva(e: { key: string }): boolean {
+  return e.key === "Enter" || e.key === " ";
+}
+
 /* ---------- Período (filtro por datas) ---------- */
 
 /** Intervalo de datas. Campo vazio ("") significa "sem limite" desse lado. */

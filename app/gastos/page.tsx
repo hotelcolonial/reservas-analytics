@@ -22,12 +22,15 @@ import {
   rotuloCompetencia,
 } from "@/lib/calculationsGastos";
 import {
+  cn,
   formatBRL,
   formatDate,
   formatNumber,
   formatPercent,
+  teclaAtiva,
   todayISO,
 } from "@/lib/utils";
+import { LancamentoForm } from "@/components/gastos/LancamentoForm";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionCardHeader } from "@/components/ui/section-card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -61,6 +64,10 @@ export default function GastosDashboardPage() {
   const mesAtual = hoje.slice(0, 7);
 
   const [periodo, setPeriodo] = useState<PeriodoCompetencia>(COMPETENCIA_TUDO);
+  // Lançamento aberto no Sheet de edição (top 10 e contas a pagar). É o
+  // mesmo LancamentoForm de /gastos/lancamentos; salvar atualiza o store, e
+  // tudo nesta tela deriva do store — a página reflete na hora.
+  const [editando, setEditando] = useState<Lancamento | null>(null);
   // Estado PRÓPRIO desta tela ("" = todas). Não compartilha com
   // /gastos/lancamentos nem persiste. Filtro estrito: uma propriedade mostra
   // só o que é dela; os gerais têm a opção "Escritório / Geral".
@@ -373,7 +380,19 @@ export default function GastosDashboardPage() {
                         {topGastos.map((l) => {
                           const natureza = naturezaPorId.get(l.naturezaId);
                           return (
-                            <tr key={l.id} className="hover:bg-carvao-50/50">
+                            <tr
+                              key={l.id}
+                              tabIndex={0}
+                              aria-label={`Editar ${l.descricao}`}
+                              onClick={() => setEditando(l)}
+                              onKeyDown={(e) => {
+                                if (teclaAtiva(e)) {
+                                  e.preventDefault();
+                                  setEditando(l);
+                                }
+                              }}
+                              className="cursor-pointer transition-colors hover:bg-carvao-50/50 focus-visible:bg-carvao-50/50 focus-visible:outline-2 focus-visible:outline-ring/50 focus-visible:-outline-offset-2"
+                            >
                               <td className="px-3 py-3">
                                 <p className="font-normal text-carvao">
                                   {l.descricao}
@@ -433,7 +452,12 @@ export default function GastosDashboardPage() {
                         </p>
                         <ul className="space-y-2">
                           {contas.atrasados.map((l) => (
-                            <LinhaAVencer key={l.id} lancamento={l} atrasado />
+                            <LinhaAVencer
+                              key={l.id}
+                              lancamento={l}
+                              atrasado
+                              onAbrir={() => setEditando(l)}
+                            />
                           ))}
                         </ul>
                       </div>
@@ -446,7 +470,11 @@ export default function GastosDashboardPage() {
                         </p>
                         <ul className="space-y-2">
                           {contas.proximos.map((l) => (
-                            <LinhaAVencer key={l.id} lancamento={l} />
+                            <LinhaAVencer
+                              key={l.id}
+                              lancamento={l}
+                              onAbrir={() => setEditando(l)}
+                            />
                           ))}
                         </ul>
                       </div>
@@ -458,6 +486,13 @@ export default function GastosDashboardPage() {
           </div>
         </>
       )}
+
+      <LancamentoForm
+        key={`dash-lanc-${editando?.id ?? "fechado"}`}
+        open={editando !== null}
+        onClose={() => setEditando(null)}
+        lancamento={editando}
+      />
     </div>
   );
 }
@@ -491,17 +526,25 @@ function Seta({ subindo }: { subindo: boolean }) {
 function LinhaAVencer({
   lancamento,
   atrasado = false,
+  onAbrir,
 }: {
   lancamento: Lancamento;
   atrasado?: boolean;
+  /** Abre o lançamento no Sheet de edição. */
+  onAbrir: () => void;
 }) {
   return (
-    <li
-      className={
+    <li>
+    <button
+      type="button"
+      onClick={onAbrir}
+      aria-label={`Editar ${lancamento.descricao}`}
+      className={cn(
+        "flex w-full items-center justify-between gap-3 rounded-lg px-3 text-left text-sm transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
         atrasado
-          ? "flex items-center justify-between gap-3 rounded-lg bg-destructive/8 px-3 py-2 text-sm"
-          : "flex items-center justify-between gap-3 px-3 py-1.5 text-sm"
-      }
+          ? "bg-destructive/8 py-2 hover:bg-destructive/12"
+          : "py-1.5 hover:bg-carvao-50",
+      )}
     >
       <span className="flex min-w-0 items-start gap-2">
         {/* Pendente no prazo = amarelo; já vencido = vermelho. */}
@@ -539,6 +582,7 @@ function LinhaAVencer({
       >
         {formatBRL(lancamento.valor)}
       </span>
+    </button>
     </li>
   );
 }

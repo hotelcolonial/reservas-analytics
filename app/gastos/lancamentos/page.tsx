@@ -15,7 +15,7 @@ import {
   type Ordenacao,
 } from "@/lib/ordenacao";
 import { estaAtrasado } from "@/lib/calculationsGastos";
-import { cn, formatBRL, formatDate, todayISO } from "@/lib/utils";
+import { cn, formatBRL, formatDate, teclaAtiva, todayISO } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -347,15 +347,32 @@ export default function LancamentosPage() {
                       ? propriedadePorId.get(l.propriedadeId)
                       : null;
                     return (
-                      <tr key={l.id} className="hover:bg-carvao-50/50">
+                      <tr
+                        key={l.id}
+                        tabIndex={0}
+                        aria-label={`Editar ${l.descricao}`}
+                        onClick={() => abrirEdicao(l)}
+                        onKeyDown={(e) => {
+                          // Só quando o foco está na própria linha, não num
+                          // botão/link dentro dela (esses têm o próprio Enter).
+                          if (e.target === e.currentTarget && teclaAtiva(e)) {
+                            e.preventDefault();
+                            abrirEdicao(l);
+                          }
+                        }}
+                        className="cursor-pointer transition-colors hover:bg-carvao-50/50 focus-visible:bg-carvao-50/50 focus-visible:outline-2 focus-visible:outline-ring/50 focus-visible:-outline-offset-2"
+                      >
                         <td className="px-3 py-3">
                           <p className="flex items-center gap-1.5 font-normal text-carvao">
                             <span className="min-w-0">{l.descricao}</span>
                             {l.comprovanteUrl && (
-                              <ComprovanteLink
-                                valor={l.comprovanteUrl}
-                                descricao={l.descricao}
-                              />
+                              // O link do comprovante não abre a edição.
+                              <span onClick={(e) => e.stopPropagation()}>
+                                <ComprovanteLink
+                                  valor={l.comprovanteUrl}
+                                  descricao={l.descricao}
+                                />
+                              </span>
                             )}
                           </p>
                           <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-subtle-fg">
@@ -407,7 +424,12 @@ export default function LancamentosPage() {
                         <td className="px-3 py-3">
                           <StatusBadge lancamento={l} hoje={hoje} />
                         </td>
-                        <td className="px-3 py-3">
+                        {/* Os botões param a propagação: o clique neles não
+                            é o clique na linha. */}
+                        <td
+                          className="px-3 py-3"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"
