@@ -25,6 +25,7 @@ import { Paperclip, X, Loader2, CheckCheck } from "lucide-react";
 import { useGastosStore, novoId } from "@/lib/storeGastos";
 import { useStore } from "@/lib/store";
 import { InputSugestoes } from "@/components/ui/input-sugestoes";
+import { PontoCor } from "@/components/ui/PontoCor";
 import { sugestoesDeDescricao } from "@/lib/sugestoesGastos";
 import {
   ACCEPT_COMPROVANTE,
@@ -378,6 +379,7 @@ export function LancamentoForm({
                   </SelectItem>
                   {porOrdem(propriedades).map((p) => (
                     <SelectItem key={p.id} value={p.id}>
+                      <PontoCor cor={p.cor} />
                       {p.nome}
                     </SelectItem>
                   ))}

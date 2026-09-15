@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Autoria } from "@/components/ui/Autoria";
+import { PontoCor, COR_NEUTRA } from "@/components/ui/PontoCor";
 
 export default function PropriedadesPage() {
   const propriedades = useStore((s) => s.propriedades);
@@ -25,8 +26,11 @@ export default function PropriedadesPage() {
   const removePropriedade = useStore((s) => s.removePropriedade);
 
   const [novoNome, setNovoNome] = useState("");
+  // Mesmo padrão do formulário de naturezas: <input type="color"> + hex.
+  const [novaCor, setNovaCor] = useState(COR_NEUTRA);
   const [editId, setEditId] = useState<string | null>(null);
   const [editNome, setEditNome] = useState("");
+  const [editCor, setEditCor] = useState(COR_NEUTRA);
   const [excluir, setExcluir] = useState<Propriedade | null>(null);
 
   const contagens = useMemo(() => {
@@ -49,18 +53,20 @@ export default function PropriedadesPage() {
     if (!nome) return;
     const proximaOrdem =
       propriedades.reduce((max, p) => Math.max(max, p.ordem), 0) + 1;
-    addPropriedade({ nome, ordem: proximaOrdem });
+    addPropriedade({ nome, ordem: proximaOrdem, cor: novaCor });
     setNovoNome("");
+    setNovaCor(COR_NEUTRA);
   }
 
   function iniciarEdicao(p: Propriedade) {
     setEditId(p.id);
     setEditNome(p.nome);
+    setEditCor(p.cor ?? COR_NEUTRA);
   }
 
   function salvarEdicao() {
     const nome = editNome.trim();
-    if (editId && nome) updatePropriedade(editId, { nome });
+    if (editId && nome) updatePropriedade(editId, { nome, cor: editCor });
     setEditId(null);
     setEditNome("");
   }
@@ -94,6 +100,21 @@ export default function PropriedadesPage() {
                 onChange={(e) => setNovoNome(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && adicionar()}
               />
+            </Field>
+            <Field className="sm:w-40">
+              <FieldLabel htmlFor="nova-prop-cor">Cor</FieldLabel>
+              <div className="flex items-center gap-3">
+                <Input
+                  id="nova-prop-cor"
+                  type="color"
+                  value={novaCor}
+                  onChange={(e) => setNovaCor(e.target.value)}
+                  className="h-9 w-16 cursor-pointer p-1"
+                />
+                <span className="font-mono text-sm text-muted-foreground">
+                  {novaCor}
+                </span>
+              </div>
             </Field>
             <Button onClick={adicionar} disabled={!novoNome.trim()}>
               Adicionar propriedade
@@ -129,6 +150,13 @@ export default function PropriedadesPage() {
                           }}
                           className="max-w-xs"
                         />
+                        <Input
+                          type="color"
+                          aria-label="Cor da propriedade"
+                          value={editCor}
+                          onChange={(e) => setEditCor(e.target.value)}
+                          className="h-9 w-16 shrink-0 cursor-pointer p-1"
+                        />
                         <Button
                           size="icon-sm"
                           variant="ghost"
@@ -148,6 +176,7 @@ export default function PropriedadesPage() {
                       </div>
                     ) : (
                       <div className="flex flex-wrap items-center gap-2">
+                        <PontoCor cor={p.cor} />
                         <span className="font-brand text-lg font-normal text-carvao">
                           {p.nome}
                         </span>

@@ -92,6 +92,7 @@ reproduz o estado atual do banco.
 | 005 | `005-acesso-autenticado.sql` | `usuario_ativo()`; remove as policies permissivas de 001–003; policy única "acesso autenticado" (sessão + perfil ativo) nas 8 tabelas e no bucket `comprovantes`; `revoke` de tudo para `anon` |
 | 006 | `006-auditoria.sql` | `criado_por`, `criado_em`, `atualizado_em` nas 8 tabelas (com a conversão de `lancamentos.criado_em` de `text` para `timestamptz`), FKs para `perfis`, e os triggers `ao_inserir`/`ao_atualizar` que preenchem tudo — o app nunca escreve essas colunas |
 | 007 | `007-lancamento-propriedade.sql` | `lancamentos.propriedade_id` (nullable, FK para `propriedades`) + índice. NULL = gasto de escritório ou compartilhado |
+| 008 | `008-propriedade-cor.sql` | `propriedades.cor` (nullable): hex do ponto colorido ao lado do nome, como em `naturezas.cor` |
 
 004–006 foram extraídos do banco real com `supabase/extrair-estado.sql` (uma consulta só
 de leitura sobre `pg_policies`, `pg_proc`, `pg_trigger` e `pg_attribute`). Se a base mudar

@@ -101,6 +101,7 @@ export function rowToPropriedade(row: Row): Propriedade {
     id: row.id as string,
     nome: row.nome as string,
     ordem: Number(row.ordem ?? 0),
+    cor: (row.cor as string | null) ?? null,
   };
 }
 
@@ -109,6 +110,7 @@ export function propriedadeToRow(p: Propriedade) {
     id: p.id,
     nome: p.nome,
     ordem: p.ordem,
+    cor: p.cor ?? null,
   };
 }
 

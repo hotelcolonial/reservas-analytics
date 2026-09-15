@@ -18,6 +18,7 @@ import {
   STATUS_LANCAMENTO_LABELS,
 } from "@/lib/typesGastos";
 import { porOrdem } from "@/lib/utils";
+import { PontoCor } from "@/components/ui/PontoCor";
 
 export interface FiltrosLancamento {
   busca: string;
@@ -111,6 +112,7 @@ export function LancamentoFilters({
             <SelectItem value={SEM_PROPRIEDADE}>Escritório / Geral</SelectItem>
             {porOrdem(propriedades).map((p) => (
               <SelectItem key={p.id} value={p.id}>
+                <PontoCor cor={p.cor} />
                 {p.nome}
               </SelectItem>
             ))}

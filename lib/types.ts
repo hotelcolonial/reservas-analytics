@@ -45,6 +45,7 @@ export interface Propriedade extends Auditoria {
   id: string;
   nome: string;
   ordem: number; // ordem no seletor de propriedade
+  cor?: string | null; // hex do ponto colorido (migração 008); null = neutro do DS
 }
 
 export interface Campanha extends Auditoria {

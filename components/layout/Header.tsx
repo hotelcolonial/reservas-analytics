@@ -18,6 +18,7 @@ import { ROTA_LOGIN } from "@/lib/rotasAuth";
 import { NavTabs, TABS_RESERVAS, TABS_GASTOS } from "./NavTabs";
 import { UserMenu } from "./UserMenu";
 import { Logo } from "./Logo";
+import { PontoCor } from "@/components/ui/PontoCor";
 import { CampaignForm } from "@/components/campaigns/CampaignForm";
 import { ReservationForm } from "@/components/reservations/ReservationForm";
 
@@ -84,6 +85,7 @@ function PropriedadeSelector() {
       <SelectContent>
         {propriedades.map((p) => (
           <SelectItem key={p.id} value={p.id}>
+            <PontoCor cor={p.cor} />
             {p.nome}
           </SelectItem>
         ))}

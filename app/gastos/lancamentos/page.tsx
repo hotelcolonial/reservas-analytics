@@ -1,16 +1,25 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, ArrowUp, ArrowDown, ChevronsUpDown } from "lucide-react";
 import { useGastosStore } from "@/lib/storeGastos";
 import { useStore } from "@/lib/store";
 import type { Lancamento } from "@/lib/typesGastos";
-import { FORMA_PAGAMENTO_LABELS } from "@/lib/typesGastos";
+import {
+  FORMA_PAGAMENTO_LABELS,
+  STATUS_LANCAMENTO,
+} from "@/lib/typesGastos";
+import {
+  alternarOrdenacao,
+  ordenarPor,
+  type Ordenacao,
+} from "@/lib/ordenacao";
 import { estaAtrasado } from "@/lib/calculationsGastos";
 import { cn, formatBRL, formatDate, todayISO } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PontoCor } from "@/components/ui/PontoCor";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Pagination } from "@/components/ui/Pagination";
@@ -30,6 +39,18 @@ import {
 
 const POR_PAGINA = 10;
 
+/** Colunas ordenáveis. "Ações" fica de fora. */
+type ColunaOrdenavel =
+  | "descricao"
+  | "natureza"
+  | "pagamento"
+  | "vencimento"
+  | "valor"
+  | "status";
+
+/** Ordem semântica do status (pendente antes de pago antes de cancelado). */
+const POSICAO_STATUS = new Map(STATUS_LANCAMENTO.map((s, i) => [s, i]));
+
 export default function LancamentosPage() {
   const lancamentos = useGastosStore((s) => s.lancamentos);
   const naturezas = useGastosStore((s) => s.naturezas);
@@ -45,6 +66,10 @@ export default function LancamentosPage() {
 
   const [filtros, setFiltros] = useState<FiltrosLancamento>(filtrosVazios);
   const [page, setPage] = useState(1);
+  // null = ordem padrão (vencimento mais recente primeiro).
+  const [ordenacao, setOrdenacao] = useState<Ordenacao<ColunaOrdenavel> | null>(
+    null,
+  );
   const [aberto, setAberto] = useState(false);
   const [editando, setEditando] = useState<Lancamento | null>(null);
   const [excluir, setExcluir] = useState<Lancamento | null>(null);
@@ -78,6 +103,12 @@ export default function LancamentosPage() {
     setAberto(false);
     setEditando(null);
     consumirNovoLancamento();
+  }
+
+  /** Clique no cabeçalho: asc → desc → sem ordenação. Sempre volta à página 1. */
+  function ordenarPorColuna(coluna: ColunaOrdenavel) {
+    setOrdenacao((atual) => alternarOrdenacao(atual, coluna));
+    setPage(1);
   }
 
   function aplicarFiltros(f: FiltrosLancamento) {
@@ -151,9 +182,29 @@ export default function LancamentosPage() {
     return { total, pago, pendente };
   }, [filtrados]);
 
-  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA));
+  // Ordenação sobre o conjunto filtrado inteiro, ANTES da paginação. Sem
+  // ordenação escolhida, fica a ordem padrão de `filtrados` (vencimento desc).
+  const ordenados = useMemo(() => {
+    if (!ordenacao) return filtrados;
+    const chave = {
+      descricao: (l: Lancamento) => l.descricao || null,
+      natureza: (l: Lancamento) => naturezaPorId.get(l.naturezaId)?.nome ?? null,
+      pagamento: (l: Lancamento) => {
+        const cartao = l.cartaoId ? cartaoPorId.get(l.cartaoId) : null;
+        return FORMA_PAGAMENTO_LABELS[l.formaPagamento] + (cartao ? ` ${cartao.nome}` : "");
+      },
+      // Datas ISO: comparação de string, nunca Date.
+      vencimento: (l: Lancamento) => l.dataVencimento || null,
+      // Valor é número: nunca ordenar como texto.
+      valor: (l: Lancamento) => l.valor,
+      status: (l: Lancamento) => POSICAO_STATUS.get(l.status) ?? null,
+    }[ordenacao.coluna];
+    return ordenarPor(filtrados, chave, ordenacao.direcao);
+  }, [filtrados, ordenacao, naturezaPorId, cartaoPorId]);
+
+  const totalPaginas = Math.max(1, Math.ceil(ordenados.length / POR_PAGINA));
   const paginaAtual = Math.min(page, totalPaginas);
-  const paginados = filtrados.slice(
+  const paginados = ordenados.slice(
     (paginaAtual - 1) * POR_PAGINA,
     paginaAtual * POR_PAGINA,
   );
@@ -228,12 +279,52 @@ export default function LancamentosPage() {
               <table className="w-full min-w-[880px] border-collapse text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wide text-subtle-fg">
-                    <th className="px-3 py-2 font-normal">Descrição</th>
-                    <th className="px-3 py-2 font-normal">Natureza</th>
-                    <th className="px-3 py-2 font-normal">Pagamento</th>
-                    <th className="px-3 py-2 font-normal">Vencimento</th>
-                    <th className="px-3 py-2 text-right font-normal">Valor</th>
-                    <th className="px-3 py-2 font-normal">Status</th>
+                    {(
+                      [
+                        ["descricao", "Descrição", false],
+                        ["natureza", "Natureza", false],
+                        ["pagamento", "Pagamento", false],
+                        ["vencimento", "Vencimento", false],
+                        ["valor", "Valor", true],
+                        ["status", "Status", false],
+                      ] as const
+                    ).map(([coluna, rotulo, direita]) => {
+                      const ativa = ordenacao?.coluna === coluna;
+                      const Icone = !ativa
+                        ? ChevronsUpDown
+                        : ordenacao.direcao === "asc"
+                          ? ArrowUp
+                          : ArrowDown;
+                      return (
+                        <th
+                          key={coluna}
+                          scope="col"
+                          aria-sort={
+                            !ativa
+                              ? "none"
+                              : ordenacao.direcao === "asc"
+                                ? "ascending"
+                                : "descending"
+                          }
+                          className={cn("px-3 py-2 font-normal", direita && "text-right")}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => ordenarPorColuna(coluna)}
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full uppercase tracking-wide transition-colors hover:text-carvao",
+                              direita && "flex-row-reverse",
+                              ativa && "text-carvao",
+                            )}
+                          >
+                            {rotulo}
+                            <Icone
+                              className={cn("size-3.5", !ativa && "opacity-50")}
+                            />
+                          </button>
+                        </th>
+                      );
+                    })}
                     <th className="px-3 py-2 text-right font-normal">Ações</th>
                   </tr>
                 </thead>
@@ -263,6 +354,7 @@ export default function LancamentosPage() {
                                 nunca um lançamento escondido. */}
                             {propriedade ? (
                               <Badge className="bg-carvao-50 text-carvao">
+                                <PontoCor cor={propriedade.cor} className="size-2" />
                                 {propriedade.nome}
                               </Badge>
                             ) : (
