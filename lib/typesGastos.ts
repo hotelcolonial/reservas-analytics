@@ -82,6 +82,12 @@ export interface Lancamento extends Auditoria {
   comprovanteUrl: string | null;
   observacoes: string;
   despesaRecorrenteId: string | null; // null = gasto avulso
+  /**
+   * Propriedade a que o gasto pertence, ou null (padrão): gasto de escritório
+   * (aluguel, contador) ou compartilhado entre propriedades. Independente do
+   * seletor de propriedade ativa do ReservaTrack — ver GASTOS.md.
+   */
+  propriedadeId?: string | null;
 }
 
 /* ---------- Labels PT-BR e ordens para os selects ---------- */

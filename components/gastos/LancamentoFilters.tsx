@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import type { Cartao, Natureza } from "@/lib/typesGastos";
+import type { Propriedade } from "@/lib/types";
 import {
   FORMAS_PAGAMENTO,
   FORMA_PAGAMENTO_LABELS,
@@ -20,6 +21,7 @@ import { porOrdem } from "@/lib/utils";
 
 export interface FiltrosLancamento {
   busca: string;
+  propriedadeId: string; // "" = todas, "geral" = sem propriedade
   naturezaId: string; // "" = todas
   cartaoId: string; // "" = todos, "sem" = sem cartão
   formaPagamento: string; // "" = todas
@@ -33,6 +35,7 @@ export interface FiltrosLancamento {
 
 export const filtrosVazios: FiltrosLancamento = {
   busca: "",
+  propriedadeId: "",
   naturezaId: "",
   cartaoId: "",
   formaPagamento: "",
@@ -51,6 +54,13 @@ const TODOS = "__todos__";
 /** Sentinel do filtro de cartão: lançamentos que não foram no crédito. */
 export const SEM_CARTAO = "sem";
 
+/**
+ * Sentinel do filtro de propriedade: só os lançamentos de escritório /
+ * compartilhados (propriedadeId null). O padrão do filtro é "todas" — este
+ * filtro é PRÓPRIO do módulo e não segue a propriedade ativa do ReservaTrack.
+ */
+export const SEM_PROPRIEDADE = "geral";
+
 /** Status derivado, não guardado: pendente e já vencido. */
 export const STATUS_ATRASADO = "atrasado";
 
@@ -63,11 +73,13 @@ export function LancamentoFilters({
   onChange,
   naturezas,
   cartoes,
+  propriedades,
 }: {
   filtros: FiltrosLancamento;
   onChange: (f: FiltrosLancamento) => void;
   naturezas: Natureza[];
   cartoes: Cartao[];
+  propriedades: Propriedade[];
 }) {
   function set<K extends keyof FiltrosLancamento>(
     key: K,
@@ -86,7 +98,25 @@ export function LancamentoFilters({
         onChange={(e) => set("busca", e.target.value)}
       />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Select
+          value={filtros.propriedadeId === "" ? TODAS : filtros.propriedadeId}
+          onValueChange={(v) => set("propriedadeId", v === TODAS ? "" : v)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={TODAS}>Todas as propriedades</SelectItem>
+            <SelectItem value={SEM_PROPRIEDADE}>Escritório / Geral</SelectItem>
+            {porOrdem(propriedades).map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.nome}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <Select
           value={filtros.naturezaId === "" ? TODAS : filtros.naturezaId}
           onValueChange={(v) => set("naturezaId", v === TODAS ? "" : v)}

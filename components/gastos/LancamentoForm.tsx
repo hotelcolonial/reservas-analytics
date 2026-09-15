@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -21,8 +21,11 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Paperclip, X, Loader2 } from "lucide-react";
+import { Paperclip, X, Loader2, CheckCheck } from "lucide-react";
 import { useGastosStore, novoId } from "@/lib/storeGastos";
+import { useStore } from "@/lib/store";
+import { InputSugestoes } from "@/components/ui/input-sugestoes";
+import { sugestoesDeDescricao } from "@/lib/sugestoesGastos";
 import {
   ACCEPT_COMPROVANTE,
   TAMANHO_MAXIMO_MB,
@@ -55,6 +58,8 @@ type FormData = Omit<Lancamento, "id" | "criadoEm">;
 // Radix Select não aceita value="" — sentinels para "nada escolhido ainda".
 const SEM_CARTAO = "sem";
 const SEM_NATUREZA = "sem-natureza";
+/** Propriedade vazia = gasto de escritório ou compartilhado (ver GASTOS.md). */
+const SEM_PROPRIEDADE = "__geral__";
 
 /** A competência de uma data ISO é o seu `yyyy-mm`. */
 function competenciaDe(dataISO: string): string {
@@ -77,6 +82,7 @@ function estadoInicial(l: Lancamento | null | undefined): FormData {
     comprovanteUrl: l?.comprovanteUrl ?? null,
     observacoes: l?.observacoes ?? "",
     despesaRecorrenteId: l?.despesaRecorrenteId ?? null,
+    propriedadeId: l?.propriedadeId ?? null,
   };
 }
 
@@ -87,8 +93,19 @@ export function LancamentoForm({
 }: LancamentoFormProps) {
   const naturezas = useGastosStore((s) => s.naturezas);
   const cartoes = useGastosStore((s) => s.cartoes);
+  const lancamentos = useGastosStore((s) => s.lancamentos);
   const addLancamento = useGastosStore((s) => s.addLancamento);
   const updateLancamento = useGastosStore((s) => s.updateLancamento);
+  // Propriedades vêm do store do ReservaTrack, já carregado pelo Providers
+  // global (que envolve /gastos também). Só a lista: NÃO a propriedade ativa.
+  const propriedades = useStore((s) => s.propriedades);
+
+  // Descrições já usadas, sem repetição, das mais frequentes às menos. Sai
+  // do store em memória; nada de consulta nem catálogo à parte.
+  const sugestoes = useMemo(
+    () => sugestoesDeDescricao(lancamentos),
+    [lancamentos],
+  );
 
   const naturezasOrdenadas = porOrdem(naturezas);
 
@@ -145,6 +162,22 @@ export function LancamentoForm({
       formaPagamento: value,
       // Fora do crédito não existe cartão vinculado.
       cartaoId: value === "cartao_credito" ? f.cartaoId : null,
+    }));
+  }
+
+  /**
+   * Atalho para "paguei agora, não havia vencimento prévio": status pago e
+   * as duas datas em hoje, de uma vez. Vencimento continua significando
+   * vencimento — aqui ele só coincide com o pagamento.
+   */
+  function pagueiHoje() {
+    const hoje = todayISO();
+    setForm((f) => ({
+      ...f,
+      status: "pago",
+      dataPagamento: hoje,
+      dataVencimento: hoje,
+      competencia: competenciaAuto ? competenciaDe(hoje) : f.competencia,
     }));
   }
 
@@ -205,6 +238,10 @@ export function LancamentoForm({
     }
     if (noCartao && !form.cartaoId) {
       setErro("Selecione o cartão usado no pagamento.");
+      return;
+    }
+    if (form.status === "pago" && !form.dataPagamento) {
+      setErro("Informe a data de pagamento.");
       return;
     }
 
@@ -275,10 +312,11 @@ export function LancamentoForm({
               <FieldLabel htmlFor="lanc-descricao">
                 Descrição <span className="text-primary">*</span>
               </FieldLabel>
-              <Input
+              <InputSugestoes
                 id="lanc-descricao"
                 value={form.descricao}
-                onChange={(e) => set("descricao", e.target.value)}
+                onChange={(v) => set("descricao", v)}
+                sugestoes={sugestoes}
                 placeholder="Ex.: Tráfego pago — Meta Ads"
               />
             </Field>
@@ -322,6 +360,34 @@ export function LancamentoForm({
                 />
               </Field>
             </div>
+
+            <Field>
+              <FieldLabel htmlFor="lanc-propriedade">Propriedade</FieldLabel>
+              <Select
+                value={form.propriedadeId ?? SEM_PROPRIEDADE}
+                onValueChange={(v) =>
+                  set("propriedadeId", v === SEM_PROPRIEDADE ? null : v)
+                }
+              >
+                <SelectTrigger id="lanc-propriedade" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SEM_PROPRIEDADE}>
+                    Escritório / Geral
+                  </SelectItem>
+                  {porOrdem(propriedades).map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Deixe em Escritório / Geral para gastos que não são de um hotel
+                (aluguel, contador) ou compartilhados entre eles.
+              </p>
+            </Field>
 
             <Field>
               <FieldLabel htmlFor="lanc-forma">
@@ -447,7 +513,7 @@ export function LancamentoForm({
             {form.status === "pago" && (
               <Field>
                 <FieldLabel htmlFor="lanc-pagamento">
-                  Data de pagamento
+                  Data de pagamento <span className="text-primary">*</span>
                 </FieldLabel>
                 <Input
                   id="lanc-pagamento"
@@ -459,6 +525,27 @@ export function LancamentoForm({
                 />
               </Field>
             )}
+
+            <div className="-mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={pagueiHoje}
+                disabled={
+                  form.status === "pago" &&
+                  form.dataPagamento === todayISO() &&
+                  form.dataVencimento === todayISO()
+                }
+              >
+                <CheckCheck className="size-4" />
+                paguei hoje
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Para um gasto pago na hora, sem vencimento prévio: marca pago
+                e põe pagamento e vencimento em hoje.
+              </span>
+            </div>
 
             <Field>
               <FieldLabel htmlFor="lanc-comprovante">Comprovante</FieldLabel>

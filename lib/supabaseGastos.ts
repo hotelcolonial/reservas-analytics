@@ -133,6 +133,7 @@ export function rowToLancamento(row: Row): Lancamento {
     comprovanteUrl: (row.comprovante_url as string | null) ?? null,
     observacoes: texto(row.observacoes),
     despesaRecorrenteId: (row.despesa_recorrente_id as string | null) ?? null,
+    propriedadeId: (row.propriedade_id as string | null) ?? null,
   };
 }
 
@@ -152,6 +153,7 @@ export function lancamentoToRow(l: Lancamento) {
     comprovante_url: l.comprovanteUrl,
     observacoes: l.observacoes,
     despesa_recorrente_id: l.despesaRecorrenteId,
+    propriedade_id: l.propriedadeId ?? null,
     // criado_em / criado_por / atualizado_em: NUNCA — são do trigger.
   };
 }

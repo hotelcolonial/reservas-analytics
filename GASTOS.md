@@ -51,13 +51,27 @@ y es deliberada.
 ### Lancamento
 `{ id, descricao, naturezaId, fornecedor, formaPagamento, cartaoId, valor, competencia,
    dataVencimento, dataPagamento, status, comprovanteUrl, observacoes,
-   despesaRecorrenteId, criadoEm }`
+   despesaRecorrenteId, propriedadeId }` + auditoria (`criadoPor`, `criadoEm`,
+   `atualizadoEm`, preenchidos por trigger — o app nunca os envia)
 - `formaPagamento`: cartao_credito | pix | boleto | debito | dinheiro
 - `cartaoId`: solo cuando `formaPagamento === "cartao_credito"`, si no `null`.
 - `competencia`: `yyyy-mm`, el mes al que pertenece el gasto.
 - `status`: pendente | pago | cancelado
 - `dataPagamento`: nullable. Si tiene fecha, `status` debe ser `pago`.
 - `despesaRecorrenteId`: nullable. Null = gasto suelto.
+- `propriedadeId`: nullable, FK a `propriedades` (migração 007). **Null es el default**
+  y significa gasto de escritório (aluguel, contador) o compartido entre propriedades:
+  no se atribuye a una por conveniencia. Es la **única** relación de este módulo con el
+  ReservaTrack, y es solo de referencia: el filtro de propriedade en
+  `/gastos/lancamentos` es propio (default "todas") y **no sigue** la propriedade ativa
+  del header. Cambiar de propriedade en el ReservaTrack nunca esconde lançamentos.
+- `descricao`: texto libre. El formulario sugiere las descripciones ya usadas (sin
+  repetidas, por frecuencia, desde el store en memoria — `lib/sugestoesGastos.ts`), pero
+  nunca bloquea una nueva. No hay catálogo de descripciones.
+- `dataVencimento` **siempre** significa vencimiento: `atrasado` y "contas a pagar"
+  dependen de eso. Para "paguei hoje, sem vencimento prévio" el formulario tiene el atajo
+  **paguei hoje**, que pone `status = pago` y las dos fechas en hoy. No existe (ni debe
+  existir) un selector de "tipo de data".
 
 ## Estados derivados (no se guardan)
 - **atrasado**: `status === "pendente"` y `dataVencimento < hoje` (comparación de strings).
@@ -78,11 +92,29 @@ variacaoMensal  = ((mesAtual − mesAnterior) / mesAnterior) × 100, null si mes
 
 Los cancelados quedan fuera de todos los totales.
 
+## Relação com o ReservaTrack (gastos ≠ lancamentos)
+
+Os dois módulos registram **fatos diferentes** sobre dinheiro em mídia, e os números
+**não devem bater**:
+
+| | `lancamentos` (Gastos) | `gastos` (ReservaTrack) |
+|---|---|---|
+| O que é | O **desembolso**: a recarga de saldo na plataforma (ex.: R$ 2.000 no Meta Ads em 03/09) | O **consumo diário** por campanha (ex.: R$ 87,30 na campanha "Junino" em 05/09) |
+| Granularidade | Um pagamento | Um dia × uma campanha |
+| Quem carrega | Quem paga a conta do escritório | Quem acompanha a campanha |
+| Serve para | Fluxo de caixa, contas a pagar, por cartão / natureza | ROI, ROAS, custo por reserva |
+
+Sempre existe saldo carregado e ainda não consumido, e uma recarga cobre várias
+campanhas e vários dias. Somar os `gastos` de uma propriedade e esperar que dê igual à
+soma dos `lancamentos` daquela propriedade **é um erro de leitura**, não um bug. Se um
+dia se quiser cruzar os dois (saldo restante = recargas − consumo), isso é uma métrica
+nova e explícita, não uma reconciliação.
+
 ## Rutas
 | Ruta | Qué hace |
 |---|---|
 | `/gastos` | Dashboard: cards, gráfico mensual, comparativo, por natureza y por cartão |
-| `/gastos/lancamentos` | Tabla paginada con filtros y alta/edición en Sheet |
+| `/gastos/lancamentos` | Tabla paginada con filtros (incluido propriedade, default "todas") y alta/edición en Sheet |
 | `/gastos/recorrentes` | Plantillas de gastos recurrentes + generación de lançamentos |
 | `/gastos/cartoes` | ABM de tarjetas |
 | `/gastos/naturezas` | ABM de naturezas |

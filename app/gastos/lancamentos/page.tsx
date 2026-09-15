@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { useGastosStore } from "@/lib/storeGastos";
+import { useStore } from "@/lib/store";
 import type { Lancamento } from "@/lib/typesGastos";
 import { FORMA_PAGAMENTO_LABELS } from "@/lib/typesGastos";
 import { estaAtrasado } from "@/lib/calculationsGastos";
 import { cn, formatBRL, formatDate, todayISO } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Pagination } from "@/components/ui/Pagination";
@@ -19,6 +21,7 @@ import {
   LancamentoFilters,
   filtrosVazios,
   SEM_CARTAO,
+  SEM_PROPRIEDADE,
   STATUS_ATRASADO,
   COM_COMPROVANTE,
   SEM_COMPROVANTE,
@@ -32,6 +35,9 @@ export default function LancamentosPage() {
   const naturezas = useGastosStore((s) => s.naturezas);
   const cartoes = useGastosStore((s) => s.cartoes);
   const removeLancamento = useGastosStore((s) => s.removeLancamento);
+  // Lista de propriedades do ReservaTrack (Providers global já carregou).
+  // Só a lista — o filtro de propriedade daqui é independente da ativa.
+  const propriedades = useStore((s) => s.propriedades);
   const novoLancamentoPedido = useGastosStore((s) => s.novoLancamentoPedido);
   const consumirNovoLancamento = useGastosStore(
     (s) => s.consumirNovoLancamento,
@@ -58,6 +64,10 @@ export default function LancamentosPage() {
     () => new Map(cartoes.map((c) => [c.id, c])),
     [cartoes],
   );
+  const propriedadePorId = useMemo(
+    () => new Map(propriedades.map((p) => [p.id, p])),
+    [propriedades],
+  );
 
   function abrirNovo() {
     setEditando(null);
@@ -83,6 +93,14 @@ export default function LancamentosPage() {
           const alvo = `${l.descricao} ${l.fornecedor}`.toLowerCase();
           if (!alvo.includes(busca)) return false;
         }
+        if (filtros.propriedadeId === SEM_PROPRIEDADE && l.propriedadeId)
+          return false;
+        if (
+          filtros.propriedadeId &&
+          filtros.propriedadeId !== SEM_PROPRIEDADE &&
+          l.propriedadeId !== filtros.propriedadeId
+        )
+          return false;
         if (filtros.naturezaId && l.naturezaId !== filtros.naturezaId)
           return false;
         if (filtros.cartaoId === SEM_CARTAO && l.cartaoId !== null) return false;
@@ -182,6 +200,7 @@ export default function LancamentosPage() {
         onChange={aplicarFiltros}
         naturezas={naturezas}
         cartoes={cartoes}
+        propriedades={propriedades}
       />
 
       {filtrados.length === 0 ? (
@@ -224,6 +243,9 @@ export default function LancamentosPage() {
                     const cartao = l.cartaoId
                       ? cartaoPorId.get(l.cartaoId)
                       : null;
+                    const propriedade = l.propriedadeId
+                      ? propriedadePorId.get(l.propriedadeId)
+                      : null;
                     return (
                       <tr key={l.id} className="hover:bg-carvao-50/50">
                         <td className="px-3 py-3">
@@ -236,11 +258,20 @@ export default function LancamentosPage() {
                               />
                             )}
                           </p>
-                          {l.fornecedor && (
-                            <p className="text-xs text-subtle-fg">
-                              {l.fornecedor}
-                            </p>
-                          )}
+                          <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-subtle-fg">
+                            {/* Propriedade sempre visível: null é "escritório",
+                                nunca um lançamento escondido. */}
+                            {propriedade ? (
+                              <Badge className="bg-carvao-50 text-carvao">
+                                {propriedade.nome}
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-transparent text-subtle-fg ring-1 ring-border">
+                                escritório
+                              </Badge>
+                            )}
+                            {l.fornecedor && <span>{l.fornecedor}</span>}
+                          </p>
                         </td>
                         <td className="px-3 py-3">
                           {natureza ? (
